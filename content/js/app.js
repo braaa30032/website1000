@@ -21,9 +21,6 @@ import { splitFillBoxWords, computeFillBox, renderFillBox } from './shared/helpe
 /* ═══════════════════════════════════════════════════════════════
    CONSTANTS
    ═══════════════════════════════════════════════════════════════ */
-const MAIN_COLOR = '#E74C3C';
-const SUB_COLOR  = '#F39C12';
-const PET_COLOR  = '#8E44AD';
 /* Palette-derived colors (refreshed per page build) */
 function _pal() { return getActivePalette(); }
 const PET_Z      = 5;
@@ -53,8 +50,7 @@ let _landingEl = null;
 
 const L = {
     frames3d: true, beams3d: true, images: true,
-    netz3d: true, pets: true,
-    outlines_content: true, outlines_nav: true, outlines_beam: true
+    netz3d: true, pets: true
 };
 
 /* ═══════════════════════════════════════════════════════════════
@@ -320,7 +316,7 @@ function _createMediaPlane(rect, nodeData, parentGroup, is3d) {
         if (boxW < 2 || boxH < 2) return;
         const planeGeo = new THREE.PlaneGeometry(boxW, boxH);
         const planeMat = new THREE.MeshBasicMaterial({
-            color: new THREE.Color(nodeData.color || _pal().primary),
+            color: new THREE.Color(_pal().primary),
             side: THREE.DoubleSide, transparent: true, opacity: 0.3
         });
         const planeMesh = new THREE.Mesh(planeGeo, planeMat);
@@ -336,13 +332,8 @@ function _createMediaPlane(rect, nodeData, parentGroup, is3d) {
             const imgAspect = (iw || 1) / (ih || 1);
             const boxAspect = boxW / boxH;
             let fw, fh;
-            if (is3d) {
-                /* 3D frame: contain-fit inside the box */
-                if (imgAspect > boxAspect) { fw = boxW; fh = boxW / imgAspect; } else { fh = boxH; fw = boxH * imgAspect; }
-            } else {
-                /* Mains & Subs: layout already sized to content aspect → fill exactly, no crop */
-                fw = boxW; fh = boxH;
-            }
+            /* Always contain-fit: show full image, no stretching */
+            if (imgAspect > boxAspect) { fw = boxW; fh = boxW / imgAspect; } else { fh = boxH; fw = boxH * imgAspect; }
             planeMesh.geometry.dispose();
             planeMesh.geometry = new THREE.PlaneGeometry(fw, fh);
             planeMat.map = tex; planeMat.color.set(0xffffff); planeMat.opacity = 1.0; planeMat.needsUpdate = true;
@@ -369,8 +360,8 @@ function _createMediaPlane(rect, nodeData, parentGroup, is3d) {
             const vw = video.videoWidth || 1, vh = video.videoHeight || 1;
             const va = vw / vh, ba = boxW / boxH;
             let fw, fh;
-            if (is3d) { if (va > ba) { fw = boxW; fh = boxW / va; } else { fh = boxH; fw = boxH * va; } }
-            else { fw = boxW; fh = boxH; }
+            /* Always contain-fit */
+            if (va > ba) { fw = boxW; fh = boxW / va; } else { fh = boxH; fw = boxH * va; }
             vMesh.geometry.dispose(); vMesh.geometry = new THREE.PlaneGeometry(fw, fh); needsRender = true;
         });
     } else if (nodeData.type === 'text') {
@@ -402,7 +393,7 @@ function _createTextPlane(rect, nodeData, parentGroup, z) {
         const PAD = Math.round(cvs.width * 0.04);
         const layout = computeFillBox(ctx, words, cvs.width - 2 * PAD, cvs.height - 2 * PAD);
         if (!layout) return;
-        ctx.fillStyle = nodeData.color || _pal().accent;
+        ctx.fillStyle = _pal().accent;
         renderFillBox(ctx, layout, PAD, PAD, cvs.width, cvs.height, 'alternate', 'center');
     } else {
         /* Multi-paragraph → uniform font size, preserve line breaks */
@@ -433,7 +424,7 @@ function _createTextPlane(rect, nodeData, parentGroup, z) {
         const lineH = fontSize * LS;
         const blockH = lineH * lines.length;
         const yStart = PAD + (usableH - blockH) / 2;
-        ctx.fillStyle = nodeData.color || _pal().accent;
+        ctx.fillStyle = _pal().accent;
         ctx.font = Math.round(fontSize) + 'px sans-serif';
         ctx.textBaseline = 'top';
         ctx.textAlign = 'left';
@@ -523,7 +514,7 @@ function _buildPageGroup(layout, chIdx, pgIdx, skipNav, nodes) {
         const node = _nodes[mi];
         const is3d = node && node.render3d;
         if (is3d) _any3d = true;
-        if (is3d) _createFrame3d(m, (node.color || MAIN_COLOR), fg);
+        if (is3d) _createFrame3d(m, _pal().primary, fg);
         if (node) _createMediaPlane(m, node, ig, is3d);
     });
 
@@ -533,7 +524,7 @@ function _buildPageGroup(layout, chIdx, pgIdx, skipNav, nodes) {
             let subNode = null;
             if (_nodes[gi] && _nodes[gi].children && _nodes[gi].children[si]) subNode = _nodes[gi].children[si];
             const subIs3d = subNode && subNode.render3d;
-            if (subIs3d) { _any3d = true; _createFrame3d(s, subNode.color || SUB_COLOR, fg); }
+            if (subIs3d) { _any3d = true; _createFrame3d(s, _pal().primary, fg); }
             if (subNode) _createMediaPlane(s, subNode, ig, subIs3d);
         });
     });
@@ -561,7 +552,7 @@ function _buildPageGroup(layout, chIdx, pgIdx, skipNav, nodes) {
                 ptg.add(petGrp);
             } else {
                 const meshP = new THREE.Mesh(new THREE.PlaneGeometry(pet.w, pet.h),
-                    new THREE.MeshBasicMaterial({ color: new THREE.Color(petNode ? petNode.color : PET_COLOR), side: THREE.DoubleSide, transparent: true, opacity: 0.85 }));
+                    new THREE.MeshBasicMaterial({ color: new THREE.Color(_pal().primary), side: THREE.DoubleSide, transparent: true, opacity: 0.85 }));
                 meshP.position.set(pet.x, -pet.y, PET_Z);
                 ptg.add(meshP);
             }
@@ -585,7 +576,7 @@ function _buildPageGroup(layout, chIdx, pgIdx, skipNav, nodes) {
                     ? { x: matched.x, y: matched.y, w: matched.w, h: matched.h }
                     : null;
                 if (rect) {
-                    _createTextPlane(rect, { type: 'text', text: nt.text, color: nt.color || node.color }, ig, 1);
+                    _createTextPlane(rect, { type: 'text', text: nt.text }, ig, 1);
                 }
             }
         });

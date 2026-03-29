@@ -85,9 +85,6 @@
         <div class="cp-row"><label><input type="checkbox" id="cp-images" checked> Images / Video</label></div>
         <div class="cp-row"><label><input type="checkbox" id="cp-netz3d" checked> Netz (3D quads)</label></div>
         <div class="cp-row"><label><input type="checkbox" id="cp-pets" checked> Pets</label></div>
-        <div class="cp-row"><label><input type="checkbox" id="cp-outlines-content" checked> Grid: Content</label></div>
-        <div class="cp-row"><label><input type="checkbox" id="cp-outlines-nav" checked> Grid: Nav Corners</label></div>
-        <div class="cp-row"><label><input type="checkbox" id="cp-outlines-beam" checked> Grid: Beams</label></div>
         <hr>
         <h4>🏗 Basis Layers</h4>
         <div class="cp-row"><label><input type="checkbox" id="cp-cds-layer" checked> CDS Canvas</label></div>
@@ -117,7 +114,7 @@
     </script>
 
     <!-- All ES Modules (import map above resolves three) -->
-    <script type="module" src="content/js/app.js?v=65"></script>
+    <script type="module" src="content/js/app.js?v=66"></script>
     <script type="module" src="nav/nav.js?v=38"></script>
 
     <!-- ===== CDS CONTROL PANEL LOGIC ===== -->
@@ -216,10 +213,6 @@
         wire('cp-images',           'images');
         wire('cp-netz3d',           'netz3d');
         wire('cp-pets',             'pets');
-        wire('cp-outlines-content', 'outlines_content');
-        wire('cp-outlines-nav',     'outlines_nav');
-        wire('cp-outlines-beam',    'outlines_beam');
-
         /* ── Basis layer toggles ── */
         var cbCds = document.getElementById('cp-cds-layer');
         var cbNav = document.getElementById('cp-nav-layer');
