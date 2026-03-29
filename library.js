@@ -28,9 +28,9 @@
    ============================================ */
 
 /* Nav-Quadranten: '2d' = Canvas-Fill-Box | '3d' = 3D-Letter-System */
-var NAV_TEXT_MODE = '2d';
+export var NAV_TEXT_MODE = '2d';
 
-var LIBRARY = [
+export var LIBRARY = [
 
     // ===== Kapitel 0: David Asche =====
     {
@@ -54,7 +54,7 @@ var LIBRARY = [
     // ===== Kapitel 1: 0 =====
     {
         name: '0', color: '#3498DB',
-        pageLayouts: { 1: 'timeline' },
+        pageNames: ["flower","sprints 1","sprints 2","sprints 3","sprints 4","sprints 5","sprints 6","video","bild 3","bild 4","bild 5","bild 6","bild 7","bild 8","video 2"],
         materialSet: [
             { color: '#3498DB', roughness: 0.1, metalness: 0.0, transmission: 0.8, ior: 1.5, thickness: 0.5 },
             { color: '#2980B9', roughness: 0.3, metalness: 0.2, clearcoat: 0.8 },
@@ -67,7 +67,8 @@ var LIBRARY = [
                 { id: 'null-flower-start', type: 'image', url: 'https://raw.githubusercontent.com/DavidStHH/Website-Assets/main/assets/flower-1.png', color: '#3498DB' }
             ],
 
-            // --- Seite 1 (236 Main-Nodes) ---
+
+            // --- Seite 1: sprints 1 (40 Main-Nodes) ---
             [
                 {
                     type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/001.jpg', color: '#3498DB',
@@ -116,7 +117,11 @@ var LIBRARY = [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/039.png', color: '#2980B9' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/040.png', color: '#2471A3' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/041.png', color: '#1F618D' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/042.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/042.png', color: '#1A5276' }
+            ],
+
+            // --- Seite 2: sprints 2 (40 Main-Nodes) ---
+            [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/043.png', color: '#3498DB' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/044.png', color: '#2980B9' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/045.jpg', color: '#2471A3' },
@@ -156,7 +161,11 @@ var LIBRARY = [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/083.jpeg', color: '#2980B9' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/084.png', color: '#2471A3' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/085.png', color: '#1F618D' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/086.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/086.png', color: '#1A5276' }
+            ],
+
+            // --- Seite 3: sprints 3 (40 Main-Nodes) ---
+            [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/087.png', color: '#3498DB' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/089.png', color: '#2980B9' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/090.png', color: '#2471A3' },
@@ -196,7 +205,11 @@ var LIBRARY = [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/124.png', color: '#2980B9' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/125.png', color: '#2471A3' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/126.jpg', color: '#1F618D' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/127.jpg', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/127.jpg', color: '#1A5276' }
+            ],
+
+            // --- Seite 4: sprints 4 (40 Main-Nodes) ---
+            [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/128.jpg', color: '#3498DB' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/129.jpg', color: '#2980B9' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/13.jpg', color: '#2471A3' },
@@ -236,7 +249,11 @@ var LIBRARY = [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/157.jpg', color: '#2980B9' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/158.jpg', color: '#2471A3' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1581.png', color: '#1F618D' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/159.jpg', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/159.jpg', color: '#1A5276' }
+            ],
+
+            // --- Seite 5: sprints 5 (40 Main-Nodes) ---
+            [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/16.png', color: '#3498DB' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/160.jpg', color: '#2980B9' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1601.jpg', color: '#2471A3' },
@@ -276,7 +293,11 @@ var LIBRARY = [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1741.png', color: '#2980B9' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1742.png', color: '#2471A3' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/175.jpg', color: '#1F618D' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/176.jpg', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/176.jpg', color: '#1A5276' }
+            ],
+
+            // --- Seite 6: sprints 6 (33 Main-Nodes) ---
+            [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1761.png', color: '#3498DB' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/177.jpg', color: '#2980B9' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/177.png', color: '#2471A3' },
@@ -311,6 +332,7 @@ var LIBRARY = [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1891.png', color: '#2980B9' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/190.jpg', color: '#2471A3' }
             ],
+
 
             // --- Seite 2 (1 Main-Nodes) ---
             [
@@ -575,12 +597,12 @@ var LIBRARY = [
    ============================================ */
 
 /** Anzahl Kapitel */
-function getChapterCount() {
+export function getChapterCount() {
     return LIBRARY.length;
 }
 
 /** Zaehlt die Seiten eines Kapitels. */
-function getPageCount(chapterIdx) {
+export function getPageCount(chapterIdx) {
     var ch = LIBRARY[chapterIdx];
     return ch ? ch.pages.length : 0;
 }
@@ -593,7 +615,7 @@ function getPageCount(chapterIdx) {
  * IDs: Nutzt entry.id wenn vorhanden, sonst auto-generiert
  * (z.B. 'ch1-p2-m0').  Gleiche Logik fuer Children.
  */
-function getMainNodesForPage(chapterIdx, pageIdx) {
+export function getMainNodesForPage(chapterIdx, pageIdx) {
     var ch = LIBRARY[chapterIdx];
     if (!ch || pageIdx >= ch.pages.length) return [];
     var page = ch.pages[pageIdx];
@@ -698,7 +720,7 @@ function getMainNodesForPage(chapterIdx, pageIdx) {
  * Gibt das Thumbnail fuer eine Page im Nav-System zurueck.
  * Default: erster Main-Node der Page.
  */
-function getPageThumbnail(chapterIdx, pageIdx) {
+export function getPageThumbnail(chapterIdx, pageIdx) {
     var ch = LIBRARY[chapterIdx];
     if (!ch || pageIdx >= ch.pages.length) return null;
     var page = ch.pages[pageIdx];
@@ -722,7 +744,7 @@ function getPageThumbnail(chapterIdx, pageIdx) {
  *
  * Format: [{mainCount: N}, {mainCount: M}, ...]
  */
-function getPageSections(chapterIdx, pageIdx) {
+export function getPageSections(chapterIdx, pageIdx) {
     var ch = LIBRARY[chapterIdx];
     if (!ch) return [{ mainCount: 0 }];
     if (ch.pageSections && ch.pageSections[pageIdx] !== undefined) {
@@ -737,6 +759,16 @@ function getPageSections(chapterIdx, pageIdx) {
 }
 
 /** Backward-compatible CHAPTER_DEFS (reads from LIBRARY). */
-var CHAPTER_DEFS = LIBRARY.map(function(ch) {
+export var CHAPTER_DEFS = LIBRARY.map(function(ch) {
     return { name: ch.name, color: ch.color };
 });
+
+/* Window globals for backward compat (letter-system.js, inline scripts) */
+window.LIBRARY = LIBRARY;
+window.NAV_TEXT_MODE = NAV_TEXT_MODE;
+window.CHAPTER_DEFS = CHAPTER_DEFS;
+window.getChapterCount = getChapterCount;
+window.getPageCount = getPageCount;
+window.getMainNodesForPage = getMainNodesForPage;
+window.getPageThumbnail = getPageThumbnail;
+window.getPageSections = getPageSections;

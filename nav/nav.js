@@ -17,6 +17,8 @@ import {
     createLetter, layoutTextIntoLines, applyMaterialPreset,
     buildLetterGroup as _buildLetterGroup
 } from '../content/js/shared/letter-system.js?v=24';
+import { NAV_TEXT_MODE, LIBRARY, CHAPTER_DEFS, getPageCount } from '../library.js?v=34';
+import { splitFillBoxWords, computeFillBox, renderFillBox } from '../content/js/shared/helpers.js?v=1';
 
 // ========== CONFIG ==========
 
@@ -123,7 +125,7 @@ function navInit() {
         premultipliedAlpha: false,
         antialias: true,
     });
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(W, H);
     renderer.setClearColor(0x000000, 0); // Vollstaendig transparent
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -313,7 +315,7 @@ function updateQuadrantContent(panelName) {
     edgesLine.userData.isBg = true;
     group.add(edgesLine);
 
-    const navMode = (typeof NAV_TEXT_MODE !== 'undefined') ? NAV_TEXT_MODE : '3d';
+    const navMode = NAV_TEXT_MODE || '3d';
 
     if (navMode === '3d') {
         /* ── 3D Letters ── */
@@ -360,7 +362,7 @@ function _getNavQuadLabel(panelName, content) {
     // TR = next     → chapter name
     // BL = bottom   → citation
     // BR = info     → '0fun'
-    const pageNames = (typeof LIBRARY !== 'undefined' && LIBRARY[ch] && LIBRARY[ch].pageNames) ? LIBRARY[ch].pageNames : null;
+    const pageNames = (LIBRARY[ch] && LIBRARY[ch].pageNames) ? LIBRARY[ch].pageNames : null;
     const pageLabel = pageNames && pageNames[pg] ? pageNames[pg] : 'page ' + (pg + 1);
     switch (panelName) {
         case 'main': case 'top':
@@ -376,91 +378,9 @@ function _getNavQuadLabel(panelName, content) {
     }
 }
 
-/* Split text: spaces separate, hyphens separate AND become own words */
-function _splitFillBoxWords(text) {
-    const tokens = [];
-    let buf = '';
-    for (let i = 0; i < text.length; i++) {
-        const ch = text[i];
-        if (ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r') {
-            if (buf) { tokens.push(buf); buf = ''; }
-        } else if (ch === '-' || ch === '\u2010' || ch === '\u2011') {
-            if (buf) { tokens.push(buf); buf = ''; }
-            tokens.push('-');
-        } else {
-            buf += ch;
-        }
-    }
-    if (buf) tokens.push(buf);
-    return tokens;
-}
-
-/* Distribute words into numLines, balanced by visual width */
-function _distributeToLines(ctx, words, numLines) {
-    if (numLines >= words.length) return words.map(w => [w]);
-    if (numLines <= 1) return [words.slice()];
-    ctx.font = '100px sans-serif';
-    const widths = words.map(w => ctx.measureText(w).width);
-    const totalW = widths.reduce((a, b) => a + b, 0);
-    const cumW = []; let sum = 0;
-    for (let i = 0; i < widths.length; i++) { sum += widths[i]; cumW.push(sum); }
-    const breaks = [];
-    for (let b = 1; b < numLines; b++) {
-        const target = totalW * b / numLines;
-        const lo = breaks.length > 0 ? breaks[breaks.length - 1] : 0;
-        const hi = words.length - (numLines - b);
-        let bestIdx = lo, bestDist = Infinity;
-        for (let j = lo; j < hi; j++) {
-            const d = Math.abs(cumW[j] - target);
-            if (d < bestDist) { bestDist = d; bestIdx = j + 1; }
-        }
-        if (bestIdx <= lo) bestIdx = lo + 1;
-        breaks.push(bestIdx);
-    }
-    const lines = []; let prev = 0;
-    for (let k = 0; k < breaks.length; k++) {
-        lines.push(words.slice(prev, breaks[k])); prev = breaks[k];
-    }
-    lines.push(words.slice(prev));
-    return lines.filter(l => l.length > 0);
-}
-
-/* Compute fill-box layout: each line fills the width at its own font size */
-function _computeFillBox(ctx, words, usableW, usableH) {
-    const maxLines = Math.min(words.length, 12);
-    let bestTotalH = 0, bestResult = null;
-    const ref = 200, LS = 1.08;
-    for (let numLines = 1; numLines <= maxLines; numLines++) {
-        const dist = _distributeToLines(ctx, words, numLines);
-        let totalH = 0; const lineData = []; let valid = true;
-        for (let li = 0; li < dist.length; li++) {
-            const lw = dist[li];
-            ctx.font = ref + 'px sans-serif';
-            const natW = lw.map(w => ctx.measureText(w).width);
-            const sumNat = natW.reduce((a, b) => a + b, 0);
-            if (sumNat <= 0) { valid = false; break; }
-            const gapCount = lw.length - 1;
-            let fontSize = ref * usableW / sumNat;
-            let gap = gapCount > 0 ? fontSize * 0.06 : 0;
-            fontSize = ref * (usableW - gap * gapCount) / sumNat;
-            gap = gapCount > 0 ? fontSize * 0.06 : 0;
-            fontSize = ref * (usableW - gap * gapCount) / sumNat;
-            if (fontSize < 4) { valid = false; break; }
-            const lineH = fontSize * LS;
-            totalH += lineH;
-            ctx.font = Math.round(fontSize) + 'px sans-serif';
-            const ww = lw.map(w => ctx.measureText(w).width);
-            lineData.push({ words: lw, wordWidths: ww, fontSize, lineH, gap });
-        }
-        if (!valid || totalH > usableH + 1) continue;
-        if (totalH > bestTotalH) { bestTotalH = totalH; bestResult = { lines: lineData, totalH }; }
-    }
-    return bestResult;
-}
-
-/* Build a THREE.Mesh with canvas-rendered fill-box text */
+/* Build a THREE.Mesh with canvas-rendered fill-box text (uses shared helpers) */
 function _buildCanvasTextMesh(text, areaW, areaH, panelName) {
-    const words = _splitFillBoxWords(text);
+    const words = splitFillBoxWords(text);
     if (words.length === 0) return null;
 
     const sc = 2;
@@ -473,7 +393,7 @@ function _buildCanvasTextMesh(text, areaW, areaH, panelName) {
     const padPx = Math.round(cvs.width * pad);
     const usW = cvs.width - 2 * padPx;
     const usH = cvs.height - 2 * padPx;
-    const layout = _computeFillBox(ctx, words, usW, usH);
+    const layout = computeFillBox(ctx, words, usW, usH);
     if (!layout) return null;
 
     /* Position-aware alignment */
@@ -484,35 +404,7 @@ function _buildCanvasTextMesh(text, areaW, areaH, panelName) {
     const vAlign = isTop ? 'top' : 'bottom';
 
     ctx.fillStyle = '#333';
-    ctx.textBaseline = 'top';
-
-    const usHTotal = cvs.height - 2 * padPx;
-    const extraV = usHTotal - layout.totalH;
-    let yOff = vAlign === 'top' ? padPx : padPx + extraV;
-
-    let cumY = 0;
-    for (let li = 0; li < layout.lines.length; li++) {
-        const line = layout.lines[li];
-        const y = yOff + cumY;
-        const goRight = (hAlign === 'right');
-        ctx.font = Math.round(line.fontSize) + 'px sans-serif';
-        if (goRight) {
-            ctx.textAlign = 'right';
-            let x = cvs.width - padPx;
-            for (let wi = line.words.length - 1; wi >= 0; wi--) {
-                ctx.fillText(line.words[wi], x, y);
-                x -= line.wordWidths[wi] + line.gap;
-            }
-        } else {
-            ctx.textAlign = 'left';
-            let x = padPx;
-            for (let wi = 0; wi < line.words.length; wi++) {
-                ctx.fillText(line.words[wi], x, y);
-                x += line.wordWidths[wi] + line.gap;
-            }
-        }
-        cumY += line.lineH;
-    }
+    renderFillBox(ctx, layout, padPx, padPx, cvs.width, cvs.height, hAlign, vAlign);
 
     const tex = new THREE.CanvasTexture(cvs);
     const geo = new THREE.PlaneGeometry(areaW, areaH);

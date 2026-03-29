@@ -45,16 +45,14 @@
     <!-- ===== FLASH OVERLAY (boundary feedback) ===== -->
     <div class="flash-overlay" id="flash"></div>
 
-    <!-- ===== PAGE INFO BAR ===== -->
-    <div id="cds-info"></div>
+    <!-- ===== PAGE INFO BAR (debug only) ===== -->
+    <div id="cds-info" style="display:none"></div>
 
     <!-- ===== NAVIGATION LAYER (Vordergrund, z-index 100) ===== -->
-    <div id="nav-viewport">
-        <div class="status-display" id="statusDisplay">Loading...</div>
-    </div>
+    <div id="nav-viewport"></div>
 
-    <!-- ===== CDS CONTROL PANEL ===== -->
-    <button id="cds-toggle" title="CDS Control Panel">⚙</button>
+    <!-- ===== CDS CONTROL PANEL (only shown with ?debug) ===== -->
+    <button id="cds-toggle" title="CDS Control Panel" style="display:none">⚙</button>
     <div id="cds-panel">
         <h4>🔧 CDS Control Panel</h4>
         <div class="cp-row"><span>Build:</span> <span id="cp-version" class="cp-status">—</span></div>
@@ -100,29 +98,29 @@
     }
     </script>
 
-    <!-- Zentrale Library (muss zuerst laden) -->
-    <script src="library.js?v=33"></script>
-
-    <!-- THREE.js Bootstrap (ES module → window.THREE) -->
-    <script type="module" src="content/js/three-boot.js?v=2"></script>
-
-    <!-- Content Layer (classic scripts, wait for THREE via polling) -->
-    <script src="content/js/layout.js?v=52"></script>
-    <script src="content/js/app.js?v=54"></script>
-
-    <!-- Navigation Layer (Three.js module) -->
-    <script type="module" src="nav/nav.js?v=29"></script>
+    <!-- All ES Modules (import map above resolves three) -->
+    <script type="module" src="content/js/app.js?v=55"></script>
+    <script type="module" src="nav/nav.js?v=30"></script>
 
     <!-- ===== CDS CONTROL PANEL LOGIC ===== -->
     <script>
     (function(){
         'use strict';
-        var BUILD = '2026-03-26-v42';
+        var BUILD = '2025-06-26-v55';
+
+        /* ── Only show panel if ?debug is in the URL ── */
+        var isDebug = new URLSearchParams(location.search).has('debug');
 
         /* ── DOM refs ── */
         var panel  = document.getElementById('cds-panel');
         var toggle = document.getElementById('cds-toggle');
         var log    = document.getElementById('cp-log');
+
+        if (isDebug && toggle) toggle.style.display = '';
+        if (isDebug) {
+            var infoBar = document.getElementById('cds-info');
+            if (infoBar) infoBar.style.display = '';
+        }
 
         /* ── Toggle panel open/close ── */
         if (toggle && panel) {

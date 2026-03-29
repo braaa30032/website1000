@@ -7,7 +7,7 @@
    Called by app.js with real LIBRARY data.
    ═══════════════════════════════════════════════════════════════ */
 
-var LAYOUT_CONST = {
+export var LAYOUT_CONST = {
     MAIN_ASPECT: 3 / 4,
     SUB_ASPECT:  4 / 3,
     SQ_RATIO:    0.25,
@@ -29,7 +29,7 @@ var LAYOUT_CONST = {
  *
  * @returns {object} layout with SQ, navs, mains, subs, netz, pets, etc.
  */
-function computeLayout(cfg, W, H) {
+export function computeLayout(cfg, W, H) {
     var mainCount   = cfg.mainCount;
     var subsPerMain = cfg.subsPerMain || [];
     var isLand      = W >= H;
@@ -376,7 +376,7 @@ function computeLayout(cfg, W, H) {
 /**
  * Compute a layout shifted by (offsetX, offsetY) for transitions.
  */
-function computeOffsetLayout(cfg, W, H, offsetX, offsetY) {
+export function computeOffsetLayout(cfg, W, H, offsetX, offsetY) {
     var layout = computeLayout(cfg, W, H);
     var shift = function(rect) {
         rect.x += offsetX; rect.y += offsetY;
@@ -566,7 +566,7 @@ function _mergeRects(netz) {
     return r;
 }
 
-/* ── Expose globally (classic script) ── */
+/* Window globals for backward compat */
 window.computeLayout       = computeLayout;
 window.computeOffsetLayout = computeOffsetLayout;
 window.LAYOUT_CONST        = LAYOUT_CONST;

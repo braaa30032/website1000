@@ -6,6 +6,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { LIBRARY } from '../../../library.js';
 
 /* ── Config ── */
 export const LETTER_BASE    = 'https://qahjdthakxhbrxkyorow.supabase.co/storage/v1/object/public/website_dateien/letters/';
@@ -74,7 +75,7 @@ export function loadLetterGLBs(neededChars) {
  */
 export function collectNeededChars() {
     const needed = new Set();
-    if (typeof LIBRARY !== 'undefined') {
+    if (LIBRARY && LIBRARY.length) {
         LIBRARY.forEach(ch => {
             for (const c of ch.name.toLowerCase()) {
                 if (c !== ' ') needed.add(c);
@@ -267,7 +268,7 @@ export function buildLetterGroup(text, areaW, areaH, color, chapterIdx) {
 /* ── Material Moodboard ── */
 
 function getChapterMaterialSet(chapterIdx) {
-    if (typeof LIBRARY !== 'undefined' && LIBRARY[chapterIdx] && LIBRARY[chapterIdx].materialSet) {
+    if (LIBRARY && LIBRARY[chapterIdx] && LIBRARY[chapterIdx].materialSet) {
         return LIBRARY[chapterIdx].materialSet;
     }
     return null;
