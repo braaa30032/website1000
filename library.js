@@ -439,9 +439,21 @@ export var LIBRARY = [
         ],
         pages: [
 
-            // --- Seite 0: intro (7 Main-Nodes) ---
+            // --- Seite 0: intro (1 Main-Node: text + 1 Sub: image) ---
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200034.jpg', color: '#9B59B6' },
+                {
+                    type: 'text',
+                    text: 'In this collection, I developed a collection based solely on the idea of a spiek. This idea gave rise to seven garments that brought this design element to the body, starting with the cut from the spike outgoing.',
+                    color: '#9B59B6',
+                    subs: [
+                        { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200034.jpg', color: '#9B59B6' }
+                    ],
+                    netzTexts: [
+                        { position: 'above-main', text: 'spitzenkollektion', color: '#9B59B6' },
+                        { position: 'above-sub-0', text: '6th term project', color: '#9B59B6' },
+                        { position: 'below-main', text: 'Period of origin 2024, 4 months\nSupervision Prof. Sibylle Klose\nPhotogrphy Ferle Reisige\nTalents Juli Eller, Lydia Puschendorf, Caro', color: '#9B59B6' }
+                    ]
+                }
             ],
 
             // --- Seite 1: abstract (7 Main-Nodes) ---
@@ -692,6 +704,9 @@ export function getMainNodesForPage(chapterIdx, pageIdx) {
             if (mp.scale !== undefined) petObj.scale = mp.scale;
             node.pets.push(petObj);
         }
+
+        /* netzTexts — text overlays for netz quads near this main */
+        node.netzTexts = entry.netzTexts || [];
 
         /* children (subs) */
         var subs = entry.subs || [];

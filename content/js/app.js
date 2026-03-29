@@ -406,6 +406,56 @@ function _createTextPlane(rect, nodeData, parentGroup, z) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   NETZ TEXT — find netz quads by position relative to mains/subs
+   ═══════════════════════════════════════════════════════════════ */
+function _findNetzByPosition(netzArr, position, mainRect, subRects, SQ) {
+    /* Filter only rect-type netz quads */
+    const rects = netzArr.filter(n => n.type === 'rect');
+
+    if (position === 'above-main') {
+        /* Netz rect that sits directly above the main, overlapping in X */
+        return _bestNetz(rects, mainRect, 'above');
+    } else if (position === 'below-main') {
+        return _bestNetz(rects, mainRect, 'below');
+    } else if (position.startsWith('above-sub-')) {
+        const si = parseInt(position.replace('above-sub-', ''), 10);
+        const subRect = subRects[si];
+        if (!subRect) return null;
+        return _bestNetz(rects, subRect, 'above');
+    } else if (position.startsWith('below-sub-')) {
+        const si = parseInt(position.replace('below-sub-', ''), 10);
+        const subRect = subRects[si];
+        if (!subRect) return null;
+        return _bestNetz(rects, subRect, 'below');
+    }
+    return null;
+}
+
+function _bestNetz(rects, ref, dir) {
+    const refL = ref.x, refR = ref.r || (ref.x + ref.w);
+    const refT = ref.y, refB = ref.b || (ref.y + ref.h);
+    let best = null, bestDist = Infinity;
+
+    for (const nq of rects) {
+        const nL = nq.x, nR = nq.x + nq.w, nT = nq.y, nB = nq.y + nq.h;
+        /* Must overlap in X with the reference rect */
+        const overlapX = Math.min(nR, refR) - Math.max(nL, refL);
+        if (overlapX < 2) continue;
+
+        if (dir === 'above') {
+            /* Bottom edge of netz should be at or near top edge of ref */
+            const dist = Math.abs(nB - refT);
+            if (dist < 5 && dist < bestDist) { bestDist = dist; best = nq; }
+        } else if (dir === 'below') {
+            /* Top edge of netz should be at or near bottom edge of ref */
+            const dist = Math.abs(nT - refB);
+            if (dist < 5 && dist < bestDist) { bestDist = dist; best = nq; }
+        }
+    }
+    return best;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    PAGE GROUP BUILDING
    ═══════════════════════════════════════════════════════════════ */
 function _buildPageGroup(layout, chIdx, pgIdx, skipNav, nodes) {
@@ -489,6 +539,26 @@ function _buildPageGroup(layout, chIdx, pgIdx, skipNav, nodes) {
 
     /* Netz */
     layout.netz.forEach(nq => { if (!_isNetzInSkippedZone(nq, SQ, skipNav, W)) _createNetzQuad3d(nq, ng); });
+
+    /* Netz Text Overlays — render text on netz quads matched by position hints */
+    _nodes.forEach((node, mi) => {
+        if (!node.netzTexts || node.netzTexts.length === 0) return;
+        const mainRect = layout.mains[mi];
+        if (!mainRect) return;
+        const subRects = layout.subs[mi] || [];
+
+        node.netzTexts.forEach(nt => {
+            const matched = _findNetzByPosition(layout.netz, nt.position, mainRect, subRects, SQ);
+            if (matched) {
+                const rect = matched.type === 'rect'
+                    ? { x: matched.x, y: matched.y, w: matched.w, h: matched.h }
+                    : null;
+                if (rect) {
+                    _createTextPlane(rect, { type: 'text', text: nt.text, color: nt.color || node.color }, ig, 1);
+                }
+            }
+        });
+    });
 
     fg.visible = !!L.frames3d; ig.visible = !!L.images; ng.visible = !!L.netz3d;
     ptg.visible = !!L.pets; ocg.visible = !!L.outlines_content; ong.visible = !!L.outlines_nav;
