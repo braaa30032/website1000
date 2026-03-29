@@ -84,6 +84,7 @@ function init() {
 
     flashEl = document.getElementById('flash');
     _landingEl = document.getElementById('landing-banners');
+    if (_landingEl) _landingEl.style.display = 'none';
 
     window.addEventListener('resize', _onResize);
     _setupPanning();
@@ -819,7 +820,7 @@ function updateLayerVisibility(key, visible) {
 function _updateLandingBanners() {
     if (!_landingEl) return;
     if (currentChapter === 0 && currentPage === 0 && !isAnimating) {
-        _landingEl.style.display = '';
+        _landingEl.style.display = 'block';
         _fitLandingBanners();
     } else {
         _landingEl.style.display = 'none';
