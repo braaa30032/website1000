@@ -1,0 +1,164 @@
+/* ============================================
+   CONTENT LAYER – Three.js WebGL CDS Styles
+   ============================================
+   The CDS now renders entirely via WebGL.
+   This stylesheet handles only the container,
+   overlay effects, and the control panel.
+   ============================================ */
+
+/* === CONTAINER === */
+
+#content-layer {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    overflow: hidden;
+    z-index: 1;
+    pointer-events: auto;
+}
+
+#cds-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+}
+
+/* === FLASH OVERLAY (boundary feedback) === */
+
+.flash-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0;
+    background: rgba(255, 50, 50, 0.15);
+    transition: opacity 0.15s ease-out;
+}
+.flash-overlay.active {
+    opacity: 1;
+    transition: none;
+}
+
+/* === PAGE INFO BAR === */
+
+#cds-info {
+    position: fixed;
+    top: 8px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    font: 11px/1.5 'SF Mono', Monaco, Consolas, monospace;
+    padding: 3px 14px;
+    border-radius: 4px;
+    pointer-events: none;
+    white-space: nowrap;
+    backdrop-filter: blur(4px);
+}
+
+/* === CDS CONTROL PANEL === */
+
+#cds-panel {
+    position: fixed;
+    bottom: 10px; right: 10px;
+    z-index: 9999;
+    background: rgba(0,0,0,0.88);
+    color: #0f0;
+    font: 12px/1.6 'SF Mono', Monaco, Consolas, monospace;
+    padding: 10px 14px;
+    border-radius: 8px;
+    max-width: 320px;
+    pointer-events: auto;
+    user-select: text;
+    -webkit-user-select: text;
+    backdrop-filter: blur(6px);
+    display: none;
+}
+#cds-panel.open {
+    display: block;
+}
+#cds-panel h4 {
+    margin: 0 0 6px;
+    font-size: 11px;
+    color: #0ff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+#cds-panel .cp-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 0;
+    gap: 8px;
+}
+#cds-panel .cp-row label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+#cds-panel .cp-row input[type=checkbox] {
+    accent-color: #0f0;
+}
+#cds-panel hr {
+    border: none;
+    border-top: 1px solid #333;
+    margin: 8px 0;
+}
+.cp-status {
+    color: #888;
+    font-size: 11px;
+}
+.cp-ok  { color: #0f0; }
+.cp-err { color: #f44; }
+.cp-warn { color: #fa0; }
+
+#cds-toggle {
+    position: fixed;
+    bottom: 10px; right: 10px;
+    z-index: 9998;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid #555;
+    color: #0f0;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+}
+#cds-toggle:hover {
+    background: rgba(0,0,0,0.8);
+}
+
+/* === COLOR LEGEND === */
+
+.color-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    margin-top: 6px;
+}
+.color-legend span {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    color: #aaa;
+}
+.color-legend span::before {
+    content: '';
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 2px;
+}
+.cl-main::before   { background: #F1C40F; }
+.cl-sub::before    { background: #76D7EA; }
+.cl-beam::before   { background: #2ECC71; }
+.cl-netz::before   { background: #E8E8E8; border: 1px solid #999; }
+.cl-pet::before    { background: #0044FF; }
+.cl-nav::before    { background: #E74C3C; }
