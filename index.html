@@ -7,7 +7,7 @@
 
     <!-- Layer Styles -->
     <link rel="stylesheet" href="content/css/style.css?v=37">
-    <link rel="stylesheet" href="nav/nav.css?v=14">
+    <link rel="stylesheet" href="nav/nav.css?v=15">
 
     <style>
         /* === Global Reset & Base === */
@@ -61,7 +61,13 @@
     </div>
 
     <!-- ===== NAVIGATION LAYER (Vordergrund, z-index 100) ===== -->
-    <div id="nav-viewport"></div>
+    <div id="nav-viewport">
+        <!-- Loading tiles — cover full screen, shrink to nav corners -->
+        <div class="load-tile load-tl" id="load-tl"><span class="load-letter">0</span></div>
+        <div class="load-tile load-tr" id="load-tr"><span class="load-letter">f</span></div>
+        <div class="load-tile load-bl" id="load-bl"><span class="load-letter">u</span></div>
+        <div class="load-tile load-br" id="load-br"><span class="load-letter">n</span></div>
+    </div>
 
     <!-- ===== CDS CONTROL PANEL (only shown with ?debug) ===== -->
     <button id="cds-toggle" title="CDS Control Panel" style="display:none">⚙</button>
@@ -112,7 +118,7 @@
 
     <!-- All ES Modules (import map above resolves three) -->
     <script type="module" src="content/js/app.js?v=59"></script>
-    <script type="module" src="nav/nav.js?v=32"></script>
+    <script type="module" src="nav/nav.js?v=33"></script>
 
     <!-- ===== CDS CONTROL PANEL LOGIC ===== -->
     <script>

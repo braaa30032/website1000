@@ -40,3 +40,51 @@
     z-index: 101;
     pointer-events: none;
 }
+
+/* ============================================
+   LOADING TILES — cover screen, flash letters, shrink to corners
+   ============================================ */
+.load-tile {
+    position: absolute;
+    background: #E74C3C;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    will-change: width, height, top, left, right, bottom;
+    width: 50.1%;
+    height: 50.1%;
+    pointer-events: none;
+}
+.load-tile.load-tl { top: 0;    left: 0;   }
+.load-tile.load-tr { top: 0;    right: 0;  }
+.load-tile.load-bl { bottom: 0; left: 0;   }
+.load-tile.load-br { bottom: 0; right: 0;  }
+
+.load-letter {
+    font-family: system-ui, -apple-system, Arial, Helvetica, sans-serif;
+    font-size: min(12vw, 14vh);
+    font-weight: 900;
+    line-height: 1;
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    user-select: none;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+}
+.load-tile.lit .load-letter { opacity: 1; }
+
+/* Shrink phase — transition to final corner size */
+.load-tile.shrink {
+    transition:
+        width  0.85s cubic-bezier(0.76, 0, 0.24, 1),
+        height 0.85s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.load-tile.gone { display: none; }

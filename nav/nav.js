@@ -181,13 +181,87 @@ function navInit() {
     updateAllQuadrantContent();
     updateStatusDisplay();
 
-    // Content-Layer initial setzen
-    if (window.ContentLayer) {
-        ContentLayer.showPage(navState.currentChapter, navState.currentPage);
-    }
-
     // Render-Loop
     startRenderLoop();
+
+    // --- Loading screen: hide THREE quadrants, run tile animation ---
+    _runLoadingScreen();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LOADING SCREEN — flash 0/f/u/n on tiles, then shrink to corners
+   ═══════════════════════════════════════════════════════════════ */
+let _loadingActive = true;
+
+function _runLoadingScreen() {
+    _loadingActive = true;
+    navState.isAnimating = true; /* block input during loading */
+
+    /* Hide THREE.js quadrants during loading */
+    PANEL_NAMES_ALL.forEach(n => { quadrants[n].visible = false; });
+    navState.needsRender = true;
+
+    /* Hide CDS content layer during loading */
+    const cdsEl = document.getElementById('content-layer');
+    if (cdsEl) cdsEl.style.opacity = '0';
+
+    const SPIN_ORDER = ['load-tl', 'load-tr', 'load-bl', 'load-br'];
+    const ROTATIONS  = 2;
+    const FADE_IN_MS = 160;
+    const HOLD_MS    = 360;
+    const FADE_OUT_MS = 160;
+
+    const allTiles = SPIN_ORDER.map(id => document.getElementById(id));
+
+    function flashTile(tileEl, onDone) {
+        tileEl.classList.add('lit');
+        setTimeout(() => {
+            tileEl.classList.remove('lit');
+            setTimeout(onDone, FADE_OUT_MS);
+        }, FADE_IN_MS + HOLD_MS);
+    }
+
+    function runSpinStep(step, onAllDone) {
+        const totalSteps = 4 * ROTATIONS;
+        if (step >= totalSteps) { onAllDone(); return; }
+        const tileEl = allTiles[step % 4];
+        flashTile(tileEl, () => runSpinStep(step + 1, onAllDone));
+    }
+
+    function runShrink() {
+        /* Compute target size as CSS values matching SQ */
+        const sq = Math.min(window.innerWidth, window.innerHeight) / 4;
+        const sqW = (sq / window.innerWidth * 100) + '%';
+        const sqH = (sq / window.innerHeight * 100) + '%';
+
+        setTimeout(() => {
+            allTiles.forEach(t => {
+                t.classList.add('shrink');
+                t.style.width = sqW;
+                t.style.height = sqH;
+            });
+
+            /* After shrink transition completes → reveal everything */
+            setTimeout(() => {
+                allTiles.forEach(t => t.classList.add('gone'));
+                _loadingActive = false;
+                navState.isAnimating = false;
+
+                /* Show THREE.js quadrants */
+                setAxisVisibility('x');
+                navState.needsRender = true;
+
+                /* Show CDS content layer + trigger initial page */
+                if (cdsEl) cdsEl.style.opacity = '1';
+                if (window.ContentLayer) {
+                    ContentLayer.showPage(navState.currentChapter, navState.currentPage);
+                }
+            }, 950);
+        }, 200);
+    }
+
+    /* Start: brief pause, then spin */
+    setTimeout(() => runSpinStep(0, runShrink), 400);
 }
 
 
