@@ -39,6 +39,7 @@ let currentChapter = 0, currentPage = 0;
 let currentLayout = null, currentPageGroup = null;
 let isAnimating = false, isFrozen = false;
 let panY = 0, overscrollAcc = 0, overscrollDir = 0;
+let _scrollLandAtEnd = false;
 let isPanning = false, panStartY = 0, panStartPanY = 0;
 let fixedNavGroup = null;
 let navColumnAnimGroup = null, navColumnAnimData = null;
@@ -584,6 +585,9 @@ function renderCurrentPage() {
     const nodes = getMainNodesForPage(currentChapter, currentPage);
     pageNodes = nodes;
     const sectionDefs = getPageSections(currentChapter, currentPage);
+    /* Capture and reset scroll-land flag before async work */
+    const landAtEnd = _scrollLandAtEnd;
+    _scrollLandAtEnd = false;
 
     _preloadPageAspects(nodes).then(aspects => {
         const cfg = _buildPageConfig(nodes, aspects, sectionDefs);
@@ -604,7 +608,14 @@ function renderCurrentPage() {
             navColumnAnimGroup = _buildNavColumnAnimGroup(layout);
             if (navColumnAnimGroup) scene.add(navColumnAnimGroup);
         }
-        panY = 0; _applyPan(); _updateInfo(); needsRender = true;
+        /* Scroll-up landing: jump to end of page instead of top */
+        if (landAtEnd) {
+            const maxPan = Math.max(0, layout.totalContentHeight - H);
+            panY = maxPan;
+        } else {
+            panY = 0;
+        }
+        _applyPan(); _updateInfo(); needsRender = true;
     }).catch(err => console.error('[CDS] renderCurrentPage FAILED:', err));
 }
 
@@ -695,8 +706,12 @@ function _performTransition(axis, direction, newChapter, newPage) {
             setTimeout(() => {
                 container.remove(inGroup); container.remove(outGroup);
                 scene.remove(container); _disposeTree(outGroup); _disposeTree(inGroup);
-                currentChapter = newChapter; currentPage = newPage; panY = 0;
+                currentChapter = newChapter; currentPage = newPage;
                 renderCurrentPage(); isAnimating = false;
+                /* Sync nav.js state (labels, navState) after scroll-triggered transitions */
+                if (window.NavLayer && NavLayer.syncState) {
+                    NavLayer.syncState(newChapter, newPage);
+                }
             }, ANIM.resetDelay);
         });
 }
@@ -705,7 +720,9 @@ function _transitionChapter(direction) {
     if (isAnimating || isFrozen) return;
     const newCh = currentChapter + direction;
     if (newCh < 0 || newCh >= getChapterCount()) { _flashBoundary(); return; }
-    _performTransition('x', direction, newCh, 0);
+    /* When scrolling back across chapter boundary, land on last page of previous chapter */
+    const newPg = (direction === -1 && _scrollLandAtEnd) ? Math.max(0, getPageCount(newCh) - 1) : 0;
+    _performTransition('x', direction, newCh, newPg);
 }
 
 function _transitionPage(direction) {
@@ -725,7 +742,7 @@ function _transitionPage(direction) {
    ═══════════════════════════════════════════════════════════════ */
 function _applyPan() { if (currentPageGroup) currentPageGroup.position.y = panY; _updateNavColumnAnim(); needsRender = true; }
 function _clampPan() { let maxPan = 0; if (currentLayout && currentLayout.totalContentHeight) maxPan = Math.max(0, currentLayout.totalContentHeight - H); panY = Math.max(0, Math.min(maxPan, panY)); }
-function _handleOverscroll(delta) { if (!delta) return; const dir = delta > 0 ? 1 : -1; if (dir !== overscrollDir) { overscrollAcc = 0; overscrollDir = dir; } overscrollAcc += Math.abs(delta); if (overscrollAcc >= OVERSCROLL_THRESHOLD) { overscrollAcc = 0; overscrollDir = 0; _transitionPage(dir); } }
+function _handleOverscroll(delta) { if (!delta) return; const dir = delta > 0 ? 1 : -1; if (dir !== overscrollDir) { overscrollAcc = 0; overscrollDir = dir; } overscrollAcc += Math.abs(delta); if (overscrollAcc >= OVERSCROLL_THRESHOLD) { overscrollAcc = 0; overscrollDir = 0; _scrollLandAtEnd = (dir === -1); _transitionPage(dir); } }
 function _resetOverscroll() { overscrollAcc = 0; overscrollDir = 0; }
 
 function _setupPanning() {

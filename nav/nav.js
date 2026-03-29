@@ -772,6 +772,18 @@ window.NavLayer = {
     navigateX: navigateX,
     navigateY: navigateY,
     isAnimating: () => navState.isAnimating,
+    /** Called by app.js after scroll-triggered transitions to sync nav state & labels */
+    syncState: function(ch, pg) {
+        /* Skip if nav is mid-animation (arrow-key transitions handle their own state) */
+        if (navState.isAnimating) return;
+        navState.currentChapter = ch;
+        navState.currentPage = pg;
+        resetToDefaults();
+        setAxisVisibility('x');
+        updateAllQuadrantContent();
+        updateStatusDisplay();
+        navState.needsRender = true;
+    },
 };
 
 // ========== START ==========
