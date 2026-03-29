@@ -238,6 +238,6 @@
 .cl-main::before   { background: #F1C40F; }
 .cl-sub::before    { background: #76D7EA; }
 .cl-beam::before   { background: #2ECC71; }
-.cl-netz::before   { background: #E8E8E8; border: 1px solid #999; }
+.cl-netz::before   { background: #D5D5D5; border: 1px solid #B0B0B0; }
 .cl-pet::before    { background: #0044FF; }
 .cl-nav::before    { background: #E74C3C; }

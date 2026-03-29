@@ -186,7 +186,7 @@ function _createNetzQuad3d(nq, parentGroup) {
     parentGroup.add(mesh);
 
     const edges = new THREE.EdgesGeometry(geo);
-    const edgeMesh = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: '#999999' }));
+    const edgeMesh = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: '#B0B0B0' }));
     edgeMesh.position.copy(mesh.position);
     parentGroup.add(edgeMesh);
 }
@@ -240,7 +240,7 @@ function _buildNavColumnAnimGroup(layout) {
         const g = new THREE.Group(); g.name = name;
         const geo = new THREE.PlaneGeometry(SQ, innerH);
         g.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: new THREE.Color(NETZ_COLOR), side: THREE.DoubleSide, transparent: true, opacity: 0.7 })));
-        g.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: '#999999' })));
+        g.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: '#B0B0B0' })));
         return g;
     }
 
@@ -327,7 +327,7 @@ function _createMediaPlane(rect, nodeData, parentGroup, is3d) {
         if (boxW < 2 || boxH < 2) return;
         const planeGeo = new THREE.PlaneGeometry(boxW, boxH);
         const planeMat = new THREE.MeshBasicMaterial({
-            color: new THREE.Color(nodeData.color || '#888'),
+            color: new THREE.Color(nodeData.color || '#D5D5D5'),
             side: THREE.DoubleSide, transparent: true, opacity: 0.3
         });
         const planeMesh = new THREE.Mesh(planeGeo, planeMat);
