@@ -337,12 +337,10 @@ function _createMediaPlane(rect, nodeData, parentGroup, is3d) {
             const boxAspect = boxW / boxH;
             let fw, fh;
             if (is3d) {
+                /* 3D frame: contain-fit inside the box */
                 if (imgAspect > boxAspect) { fw = boxW; fh = boxW / imgAspect; } else { fh = boxH; fw = boxH * imgAspect; }
             } else {
-                if (imgAspect > boxAspect) { fh = boxH; fw = boxH * imgAspect; } else { fw = boxW; fh = boxW / imgAspect; }
-                const uvW = boxW / fw, uvH = boxH / fh;
-                tex.offset.set((1 - uvW) / 2, (1 - uvH) / 2);
-                tex.repeat.set(uvW, uvH);
+                /* Mains & Subs: layout already sized to content aspect → fill exactly, no crop */
                 fw = boxW; fh = boxH;
             }
             planeMesh.geometry.dispose();
@@ -372,8 +370,7 @@ function _createMediaPlane(rect, nodeData, parentGroup, is3d) {
             const va = vw / vh, ba = boxW / boxH;
             let fw, fh;
             if (is3d) { if (va > ba) { fw = boxW; fh = boxW / va; } else { fh = boxH; fw = boxH * va; } }
-            else { if (va > ba) { fh = boxH; fw = boxH * va; } else { fw = boxW; fh = boxW / va; }
-                const uvW = boxW / fw, uvH = boxH / fh; vTex.offset.set((1 - uvW) / 2, (1 - uvH) / 2); vTex.repeat.set(uvW, uvH); fw = boxW; fh = boxH; }
+            else { fw = boxW; fh = boxH; }
             vMesh.geometry.dispose(); vMesh.geometry = new THREE.PlaneGeometry(fw, fh); needsRender = true;
         });
     } else if (nodeData.type === 'text') {
