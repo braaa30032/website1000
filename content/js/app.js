@@ -311,6 +311,17 @@ function _createMediaPlane(rect, nodeData, parentGroup, is3d) {
     const boxH = is3d ? rect.h / 3 : rect.h;
     const mediaZ = is3d ? 1 : 3;
 
+    /* Background fill behind text, PNGs, and 3D content (netz color instead of white) */
+    const url = nodeData.image || nodeData.url || '';
+    const isPng = nodeData.type === 'image' && url.toLowerCase().split('?')[0].endsWith('.png');
+    if (nodeData.type === 'text' || is3d || isPng) {
+        const bgGeo = new THREE.PlaneGeometry(rect.w, rect.h);
+        const bgMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(NETZ_COLOR), side: THREE.DoubleSide });
+        const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+        bgMesh.position.set(cx, -cy, mediaZ - 0.5);
+        parentGroup.add(bgMesh);
+    }
+
     if (nodeData.type === 'image' && (nodeData.image || nodeData.url)) {
         const url = nodeData.image || nodeData.url;
         if (boxW < 2 || boxH < 2) return;
@@ -389,13 +400,58 @@ function _createTextPlane(rect, nodeData, parentGroup, z) {
     const cvs = document.createElement('canvas');
     cvs.width = Math.round(W_RECT * sc); cvs.height = Math.round(H_RECT * sc);
     const ctx = cvs.getContext('2d');
-    const words = splitFillBoxWords(text);
-    if (words.length === 0) return;
-    const PAD = Math.round(cvs.width * 0.04);
-    const layout = computeFillBox(ctx, words, cvs.width - 2 * PAD, cvs.height - 2 * PAD);
-    if (!layout) return;
-    ctx.fillStyle = nodeData.color || '#222';
-    renderFillBox(ctx, layout, PAD, PAD, cvs.width, cvs.height, 'alternate', 'center');
+
+    /* Split by explicit line breaks */
+    const paragraphs = text.split('\n');
+    const hasExplicitBreaks = paragraphs.length > 1;
+
+    if (!hasExplicitBreaks) {
+        /* Single paragraph → fill-box (each word-line fills the width) */
+        const words = splitFillBoxWords(text);
+        if (words.length === 0) return;
+        const PAD = Math.round(cvs.width * 0.04);
+        const layout = computeFillBox(ctx, words, cvs.width - 2 * PAD, cvs.height - 2 * PAD);
+        if (!layout) return;
+        ctx.fillStyle = nodeData.color || '#222';
+        renderFillBox(ctx, layout, PAD, PAD, cvs.width, cvs.height, 'alternate', 'center');
+    } else {
+        /* Multi-paragraph → uniform font size, preserve line breaks */
+        const PAD = Math.round(cvs.width * 0.04);
+        const usableW = cvs.width - 2 * PAD;
+        const usableH = cvs.height - 2 * PAD;
+        const ref = 200;
+        const LS = 1.35;
+
+        /* Measure all lines at reference size to find the widest */
+        const lines = paragraphs.filter(p => p.trim().length > 0);
+        if (lines.length === 0) return;
+        ctx.font = ref + 'px sans-serif';
+        let maxNatW = 0;
+        for (const line of lines) {
+            const w = ctx.measureText(line).width;
+            if (w > maxNatW) maxNatW = w;
+        }
+        if (maxNatW <= 0) return;
+
+        /* Fit font size: widest line fills usableW, all lines fit usableH */
+        let fontSize = ref * usableW / maxNatW;
+        const totalH = fontSize * LS * lines.length;
+        if (totalH > usableH) fontSize = usableH / (LS * lines.length);
+        if (fontSize < 4) return;
+
+        /* Render lines */
+        const lineH = fontSize * LS;
+        const blockH = lineH * lines.length;
+        const yStart = PAD + (usableH - blockH) / 2;
+        ctx.fillStyle = nodeData.color || '#222';
+        ctx.font = Math.round(fontSize) + 'px sans-serif';
+        ctx.textBaseline = 'top';
+        ctx.textAlign = 'left';
+        for (let i = 0; i < lines.length; i++) {
+            ctx.fillText(lines[i], PAD, yStart + i * lineH);
+        }
+    }
+
     const tTex = new THREE.CanvasTexture(cvs);
     const tMesh = new THREE.Mesh(
         new THREE.PlaneGeometry(W_RECT, H_RECT),
