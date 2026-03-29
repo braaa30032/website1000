@@ -40,7 +40,7 @@
     top: 0; left: 0;
     width: 100%;
     overflow: hidden;
-    background: #D5D5D5;
+    background: var(--pal-primary, #2bffdf);
 }
 .landing-stripe-h {
     position: absolute;
@@ -67,7 +67,7 @@
 #landing-txt-h {
     font-family: Arial Black, Arial, sans-serif;
     font-weight: 900;
-    color: #D5D5D5;
+    color: var(--pal-primary, #2bffdf);
     white-space: nowrap;
     line-height: 1;
     transform-origin: left center;
@@ -79,7 +79,7 @@
     position: absolute;
     top: 0; left: 0;
     overflow: hidden;
-    background: #D5D5D5;
+    background: var(--pal-primary, #2bffdf);
 }
 .landing-stripe-v {
     position: absolute;
@@ -98,7 +98,7 @@
     position: absolute;
     font-family: Arial Black, Arial, sans-serif;
     font-weight: 900;
-    color: #D5D5D5;
+    color: var(--pal-primary, #2bffdf);
     white-space: nowrap;
     line-height: 1;
 }
@@ -238,6 +238,6 @@
 .cl-main::before   { background: #F1C40F; }
 .cl-sub::before    { background: #76D7EA; }
 .cl-beam::before   { background: #2ECC71; }
-.cl-netz::before   { background: #D5D5D5; border: 1px solid #B0B0B0; }
+.cl-netz::before   { background: var(--pal-primary, #2bffdf); border: 1px solid rgba(0,0,0,0.15); }
 .cl-pet::before    { background: #0044FF; }
 .cl-nav::before    { background: #E74C3C; }

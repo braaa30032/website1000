@@ -17,7 +17,7 @@ import {
     createLetter, layoutTextIntoLines, applyMaterialPreset,
     buildLetterGroup as _buildLetterGroup
 } from '../content/js/shared/letter-system.js?v=24';
-import { NAV_TEXT_MODE, LIBRARY, CHAPTER_DEFS, getPageCount } from '../library.js?v=34';
+import { NAV_TEXT_MODE, LIBRARY, CHAPTER_DEFS, getPageCount, getActivePalette } from '../library.js?v=34';
 import { splitFillBoxWords, computeFillBox, renderFillBox } from '../content/js/shared/helpers.js?v=1';
 
 // ========== CONFIG ==========
@@ -118,6 +118,13 @@ let quadrantSizes = {};
 
 function navInit() {
     recalcLayout();
+
+    /* Apply palette CSS custom properties to :root */
+    const _p = getActivePalette();
+    const _r = document.documentElement.style;
+    _r.setProperty('--pal-primary',   _p.primary);
+    _r.setProperty('--pal-secondary', _p.secondary);
+    _r.setProperty('--pal-accent',    _p.accent);
 
     // Renderer
     renderer = new THREE.WebGLRenderer({
@@ -370,10 +377,10 @@ function updateQuadrantContent(panelName) {
     }
     group.visible = true;
 
-    /* ── Background square (D5D5D5 opaque fill) ── */
+    /* ── Background square (palette secondary = 30%) ── */
     const bgGeo = new THREE.PlaneGeometry(SQ, SQ);
     const bgMat = new THREE.MeshBasicMaterial({
-        color: new THREE.Color('#D5D5D5'), side: THREE.DoubleSide
+        color: new THREE.Color(getActivePalette().secondary), side: THREE.DoubleSide
     });
     const bgMesh = new THREE.Mesh(bgGeo, bgMat);
     bgMesh.position.z = -1; // behind text content
@@ -477,7 +484,7 @@ function _buildCanvasTextMesh(text, areaW, areaH, panelName) {
     const hAlign = isLeft ? 'left' : 'right';
     const vAlign = isTop ? 'top' : 'bottom';
 
-    ctx.fillStyle = '#333';
+    ctx.fillStyle = getActivePalette().accent;
     renderFillBox(ctx, layout, padPx, padPx, cvs.width, cvs.height, hAlign, vAlign);
 
     const tex = new THREE.CanvasTexture(cvs);

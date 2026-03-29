@@ -13,7 +13,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { LIBRARY, getChapterCount, getPageCount, getMainNodesForPage, getPageSections } from '../../library.js';
+import { LIBRARY, getChapterCount, getPageCount, getMainNodesForPage, getPageSections, getActivePalette } from '../../library.js';
 import { computeLayout, LAYOUT_CONST } from './layout.js';
 import { ANIM, lerp } from './shared/anim-config.js';
 import { splitFillBoxWords, computeFillBox, renderFillBox } from './shared/helpers.js';
@@ -24,7 +24,8 @@ import { splitFillBoxWords, computeFillBox, renderFillBox } from './shared/helpe
 const MAIN_COLOR = '#E74C3C';
 const SUB_COLOR  = '#F39C12';
 const PET_COLOR  = '#8E44AD';
-const NETZ_COLOR = '#D5D5D5';
+/* Palette-derived colors (refreshed per page build) */
+function _pal() { return getActivePalette(); }
 const PET_Z      = 5;
 const OVERSCROLL_THRESHOLD = 150;
 
@@ -63,6 +64,13 @@ function init() {
     W = window.innerWidth;
     H = window.innerHeight;
     dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    /* Apply palette CSS custom properties to :root */
+    const pal = _pal();
+    const r = document.documentElement.style;
+    r.setProperty('--pal-primary',   pal.primary);
+    r.setProperty('--pal-secondary', pal.secondary);
+    r.setProperty('--pal-accent',    pal.accent);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(dpr);
@@ -177,7 +185,7 @@ function _createNetzQuad3d(nq, parentGroup) {
     } else return;
 
     const mat = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(NETZ_COLOR), side: THREE.DoubleSide,
+        color: new THREE.Color(_pal().primary), side: THREE.DoubleSide,
         transparent: true, opacity: 0.7
     });
     const mesh = new THREE.Mesh(geo, mat);
@@ -186,7 +194,7 @@ function _createNetzQuad3d(nq, parentGroup) {
     parentGroup.add(mesh);
 
     const edges = new THREE.EdgesGeometry(geo);
-    const edgeMesh = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: '#B0B0B0' }));
+    const edgeMesh = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: new THREE.Color(_pal().primary).multiplyScalar(0.75) }));
     edgeMesh.position.copy(mesh.position);
     parentGroup.add(edgeMesh);
 }
@@ -208,7 +216,7 @@ function _buildFixedNavGroup(layout) {
 
     [layout.navTL, layout.navTR, layout.navBL, layout.navBR].forEach(rect => {
         const geo = new THREE.PlaneGeometry(rect.w, rect.h);
-        const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color('#D5D5D5'), side: THREE.DoubleSide });
+        const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(_pal().primary), side: THREE.DoubleSide });
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(rect.x + rect.w / 2, -(rect.y + rect.h / 2), 8);
         group.add(mesh);
@@ -228,7 +236,7 @@ function _buildNavColumnAnimGroup(layout) {
     const SQ = layout.SQ;
     const innerH = H - 2 * SQ;
 
-    const bgColor = new THREE.Color('#D5D5D5');
+    const bgColor = new THREE.Color(_pal().primary);
     const bgL = new THREE.Mesh(new THREE.PlaneGeometry(SQ, innerH), new THREE.MeshBasicMaterial({ color: bgColor, side: THREE.DoubleSide }));
     bgL.position.set(SQ / 2, -(SQ + innerH / 2), 7);
     group.add(bgL);
@@ -239,8 +247,8 @@ function _buildNavColumnAnimGroup(layout) {
     function makeStrip(name) {
         const g = new THREE.Group(); g.name = name;
         const geo = new THREE.PlaneGeometry(SQ, innerH);
-        g.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: new THREE.Color(NETZ_COLOR), side: THREE.DoubleSide, transparent: true, opacity: 0.7 })));
-        g.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: '#B0B0B0' })));
+        g.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: new THREE.Color(_pal().primary), side: THREE.DoubleSide, transparent: true, opacity: 0.7 })));
+        g.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: new THREE.Color(_pal().primary).multiplyScalar(0.75) })));
         return g;
     }
 
@@ -316,7 +324,7 @@ function _createMediaPlane(rect, nodeData, parentGroup, is3d) {
     const isPng = nodeData.type === 'image' && url.toLowerCase().split('?')[0].endsWith('.png');
     if (nodeData.type === 'text' || is3d || isPng) {
         const bgGeo = new THREE.PlaneGeometry(rect.w, rect.h);
-        const bgMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(NETZ_COLOR), side: THREE.DoubleSide });
+        const bgMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(_pal().primary), side: THREE.DoubleSide });
         const bgMesh = new THREE.Mesh(bgGeo, bgMat);
         bgMesh.position.set(cx, -cy, mediaZ - 0.5);
         parentGroup.add(bgMesh);
@@ -327,7 +335,7 @@ function _createMediaPlane(rect, nodeData, parentGroup, is3d) {
         if (boxW < 2 || boxH < 2) return;
         const planeGeo = new THREE.PlaneGeometry(boxW, boxH);
         const planeMat = new THREE.MeshBasicMaterial({
-            color: new THREE.Color(nodeData.color || '#D5D5D5'),
+            color: new THREE.Color(nodeData.color || _pal().primary),
             side: THREE.DoubleSide, transparent: true, opacity: 0.3
         });
         const planeMesh = new THREE.Mesh(planeGeo, planeMat);
@@ -412,7 +420,7 @@ function _createTextPlane(rect, nodeData, parentGroup, z) {
         const PAD = Math.round(cvs.width * 0.04);
         const layout = computeFillBox(ctx, words, cvs.width - 2 * PAD, cvs.height - 2 * PAD);
         if (!layout) return;
-        ctx.fillStyle = nodeData.color || '#222';
+        ctx.fillStyle = nodeData.color || _pal().accent;
         renderFillBox(ctx, layout, PAD, PAD, cvs.width, cvs.height, 'alternate', 'center');
     } else {
         /* Multi-paragraph → uniform font size, preserve line breaks */
@@ -443,7 +451,7 @@ function _createTextPlane(rect, nodeData, parentGroup, z) {
         const lineH = fontSize * LS;
         const blockH = lineH * lines.length;
         const yStart = PAD + (usableH - blockH) / 2;
-        ctx.fillStyle = nodeData.color || '#222';
+        ctx.fillStyle = nodeData.color || _pal().accent;
         ctx.font = Math.round(fontSize) + 'px sans-serif';
         ctx.textBaseline = 'top';
         ctx.textAlign = 'left';

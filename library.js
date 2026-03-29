@@ -27,6 +27,25 @@
 
    ============================================ */
 
+/* ═══════════════════════════════════════════════════════════════
+   FARBPALETTEN — zentrale Stelle für alle Farben
+   60 % = primary  (Netz-Quads, Main/Sub-Hintergründe, Landing-Banner)
+   30 % = secondary (Nav-Quadranten-Hintergrund, Loading-Tiles)
+   10 % = accent    (Texte, Nav-Beschriftungen)
+   ═══════════════════════════════════════════════════════════════ */
+export var COLOR_PALETTES = [
+    { name: 'Mint-Rose',     primary: '#2bffdf', secondary: '#ec677a', accent: '#00e105' },
+    { name: 'Lavender-Fire', primary: '#dad5eb', secondary: '#ff5b00', accent: '#00ffa2' },
+];
+
+/** Index der aktiven Palette (0-basiert). Ändere nur diesen Wert. */
+export var activePaletteIndex = 0;
+
+/** Gibt die aktuell aktive Palette zurück. */
+export function getActivePalette() {
+    return COLOR_PALETTES[activePaletteIndex] || COLOR_PALETTES[0];
+}
+
 /* Nav-Quadranten: '2d' = Canvas-Fill-Box | '3d' = 3D-Letter-System */
 export var NAV_TEXT_MODE = '2d';
 
