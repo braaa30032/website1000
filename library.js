@@ -441,13 +441,7 @@ export var LIBRARY = [
 
             // --- Seite 0: intro (7 Main-Nodes) ---
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/blouse_hinten_detail.png', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/blouse_vorne.png', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_seite_boden.png', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_seite_verschwommen.png', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_vorne_ganz.png', color: '#AF7AC5' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_vorne_verdreht.png', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/capris_halb_unten.png', color: '#8E44AD' }
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200034.jpg', color: '#9B59B6' },
             ],
 
             // --- Seite 1: abstract (7 Main-Nodes) ---
@@ -556,7 +550,8 @@ export var LIBRARY = [
 
             // --- Seite 0: intro (4 Main-Nodes) ---
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200034.jpg', color: '#F39C12' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200034.jpg', color: '#F39C12' }
+            ],
 
             // --- Seite 1: abstract (4 Main-Nodes) ---
             [
