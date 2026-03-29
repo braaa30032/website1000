@@ -429,7 +429,7 @@ export var LIBRARY = [
     // ===== Kapitel 3: spitzenkollektion =====
     {
         name: 'spitzenkollektion', color: '#9B59B6',
-        pageNames: ['shooting', 'am model', 'technicals', 'drapes & schnitt', 'process', 'looks'],
+        pageNames: ['intro', 'abstract', 'sketches', 'mood', 'visual research', 'combined research', 'key ideas', 'development', 'summary'],
         materialSet: [
             { color: '#9B59B6', roughness: 0.7, metalness: 0.0, sheen: 1.0, sheenColor: '#D2B4DE', sheenRoughness: 0.5 },
             { color: '#8E44AD', roughness: 0.3, metalness: 0.0, clearcoat: 0.4 },
@@ -439,7 +439,7 @@ export var LIBRARY = [
         ],
         pages: [
 
-            // --- Seite 0: shooting (19 Main-Nodes) ---
+            // --- Seite 0: intro (7 Main-Nodes) ---
             [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/blouse_hinten_detail.png', color: '#9B59B6' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/blouse_vorne.png', color: '#8E44AD' },
@@ -447,84 +447,96 @@ export var LIBRARY = [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_seite_verschwommen.png', color: '#7D3C98' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_vorne_ganz.png', color: '#AF7AC5' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_vorne_verdreht.png', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/capris_halb_unten.png', color: '#8E44AD' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/capris_halb_unten.png', color: '#8E44AD' }
+            ],
+
+            // --- Seite 1: abstract (7 Main-Nodes) ---
+            [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/capris_halb_vorne.png', color: '#BB8FCE' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/longer_pants_detail.png', color: '#7D3C98' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/longsleeve_detail.png', color: '#AF7AC5' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/longsleeve_vorne.png', color: '#9B59B6' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal.png', color: '#8E44AD' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_doppel.png', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz.png', color: '#7D3C98' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz.png', color: '#7D3C98' }
+            ],
+
+            // --- Seite 2: sketches (7 Main-Nodes) ---
+            [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz_eingedreht.png', color: '#AF7AC5' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz_eingedreht_verschwommen.png', color: '#9B59B6' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz_verschwommen.png', color: '#8E44AD' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/summer_pants_verschwommen.png', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/summer_pantspng.png', color: '#7D3C98' }
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/summer_pantspng.png', color: '#7D3C98' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/am_model/blouse_am_model.png', color: '#AF7AC5' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/am_model/capris_am_model.png', color: '#9B59B6' }
             ],
 
-            // --- Seite 1: am model (3 Main-Nodes) ---
+            // --- Seite 3: mood (7 Main-Nodes) ---
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/am_model/blouse_am_model.png', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/am_model/capris_am_model.png', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/am_model/office_top_am_model.png', color: '#BB8FCE' }
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/am_model/office_top_am_model.png', color: '#8E44AD' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/blouse_back.png', color: '#BB8FCE' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/blouse_front.png', color: '#7D3C98' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/bomber_hinten.png', color: '#AF7AC5' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/bomber_vorne.png', color: '#9B59B6' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/capri_shorts_hinten.png', color: '#8E44AD' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/capri_shorts_vorne.png', color: '#BB8FCE' }
             ],
 
-            // --- Seite 2: technicals (14 Main-Nodes) ---
+            // --- Seite 4: visual research (8 Main-Nodes) ---
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/blouse_back.png', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/blouse_front.png', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/bomber_hinten.png', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/bomber_vorne.png', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/capri_shorts_hinten.png', color: '#AF7AC5' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/capri_shorts_vorne.png', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/long_pants_back.png', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/long_pants_front.png', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/longsleeve_back.png', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/longsleeve_front.png', color: '#AF7AC5' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/office_top_hinten.png', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/office_top_vorne.png', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/summer_pants_back.png', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/summer_pants_front.png', color: '#7D3C98' }
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/long_pants_back.png', color: '#7D3C98' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/long_pants_front.png', color: '#AF7AC5' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/longsleeve_back.png', color: '#9B59B6' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/longsleeve_front.png', color: '#8E44AD' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/office_top_hinten.png', color: '#BB8FCE' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/office_top_vorne.png', color: '#7D3C98' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/summer_pants_back.png', color: '#AF7AC5' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/summer_pants_front.png', color: '#9B59B6' }
             ],
 
-            // --- Seite 3: drapes & schnitt (7 Main-Nodes) ---
+            // --- Seite 5: combined research (7 Main-Nodes) ---
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/drapes/drape_blouse.png', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/drapes/drape_capris.png', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/drapes/drape_office_top.png', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/schnitt/schnitt_blouse.png', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/schnitt/schnitt_capris.png', color: '#AF7AC5' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/schnitt/schnitt_office_top.png', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/mood/DSCF3882.JPG', color: '#8E44AD' }
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/drapes/drape_blouse.png', color: '#8E44AD' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/drapes/drape_capris.png', color: '#BB8FCE' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/drapes/drape_office_top.png', color: '#7D3C98' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/schnitt/schnitt_blouse.png', color: '#AF7AC5' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/schnitt/schnitt_capris.png', color: '#9B59B6' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/schnitt/schnitt_office_top.png', color: '#8E44AD' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/mood/DSCF3882.JPG', color: '#BB8FCE' }
             ],
 
-            // --- Seite 4: process (10 Main-Nodes) ---
+            // --- Seite 6: key ideas (7 Main-Nodes) ---
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_163727.jpg', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_125854.jpg', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240622_110945.jpg', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240626_182843.jpg', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240528_163947.jpg', color: '#AF7AC5' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240624_163244.jpg', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/longsleeve/20240603_172135.jpg', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/long_pants/20240624_164900.jpg', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_203521.jpg', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240622_174255.jpg', color: '#AF7AC5' }
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_163727.jpg', color: '#7D3C98' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_125854.jpg', color: '#AF7AC5' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240622_110945.jpg', color: '#9B59B6' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240626_182843.jpg', color: '#8E44AD' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240528_163947.jpg', color: '#BB8FCE' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240624_163244.jpg', color: '#7D3C98' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/longsleeve/20240603_172135.jpg', color: '#AF7AC5' }
             ],
 
-            // --- Seite 5: looks (11 Main-Nodes) ---
+            // --- Seite 7: development (7 Main-Nodes) ---
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240514_153100.jpg', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240524_134620.jpg', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_163734.jpg', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_163743.jpg', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_164009.jpg', color: '#AF7AC5' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_164028.jpg', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_164035.jpg', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240626_121837.jpg', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240626_122031.jpg', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240627_145750.jpg', color: '#AF7AC5' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240627_145751.jpg', color: '#9B59B6' }
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/long_pants/20240624_164900.jpg', color: '#9B59B6' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_203521.jpg', color: '#8E44AD' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240622_174255.jpg', color: '#BB8FCE' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240514_153100.jpg', color: '#7D3C98' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240524_134620.jpg', color: '#AF7AC5' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_163734.jpg', color: '#9B59B6' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_163743.jpg', color: '#8E44AD' }
+            ],
+
+            // --- Seite 8: summary (7 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_164009.jpg', color: '#BB8FCE' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_164028.jpg', color: '#7D3C98' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_164035.jpg', color: '#AF7AC5' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240626_121837.jpg', color: '#9B59B6' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240626_122031.jpg', color: '#8E44AD' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240627_145750.jpg', color: '#BB8FCE' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240627_145751.jpg', color: '#7D3C98' }
             ]
         ]
     },
@@ -532,7 +544,7 @@ export var LIBRARY = [
     // ===== Kapitel 4: displaydisplay =====
     {
         name: 'displaydisplay', color: '#F39C12',
-        pageNames: ['am körper', 'bag', 'handzeichnungen'],
+        pageNames: ['intro', 'abstract', 'sketches', 'mood', 'visual research', 'combined research', 'key ideas', 'development', 'summary'],
         materialSet: [
             { color: '#F39C12', roughness: 0.2, metalness: 0.6, clearcoat: 0.3 },
             { color: '#E67E22', roughness: 0.4, metalness: 0.1, sheen: 0.5, sheenColor: '#F9E79F', sheenRoughness: 0.3 },
@@ -542,48 +554,72 @@ export var LIBRARY = [
         ],
         pages: [
 
-            // --- Seite 0: am körper (10 Main-Nodes) ---
+            // --- Seite 0: intro (4 Main-Nodes) ---
             [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/avatar1.png', color: '#F39C12' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/clo3d_4arm_top.png', color: '#E67E22' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/draping_pixel.png', color: '#D68910' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/fingerhut.png', color: '#B9770E' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/fingerhut.png', color: '#B9770E' }
+            ],
+
+            // --- Seite 1: abstract (4 Main-Nodes) ---
+            [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/mantel_toille_hinten.png', color: '#9C640C' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/mantel_zeichnung1.png', color: '#F39C12' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/pulli.png', color: '#E67E22' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/shrock.png', color: '#D68910' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/tank_top.png', color: '#B9770E' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/clo_3d_sketch_pixel_aufw%C3%A4rts.png', color: '#9C640C' }
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/shrock.png', color: '#D68910' }
             ],
 
-            // --- Seite 1: bag (14 Main-Nodes) ---
+            // --- Seite 2: sketches (4 Main-Nodes) ---
             [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/tank_top.png', color: '#B9770E' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/clo_3d_sketch_pixel_aufw%C3%A4rts.png', color: '#9C640C' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/abg_blender.png', color: '#F39C12' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/bag_3d_print_hinten.png', color: '#E67E22' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/bag_3d_print_hinten.png', color: '#E67E22' }
+            ],
+
+            // --- Seite 3: mood (4 Main-Nodes) ---
+            [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/bag_3d_print_hinten_zentral.png', color: '#D68910' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/bag_3d_print_side.png', color: '#B9770E' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/bag_3d_print_vorne.png', color: '#9C640C' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/bag_black.png', color: '#F39C12' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/bag_black.png', color: '#F39C12' }
+            ],
+
+            // --- Seite 4: visual research (4 Main-Nodes) ---
+            [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/bag_blender_render.png', color: '#E67E22' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/bag_stoff_huelle.png', color: '#D68910' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/blender_bag_side.png', color: '#B9770E' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/freigestellte_blender_bag_dynamisch_unten.png', color: '#9C640C' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/freugestellte_blender_bag_vorne.png', color: '#F39C12' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/pixelig_soft_surface.png', color: '#E67E22' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/schnitt_bag_radial.jpg', color: '#D68910' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/tasche_stoff_technical_sketch.png', color: '#B9770E' }
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/freigestellte_blender_bag_dynamisch_unten.png', color: '#9C640C' }
             ],
 
-            // --- Seite 2: handzeichnungen (8 Main-Nodes) ---
+            // --- Seite 5: combined research (3 Main-Nodes) ---
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/handzeichnungen/sketch1_dynamische%20figur.png', color: '#F39C12' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/handzeichnungen/sketch1_dynamische_figur_front.png', color: '#E67E22' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/handzeichnungen/sketch_falling_character.png', color: '#D68910' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/handzeichnungen/sketch_pixel_am_koerper.png', color: '#B9770E' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/handzeichnungen/sketch_subject_and_bag.png', color: '#9C640C' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/schuh/schuh_hinten.png', color: '#F39C12' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/schuh/schuh_vorne.png', color: '#E67E22' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/schuh/schuh_vorne_innen.png', color: '#D68910' }
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/freugestellte_blender_bag_vorne.png', color: '#F39C12' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/pixelig_soft_surface.png', color: '#E67E22' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/schnitt_bag_radial.jpg', color: '#D68910' }
+            ],
+
+            // --- Seite 6: key ideas (3 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/tasche_stoff_technical_sketch.png', color: '#B9770E' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/handzeichnungen/sketch1_dynamische%20figur.png', color: '#9C640C' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/handzeichnungen/sketch1_dynamische_figur_front.png', color: '#F39C12' }
+            ],
+
+            // --- Seite 7: development (3 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/handzeichnungen/sketch_falling_character.png', color: '#E67E22' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/handzeichnungen/sketch_pixel_am_koerper.png', color: '#D68910' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/handzeichnungen/sketch_subject_and_bag.png', color: '#B9770E' }
+            ],
+
+            // --- Seite 8: summary (3 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/schuh/schuh_hinten.png', color: '#9C640C' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/schuh/schuh_vorne.png', color: '#F39C12' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/schuh/schuh_vorne_innen.png', color: '#E67E22' }
             ]
         ]
     }
