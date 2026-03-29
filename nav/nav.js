@@ -207,12 +207,14 @@ function _runLoadingScreen() {
     PANEL_NAMES_ALL.forEach(n => { quadrants[n].visible = false; });
     navState.needsRender = true;
 
-    /* Hide CDS content layer during loading */
+    /* Keep CDS content layer VISIBLE so landing page renders behind tiles */
     const cdsEl = document.getElementById('content-layer');
-    if (cdsEl) cdsEl.style.opacity = '0';
+    if (window.ContentLayer) {
+        ContentLayer.showPage(navState.currentChapter, navState.currentPage);
+    }
 
     const SPIN_ORDER = ['load-tl', 'load-tr', 'load-bl', 'load-br'];
-    const ROTATIONS  = 2;
+    const ROTATIONS  = 1;
     const FADE_IN_MS = 160;
     const HOLD_MS    = 360;
     const FADE_OUT_MS = 160;
@@ -256,12 +258,6 @@ function _runLoadingScreen() {
                 /* Show THREE.js quadrants */
                 setAxisVisibility('x');
                 navState.needsRender = true;
-
-                /* Show CDS content layer + trigger initial page */
-                if (cdsEl) cdsEl.style.opacity = '1';
-                if (window.ContentLayer) {
-                    ContentLayer.showPage(navState.currentChapter, navState.currentPage);
-                }
             }, 950);
         }, 200);
     }
@@ -385,15 +381,6 @@ function updateQuadrantContent(panelName) {
     bgMesh.position.z = -1; // behind text content
     bgMesh.userData.isBg = true;
     group.add(bgMesh);
-
-    /* ── Wireframe outline (chapter color) ── */
-    const color = getChapterColorHex(content.chapterIdx);
-    const edgesGeo = new THREE.EdgesGeometry(bgGeo);
-    const edgesMat = new THREE.LineBasicMaterial({ color: new THREE.Color(color) });
-    const edgesLine = new THREE.LineSegments(edgesGeo, edgesMat);
-    edgesLine.position.z = -0.5;
-    edgesLine.userData.isBg = true;
-    group.add(edgesLine);
 
     const navMode = NAV_TEXT_MODE || '3d';
 

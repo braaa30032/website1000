@@ -191,19 +191,6 @@ function _createNetzQuad3d(nq, parentGroup) {
     if (nq.type === 'rect') mesh.position.set(nq.x + nq.w / 2, -(nq.y + nq.h / 2), 0);
     else mesh.position.z = 0;
     parentGroup.add(mesh);
-
-    const edges = new THREE.EdgesGeometry(geo);
-    const edgeMesh = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: new THREE.Color(_pal().primary).multiplyScalar(0.75) }));
-    edgeMesh.position.copy(mesh.position);
-    parentGroup.add(edgeMesh);
-}
-
-function _createWireRect(rect, color, parentGroup, z) {
-    const geo = new THREE.PlaneGeometry(rect.w, rect.h);
-    const edges = new THREE.EdgesGeometry(geo);
-    const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: new THREE.Color(color) }));
-    line.position.set(rect.x + rect.w / 2, -(rect.y + rect.h / 2), z || 6);
-    parentGroup.add(line);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -247,7 +234,6 @@ function _buildNavColumnAnimGroup(layout) {
         const g = new THREE.Group(); g.name = name;
         const geo = new THREE.PlaneGeometry(SQ, innerH);
         g.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: new THREE.Color(_pal().primary), side: THREE.DoubleSide, transparent: true, opacity: 0.7 })));
-        g.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: new THREE.Color(_pal().primary).multiplyScalar(0.75) })));
         return g;
     }
 
@@ -530,18 +516,9 @@ function _buildPageGroup(layout, chIdx, pgIdx, skipNav, nodes) {
     const fg = new THREE.Group(); fg.name = 'frames'; pg.add(fg);
     const ig = new THREE.Group(); ig.name = 'images'; pg.add(ig);
     const ng = new THREE.Group(); ng.name = 'netz'; pg.add(ng);
-    const ocg = new THREE.Group(); ocg.name = 'outlines-content'; pg.add(ocg);
-    const ong = new THREE.Group(); ong.name = 'outlines-nav'; pg.add(ong);
     const ptg = new THREE.Group(); ptg.name = 'pets'; pg.add(ptg);
 
     const SQ = layout.SQ;
-
-    /* Nav quad wireframes */
-    [{ rect: layout.navTL, skip: skipNav.left || skipNav.top },
-     { rect: layout.navTR, skip: skipNav.right || skipNav.top },
-     { rect: layout.navBL, skip: skipNav.left || skipNav.bottom },
-     { rect: layout.navBR, skip: skipNav.right || skipNav.bottom }
-    ].forEach(e => { if (!e.skip) _createWireRect(e.rect, '#E74C3C', ong, 6); });
 
     /* Mains */
     let _any3d = false;
@@ -549,7 +526,6 @@ function _buildPageGroup(layout, chIdx, pgIdx, skipNav, nodes) {
         const node = _nodes[mi];
         const is3d = node && node.render3d;
         if (is3d) _any3d = true;
-        _createWireRect(m, MAIN_COLOR, ocg, 6);
         if (is3d) _createFrame3d(m, (node.color || MAIN_COLOR), fg);
         if (node) _createMediaPlane(m, node, ig, is3d);
     });
@@ -557,7 +533,6 @@ function _buildPageGroup(layout, chIdx, pgIdx, skipNav, nodes) {
     /* Subs */
     layout.subs.forEach((group, gi) => {
         group.forEach((s, si) => {
-            _createWireRect(s, SUB_COLOR, ocg, 6);
             let subNode = null;
             if (_nodes[gi] && _nodes[gi].children && _nodes[gi].children[si]) subNode = _nodes[gi].children[si];
             const subIs3d = subNode && subNode.render3d;
@@ -593,10 +568,6 @@ function _buildPageGroup(layout, chIdx, pgIdx, skipNav, nodes) {
                 meshP.position.set(pet.x, -pet.y, PET_Z);
                 ptg.add(meshP);
             }
-            const edgesLine = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(pet.w, pet.h)),
-                new THREE.LineBasicMaterial({ color: new THREE.Color(petNode ? petNode.color : PET_COLOR) }));
-            edgesLine.position.set(pet.x, -pet.y, PET_Z + 0.1);
-            ptg.add(edgesLine);
         });
     }
 
@@ -624,7 +595,7 @@ function _buildPageGroup(layout, chIdx, pgIdx, skipNav, nodes) {
     });
 
     fg.visible = !!L.frames3d; ig.visible = !!L.images; ng.visible = !!L.netz3d;
-    ptg.visible = !!L.pets; ocg.visible = !!L.outlines_content; ong.visible = !!L.outlines_nav;
+    ptg.visible = !!L.pets;
     pg.userData.layout = layout; pg.userData.chapterIdx = chIdx; pg.userData.pageIdx = pgIdx;
     return pg;
 }
@@ -1017,8 +988,6 @@ function updateLayerVisibility(key, visible) {
         if (g.name === 'images') g.visible = !!L.images;
         if (g.name === 'netz') g.visible = !!L.netz3d;
         if (g.name === 'pets') g.visible = !!L.pets;
-        if (g.name === 'outlines-content') g.visible = !!L.outlines_content;
-        if (g.name === 'outlines-nav') g.visible = !!L.outlines_nav;
     });
 }
 
