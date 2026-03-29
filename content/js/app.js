@@ -47,6 +47,7 @@ let frameTemplate = null, frameBBox = null, frameReady = false;
 let needsRender = true;
 let pageNodes = [];
 let flashEl;
+let _landingEl = null;
 
 const L = {
     frames3d: true, beams3d: true, images: true,
@@ -82,6 +83,7 @@ function init() {
     scene.add(dirLight);
 
     flashEl = document.getElementById('flash');
+    _landingEl = document.getElementById('landing-banners');
 
     window.addEventListener('resize', _onResize);
     _setupPanning();
@@ -615,7 +617,7 @@ function renderCurrentPage() {
         } else {
             panY = 0;
         }
-        _applyPan(); _updateInfo(); needsRender = true;
+        _applyPan(); _updateInfo(); _updateLandingBanners(); needsRender = true;
     }).catch(err => console.error('[CDS] renderCurrentPage FAILED:', err));
 }
 
@@ -675,6 +677,7 @@ function _animateCoupledTransition(container, axis, direction, inGroup, outGroup
 
 function _performTransition(axis, direction, newChapter, newPage) {
     isAnimating = true; needsRender = true;
+    if (_landingEl) _landingEl.style.display = 'none';
     if (fixedNavGroup) { scene.remove(fixedNavGroup); _disposeTree(fixedNavGroup); fixedNavGroup = null; }
     if (navColumnAnimGroup) { scene.remove(navColumnAnimGroup); _disposeTree(navColumnAnimGroup); navColumnAnimGroup = null; navColumnAnimData = null; }
 
@@ -781,6 +784,7 @@ function _onResize() {
     if (renderer) renderer.setSize(W, H);
     if (camera) { camera.right = W; camera.bottom = -H; camera.updateProjectionMatrix(); }
     needsRender = true; if (currentLayout) renderCurrentPage();
+    _updateLandingBanners();
 }
 
 function _updateInfo() {
@@ -806,6 +810,61 @@ function updateLayerVisibility(key, visible) {
         if (g.name === 'pets') g.visible = !!L.pets;
         if (g.name === 'outlines-content') g.visible = !!L.outlines_content;
         if (g.name === 'outlines-nav') g.visible = !!L.outlines_nav;
+    });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LANDING PAGE ANIMATED STRIPES (chapter 0, page 0 only)
+   ═══════════════════════════════════════════════════════════════ */
+function _updateLandingBanners() {
+    if (!_landingEl) return;
+    if (currentChapter === 0 && currentPage === 0 && !isAnimating) {
+        _landingEl.style.display = '';
+        _fitLandingBanners();
+    } else {
+        _landingEl.style.display = 'none';
+    }
+}
+
+function _fitLandingBanners() {
+    const SQ = Math.min(W, H) / 4;
+
+    /* ── Horizontal banner (top strip, full width, height = SQ) ── */
+    const bh = document.getElementById('landing-h');
+    const th = document.getElementById('landing-txt-h');
+    const htDiv = bh.querySelector('.landing-h-text');
+    bh.style.height = SQ + 'px';
+    htDiv.style.left = SQ + 'px';
+    htDiv.style.right = SQ + 'px';
+    htDiv.style.width = '';
+    th.style.transform = 'none';
+    th.style.fontSize = SQ + 'px';
+
+    /* ── Vertical banner (left strip, width = SQ, full height) ── */
+    const bv = document.getElementById('landing-v');
+    const tv = document.getElementById('landing-txt-v');
+    bv.style.width = SQ + 'px';
+    bv.style.height = '100%';
+    tv.style.fontSize = SQ + 'px';
+    tv.style.transform = 'none';
+    tv.style.left = '0px';
+    tv.style.top = '0px';
+
+    const midH = H - 2 * SQ;
+    const midCY = SQ + midH / 2;
+
+    requestAnimationFrame(() => {
+        /* Horizontal: scaleX text to fill area between corners */
+        const twH = th.scrollWidth;
+        const areaW = W - 2 * SQ;
+        if (twH > 0) th.style.transform = 'scaleX(' + (areaW / twH) + ')';
+
+        /* Vertical: rotate 90° and scaleX to fill middle section */
+        const twV = tv.scrollWidth;
+        const sx = midH / twV;
+        tv.style.left = (SQ / 2 - twV / 2) + 'px';
+        tv.style.top  = (midCY - SQ / 2) + 'px';
+        tv.style.transform = 'rotate(90deg) scaleX(' + (twV > 0 ? sx : 1) + ')';
     });
 }
 

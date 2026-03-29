@@ -24,6 +24,86 @@
     z-index: 1;
 }
 
+/* === LANDING PAGE ANIMATED STRIPES (ch0 p0) === */
+
+#landing-banners {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 10;
+    display: none;
+}
+
+/* ── Horizontal banner (top netz strip) ── */
+.landing-banner-h {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    overflow: hidden;
+    background: #D5D5D5;
+}
+.landing-stripe-h {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    width: 45%;
+    background: white;
+    animation: landing-mh 6s linear infinite;
+    will-change: transform;
+}
+@keyframes landing-mh {
+    0%   { transform: translateX(-65%); }
+    100% { transform: translateX(188%); }
+}
+.landing-h-text {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+    overflow: visible;
+}
+#landing-txt-h {
+    font-family: Arial Black, Arial, sans-serif;
+    font-weight: 900;
+    color: #D5D5D5;
+    white-space: nowrap;
+    line-height: 1;
+    transform-origin: left center;
+    display: block;
+}
+
+/* ── Vertical banner (left netz strip) ── */
+.landing-banner-v {
+    position: absolute;
+    top: 0; left: 0;
+    overflow: hidden;
+    background: #D5D5D5;
+}
+.landing-stripe-v {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%;
+    height: 45%;
+    background: white;
+    animation: landing-mv 6s linear infinite;
+    will-change: transform;
+}
+@keyframes landing-mv {
+    0%   { transform: translateY(-40%); }
+    100% { transform: translateY(165%); }
+}
+#landing-txt-v {
+    position: absolute;
+    font-family: Arial Black, Arial, sans-serif;
+    font-weight: 900;
+    color: #D5D5D5;
+    white-space: nowrap;
+    line-height: 1;
+}
+
 /* === FLASH OVERLAY (boundary feedback) === */
 
 .flash-overlay {
