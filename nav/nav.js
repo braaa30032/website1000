@@ -17,7 +17,7 @@ import {
     createLetter, layoutTextIntoLines, applyMaterialPreset,
     buildLetterGroup as _buildLetterGroup
 } from '../content/js/shared/letter-system.js?v=24';
-import { NAV_TEXT_MODE, LIBRARY, CHAPTER_DEFS, getPageCount, getActivePalette } from '../library.js?v=34';
+import { NAV_TEXT_MODE, LIBRARY, CHAPTER_DEFS, getPageCount, getActivePalette } from '../library.js?v=35';
 import { splitFillBoxWords, computeFillBox, renderFillBox } from '../content/js/shared/helpers.js?v=1';
 
 // ========== CONFIG ==========

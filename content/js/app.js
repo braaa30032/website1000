@@ -13,7 +13,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { LIBRARY, getChapterCount, getPageCount, getMainNodesForPage, getPageSections, getActivePalette } from '../../library.js';
+import { LIBRARY, getChapterCount, getPageCount, getMainNodesForPage, getPageSections, getActivePalette } from '../../library.js?v=35';
 import { computeLayout, LAYOUT_CONST } from './layout.js';
 import { ANIM, lerp } from './shared/anim-config.js';
 import { splitFillBoxWords, computeFillBox, renderFillBox } from './shared/helpers.js';
