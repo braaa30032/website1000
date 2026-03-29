@@ -75,9 +75,8 @@ function init() {
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(dpr);
     renderer.setSize(W, H);
-    renderer.setClearColor(0xffffff, 1);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.0;
+    renderer.setClearColor(new THREE.Color(pal.primary), 1);
+    renderer.toneMapping = THREE.NoToneMapping;
 
     const container = document.getElementById('content-layer');
     container.appendChild(renderer.domElement);

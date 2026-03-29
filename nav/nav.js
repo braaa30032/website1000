@@ -135,8 +135,7 @@ function navInit() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(W, H);
     renderer.setClearColor(0x000000, 0); // Vollstaendig transparent
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
+    renderer.toneMapping = THREE.NoToneMapping;
 
     const container = document.getElementById('nav-viewport');
     container.insertBefore(renderer.domElement, container.firstChild);

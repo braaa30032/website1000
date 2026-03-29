@@ -47,7 +47,7 @@
     top: 0; left: 0;
     height: 100%;
     width: 45%;
-    background: white;
+    background: var(--pal-secondary, #ec677a);
     animation: landing-mh 6s linear infinite;
     will-change: transform;
 }
@@ -86,7 +86,7 @@
     left: 0; top: 0;
     width: 100%;
     height: 45%;
-    background: white;
+    background: var(--pal-secondary, #ec677a);
     animation: landing-mv 6s linear infinite;
     will-change: transform;
 }
