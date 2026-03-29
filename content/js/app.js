@@ -40,6 +40,7 @@ let currentLayout = null, currentPageGroup = null;
 let isAnimating = false, isFrozen = false;
 let panY = 0, overscrollAcc = 0, overscrollDir = 0;
 let _scrollLandAtEnd = false;
+let _scrollSwapping = false;
 let isPanning = false, panStartY = 0, panStartPanY = 0;
 let fixedNavGroup = null;
 let navColumnAnimGroup = null, navColumnAnimData = null;
@@ -742,11 +743,85 @@ function _transitionPage(direction) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   SCROLL-TRIGGERED PAGE SWAP — instant CDS, nav-only animation
+   ═══════════════════════════════════════════════════════════════ */
+function _scrollSwap(direction) {
+    if (isAnimating || isFrozen || _scrollSwapping) return;
+    if (window.NavLayer && NavLayer.isAnimating && NavLayer.isAnimating()) return;
+
+    const ch = LIBRARY[currentChapter];
+    let newCh = currentChapter;
+    let newPg = currentPage + direction;
+    let axis = 'y';
+    let navDir = direction;
+
+    if (newPg < 0) {
+        if (currentChapter > 0) {
+            newCh = currentChapter - 1;
+            newPg = Math.max(0, getPageCount(newCh) - 1);
+            axis = 'x'; navDir = -1;
+        } else { _flashBoundary(); return; }
+    } else if (newPg >= ch.pages.length) {
+        if (currentChapter < getChapterCount() - 1) {
+            newCh = currentChapter + 1;
+            newPg = 0;
+            axis = 'x'; navDir = 1;
+        } else { _flashBoundary(); return; }
+    }
+
+    _scrollSwapping = true;
+    overscrollAcc = 0; overscrollDir = 0;
+    if (_landingEl) _landingEl.style.display = 'none';
+
+    /* ── Tear down current page ── */
+    if (currentPageGroup) { scene.remove(currentPageGroup); _disposeTree(currentPageGroup); }
+    if (fixedNavGroup) { scene.remove(fixedNavGroup); _disposeTree(fixedNavGroup); fixedNavGroup = null; }
+    if (navColumnAnimGroup) { scene.remove(navColumnAnimGroup); _disposeTree(navColumnAnimGroup); navColumnAnimGroup = null; navColumnAnimData = null; }
+
+    /* ── Build new page synchronously (default aspects, no blocking preload) ── */
+    const newNodes = getMainNodesForPage(newCh, newPg);
+    const newSectionDefs = getPageSections(newCh, newPg);
+    const newCfg = _buildPageConfig(newNodes, null, newSectionDefs);
+    const newLayout = computeLayout(newCfg, W, H);
+
+    pageNodes = newNodes;
+    currentLayout = newLayout;
+    currentChapter = newCh;
+    currentPage = newPg;
+
+    currentPageGroup = _buildPageGroup(newLayout, newCh, newPg, null, newNodes);
+    scene.add(currentPageGroup);
+    fixedNavGroup = _buildFixedNavGroup(newLayout);
+    scene.add(fixedNavGroup);
+    if (newLayout.sectionRanges && newLayout.sectionRanges.length > 1) {
+        navColumnAnimGroup = _buildNavColumnAnimGroup(newLayout);
+        if (navColumnAnimGroup) scene.add(navColumnAnimGroup);
+    }
+
+    /* Scroll position: backward → bottom of page, forward → top */
+    if (direction === -1) {
+        panY = Math.max(0, newLayout.totalContentHeight - H);
+    } else {
+        panY = 0;
+    }
+    _applyPan(); _updateInfo(); _updateLandingBanners();
+    needsRender = true;
+
+    /* ── Trigger nav-only animation (no CDS animation) ── */
+    if (window.NavLayer && NavLayer.animateTransition) {
+        NavLayer.animateTransition(axis, navDir, newCh, newPg);
+    }
+
+    /* Cooldown before next scroll swap */
+    setTimeout(() => { _scrollSwapping = false; }, 400);
+}
+
+/* ═══════════════════════════════════════════════════════════════
    SCROLLING / PANNING
    ═══════════════════════════════════════════════════════════════ */
 function _applyPan() { if (currentPageGroup) currentPageGroup.position.y = panY; _updateNavColumnAnim(); needsRender = true; }
 function _clampPan() { let maxPan = 0; if (currentLayout && currentLayout.totalContentHeight) maxPan = Math.max(0, currentLayout.totalContentHeight - H); panY = Math.max(0, Math.min(maxPan, panY)); }
-function _handleOverscroll(delta) { if (!delta) return; const dir = delta > 0 ? 1 : -1; if (dir !== overscrollDir) { overscrollAcc = 0; overscrollDir = dir; } overscrollAcc += Math.abs(delta); if (overscrollAcc >= OVERSCROLL_THRESHOLD) { overscrollAcc = 0; overscrollDir = 0; _scrollLandAtEnd = (dir === -1); _transitionPage(dir); } }
+function _handleOverscroll(delta) { if (!delta) return; const dir = delta > 0 ? 1 : -1; if (dir !== overscrollDir) { overscrollAcc = 0; overscrollDir = dir; } overscrollAcc += Math.abs(delta); if (overscrollAcc >= OVERSCROLL_THRESHOLD) { overscrollAcc = 0; overscrollDir = 0; _scrollSwap(dir); } }
 function _resetOverscroll() { overscrollAcc = 0; overscrollDir = 0; }
 
 function _setupPanning() {

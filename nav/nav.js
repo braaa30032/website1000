@@ -766,11 +766,37 @@ function handleResize() {
     navState.needsRender = true;
 }
 
+// ========== NAV-ONLY TRANSITION (called by CDS on scroll swap) ==========
+
+/**
+ * Run nav stretch-slide animation WITHOUT triggering a CDS transition.
+ * Used by app.js _scrollSwap() so the CDS swaps instantly while nav animates.
+ */
+function animateTransition(axis, direction, newCh, newPg) {
+    if (navState.isAnimating) return;
+    navState.isAnimating = true;
+    setAxisVisibility(axis);
+
+    const animFn = axis === 'x' ? animateX : animateY;
+    animFn(direction).then(() => {
+        setTimeout(() => {
+            navState.currentChapter = newCh;
+            navState.currentPage = newPg;
+            resetToDefaults();
+            setAxisVisibility('x');
+            updateAllQuadrantContent();
+            updateStatusDisplay();
+            navState.isAnimating = false;
+        }, ANIM.resetDelay);
+    });
+}
+
 // ========== PUBLIC API ==========
 
 window.NavLayer = {
     navigateX: navigateX,
     navigateY: navigateY,
+    animateTransition: animateTransition,
     isAnimating: () => navState.isAnimating,
     /** Called by app.js after scroll-triggered transitions to sync nav state & labels */
     syncState: function(ch, pg) {

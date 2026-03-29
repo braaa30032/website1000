@@ -54,7 +54,7 @@ export var LIBRARY = [
     // ===== Kapitel 1: 0 =====
     {
         name: '0', color: '#3498DB',
-        pageNames: ["flower","sprints 1","sprints 2","sprints 3","sprints 4","sprints 5","sprints 6","video","bild 3","bild 4","bild 5","bild 6","bild 7","bild 8","video 2"],
+        pageNames: ["intro","sprints 1","sprints 2","sprints 3","sprints 4","sprints 5","sprints 6","video","bild 3","bild 4","bild 5","bild 6","bild 7","bild 8","video 2"],
         materialSet: [
             { color: '#3498DB', roughness: 0.1, metalness: 0.0, transmission: 0.8, ior: 1.5, thickness: 0.5 },
             { color: '#2980B9', roughness: 0.3, metalness: 0.2, clearcoat: 0.8 },
@@ -556,11 +556,7 @@ export var LIBRARY = [
 
             // --- Seite 0: intro (4 Main-Nodes) ---
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/avatar1.png', color: '#F39C12' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/clo3d_4arm_top.png', color: '#E67E22' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/draping_pixel.png', color: '#D68910' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/fingerhut.png', color: '#B9770E' }
-            ],
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200034.jpg', color: '#F39C12' },
 
             // --- Seite 1: abstract (4 Main-Nodes) ---
             [
