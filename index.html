@@ -108,14 +108,16 @@
     {
         "imports": {
             "three": "https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.js",
-            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/"
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/",
+            "gsap": "./content/js/vendor/gsap-core.js",
+            "gsap/Observer": "./content/js/vendor/Observer.js"
         }
     }
     </script>
 
-    <!-- All ES Modules (import map above resolves three) -->
-    <script type="module" src="content/js/app.js?v=71"></script>
-    <script type="module" src="nav/nav.js?v=41"></script>
+    <!-- All ES Modules (import map above resolves three + gsap) -->
+    <script type="module" src="content/js/app.js?v=72"></script>
+    <script type="module" src="nav/nav.js?v=42"></script>
 
     <!-- ===== CDS CONTROL PANEL LOGIC ===== -->
     <script>

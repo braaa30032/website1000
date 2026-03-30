@@ -10,7 +10,7 @@
 
 import * as THREE from 'three';
 import { createEnvMap } from '../content/js/shared/three-utils.js?v=24';
-import { ANIM, lerp } from '../content/js/shared/anim-config.js?v=24';
+import { ANIM, lerp, buildNavTransitionTimeline, registerRenderCallback, gsap } from '../content/js/shared/anim-config.js?v=24';
 import {
     LETTER_DEPTH, LETTER_SPACING, LINE_SPACING, QUADRANT_FILL,
     letterCache, lettersAvailable, loadLetterGLBs, collectNeededChars,
@@ -224,10 +224,10 @@ function _runLoadingScreen() {
 
     function flashTile(tileEl, onDone) {
         tileEl.classList.add('lit');
-        setTimeout(() => {
+        gsap.delayedCall((FADE_IN_MS + HOLD_MS) / 1000, () => {
             tileEl.classList.remove('lit');
-            setTimeout(onDone, FADE_OUT_MS);
-        }, FADE_IN_MS + HOLD_MS);
+            gsap.delayedCall(FADE_OUT_MS / 1000, onDone);
+        });
     }
 
     function runSpinStep(step, onAllDone) {
@@ -243,7 +243,7 @@ function _runLoadingScreen() {
         const sqW = (sq / window.innerWidth * 100) + '%';
         const sqH = (sq / window.innerHeight * 100) + '%';
 
-        setTimeout(() => {
+        gsap.delayedCall(0.2, () => {
             allTiles.forEach(t => {
                 t.classList.add('shrink');
                 t.style.width = sqW;
@@ -251,7 +251,7 @@ function _runLoadingScreen() {
             });
 
             /* After shrink transition completes → reveal everything */
-            setTimeout(() => {
+            gsap.delayedCall(0.95, () => {
                 allTiles.forEach(t => t.classList.add('gone'));
                 _loadingActive = false;
                 navState.isAnimating = false;
@@ -259,12 +259,12 @@ function _runLoadingScreen() {
                 /* Show THREE.js quadrants */
                 setAxisVisibility('x');
                 navState.needsRender = true;
-            }, 950);
-        }, 200);
+            });
+        });
     }
 
     /* Start: brief pause, then spin */
-    setTimeout(() => runSpinStep(0, runShrink), 400);
+    gsap.delayedCall(0.4, () => runSpinStep(0, runShrink));
 }
 
 
@@ -587,14 +587,14 @@ function navigateX(direction) {
     }
 
     animateX(direction).then(() => {
-        setTimeout(() => {
+        gsap.delayedCall(ANIM.resetDelay, () => {
             navState.currentChapter = newCh;
             navState.currentPage = newPg;
             resetToDefaults();
             updateAllQuadrantContent();
             updateStatusDisplay();
             navState.isAnimating = false;
-        }, ANIM.resetDelay);
+        });
     });
 }
 
@@ -616,14 +616,14 @@ function navigateY(direction) {
     }
 
     animateY(direction).then(() => {
-        setTimeout(() => {
+        gsap.delayedCall(ANIM.resetDelay, () => {
             navState.currentPage = newPg;
             resetToDefaults();
             setAxisVisibility('x');
             updateAllQuadrantContent();
             updateStatusDisplay();
             navState.isAnimating = false;
-        }, ANIM.resetDelay);
+        });
     });
 }
 
@@ -638,7 +638,7 @@ function flashBorder(side) {
         'top': 'inset 0 20px 30px rgba(255,0,0,0.5)'
     };
     el.style.boxShadow = shadows[side] || '';
-    setTimeout(() => { el.style.boxShadow = 'none'; }, 300);
+    gsap.delayedCall(0.3, () => { el.style.boxShadow = 'none'; });
 }
 
 function resetToDefaults() {
@@ -665,186 +665,37 @@ function updateStatusDisplay() {
 
 function animateX(direction) {
     return new Promise(resolve => {
-        const startTime = performance.now();
         const defaults = getDefaultPositions();
-
-        // Dauer: sqrt-Skalierung — laenger als Y, aber nicht linear-proportional
-        // (sonst waere X bei Widescreen doppelt so lang und fuehlt sich traege an)
-        const distX = Math.abs(defaults.next.x - defaults.main.x);
-        const distY = Math.abs(defaults.top.y - defaults.bottom.y);
-        const duration = ANIM.duration * (distY > 0 ? Math.sqrt(distX / distY) : 1);
-        const phase1End = ANIM.phase1End;
-        const stretchPeak = ANIM.stretchPeak;
-        const retreat = ANIM.phase1Retreat;
-
-        const savedScaleX = {};
-        PANEL_NAMES_ALL.forEach(n => { savedScaleX[n] = quadrants[n].scale.x; });
-
-        function frame(currentTime) {
-            const elapsed = currentTime - startTime;
-            const rawProgress = Math.min(elapsed / duration, 1);
-            const progress = ANIM.easing(rawProgress);
-
-            if (direction === 1) {
-                // ► Naechstes Kapitel: next → main, main → prev
-                if (progress < phase1End) {
-                    const p1 = progress / phase1End;
-                    // Incoming: next stretcht nach links (rechte Kante bleibt)
-                    const stretch = 1 + (stretchPeak - 1) * p1;
-                    quadrants.next.scale.x = savedScaleX.next * stretch;
-                    quadrants.next.position.x = defaults.next.x + SQ / 2 * (1 - stretch);
-                    // Outgoing: main stretcht nach links + weicht aus (rechte Kante wandert)
-                    const mainStretch = 1 + (stretchPeak - 1) * p1 * 0.5;
-                    quadrants.main.scale.x = savedScaleX.main * mainStretch;
-                    const mainTargetX = lerp(defaults.main.x, defaults.prev.x, retreat);
-                    quadrants.main.position.x = lerp(defaults.main.x, mainTargetX, p1) + SQ / 2 * (1 - mainStretch);
-                } else {
-                    const p2 = (progress - phase1End) / (1 - phase1End);
-                    // Incoming: Slide + Destretch
-                    const p1EndPos = defaults.next.x + SQ / 2 * (1 - stretchPeak);
-                    const stretch = lerp(stretchPeak, 1, p2);
-                    quadrants.next.scale.x = savedScaleX.next * stretch;
-                    quadrants.next.position.x = lerp(p1EndPos, defaults.main.x, p2);
-                    // Outgoing: main Destretch + setzt Weg fort
-                    const mainP1Stretch = 1 + (stretchPeak - 1) * 0.5;
-                    const mainStretch = lerp(mainP1Stretch, 1, p2);
-                    quadrants.main.scale.x = savedScaleX.main * mainStretch;
-                    const mainP1End = lerp(defaults.main.x, defaults.prev.x, retreat) + SQ / 2 * (1 - mainP1Stretch);
-                    quadrants.main.position.x = lerp(mainP1End, defaults.prev.x, p2);
-                    // Buffer: nextNext rueckt nach
-                    quadrants.nextNext.position.x = lerp(defaults.nextNext.x, defaults.next.x, p2);
-                }
-            } else {
-                // ◄ Vorheriges Kapitel: prev → main, main → next
-                if (progress < phase1End) {
-                    const p1 = progress / phase1End;
-                    // Incoming: prev stretcht nach rechts (linke Kante bleibt)
-                    const stretch = 1 + (stretchPeak - 1) * p1;
-                    quadrants.prev.scale.x = savedScaleX.prev * stretch;
-                    quadrants.prev.position.x = defaults.prev.x + SQ / 2 * (stretch - 1);
-                    // Outgoing: main stretcht nach rechts + weicht aus (linke Kante wandert)
-                    const mainStretch = 1 + (stretchPeak - 1) * p1 * 0.5;
-                    quadrants.main.scale.x = savedScaleX.main * mainStretch;
-                    const mainTargetX = lerp(defaults.main.x, defaults.next.x, retreat);
-                    quadrants.main.position.x = lerp(defaults.main.x, mainTargetX, p1) + SQ / 2 * (mainStretch - 1);
-                } else {
-                    const p2 = (progress - phase1End) / (1 - phase1End);
-                    // Incoming: Slide + Destretch
-                    const p1EndPos = defaults.prev.x + SQ / 2 * (stretchPeak - 1);
-                    const stretch = lerp(stretchPeak, 1, p2);
-                    quadrants.prev.scale.x = savedScaleX.prev * stretch;
-                    quadrants.prev.position.x = lerp(p1EndPos, defaults.main.x, p2);
-                    // Outgoing: main Destretch + setzt Weg fort
-                    const mainP1Stretch = 1 + (stretchPeak - 1) * 0.5;
-                    const mainStretch = lerp(mainP1Stretch, 1, p2);
-                    quadrants.main.scale.x = savedScaleX.main * mainStretch;
-                    const mainP1End = lerp(defaults.main.x, defaults.next.x, retreat) + SQ / 2 * (mainP1Stretch - 1);
-                    quadrants.main.position.x = lerp(mainP1End, defaults.next.x, p2);
-                    // Buffer: next rueckt weiter nach rechts
-                    quadrants.next.position.x = lerp(defaults.next.x, defaults.nextNext.x, p2);
-                }
-            }
-
-            navState.needsRender = true;
-            if (rawProgress < 1) {
-                requestAnimationFrame(frame);
-            } else {
-                PANEL_NAMES_ALL.forEach(n => { quadrants[n].scale.x = savedScaleX[n]; });
-                resolve();
-            }
-        }
-        requestAnimationFrame(frame);
+        const tl = buildNavTransitionTimeline({
+            axis: 'x', direction, quadrants, defaults, SQ,
+            viewW: W, viewH: H,
+            onUpdate: () => { navState.needsRender = true; }
+        });
+        tl.then(resolve);
     });
 }
 
 function animateY(direction) {
     return new Promise(resolve => {
-        const startTime = performance.now();
-        const duration = ANIM.duration;
-        const phase1End = ANIM.phase1End;
-        const stretchPeak = ANIM.stretchPeak;
-        const retreat = ANIM.phase1Retreat;
         const defaults = getDefaultPositions();
-
-        const savedScaleY = {};
-        PANEL_NAMES_ALL.forEach(n => { savedScaleY[n] = quadrants[n].scale.y; });
-
-        function frame(currentTime) {
-            const elapsed = currentTime - startTime;
-            const rawProgress = Math.min(elapsed / duration, 1);
-            const progress = ANIM.easing(rawProgress);
-
-            if (direction === 1) {
-                // ▼ Naechste Seite: bottom → top
-                if (progress < phase1End) {
-                    const p1 = progress / phase1End;
-                    // Incoming: bottom stretcht nach oben (untere Kante bleibt)
-                    const stretch = 1 + (stretchPeak - 1) * p1;
-                    quadrants.bottom.scale.y = savedScaleY.bottom * stretch;
-                    quadrants.bottom.position.y = defaults.bottom.y + SQ / 2 * (stretch - 1);
-                    // Outgoing: top weicht nach oben aus
-                    quadrants.top.position.y = lerp(defaults.top.y, defaults.topTop.y, p1 * retreat);
-                } else {
-                    const p2 = (progress - phase1End) / (1 - phase1End);
-                    // Incoming: Slide + Destretch
-                    const p1EndPos = defaults.bottom.y + SQ / 2 * (stretchPeak - 1);
-                    const stretch = lerp(stretchPeak, 1, p2);
-                    quadrants.bottom.scale.y = savedScaleY.bottom * stretch;
-                    quadrants.bottom.position.y = lerp(p1EndPos, defaults.top.y, p2);
-                    // Outgoing: top setzt Weg fort (30%→100%)
-                    const topP1End = lerp(defaults.top.y, defaults.topTop.y, retreat);
-                    quadrants.top.position.y = lerp(topP1End, defaults.topTop.y, p2);
-                    // Buffer: bottomBottom rueckt nach
-                    quadrants.bottomBottom.position.y = lerp(defaults.bottomBottom.y, defaults.bottom.y, p2);
-                }
-            } else {
-                // ▲ Vorherige Seite: top → bottom
-                if (progress < phase1End) {
-                    const p1 = progress / phase1End;
-                    // Incoming: top stretcht nach unten (obere Kante bleibt)
-                    const stretch = 1 + (stretchPeak - 1) * p1;
-                    quadrants.top.scale.y = savedScaleY.top * stretch;
-                    quadrants.top.position.y = defaults.top.y + SQ / 2 * (1 - stretch);
-                    // Outgoing: bottom weicht nach unten aus
-                    quadrants.bottom.position.y = lerp(defaults.bottom.y, defaults.bottomBottom.y, p1 * retreat);
-                } else {
-                    const p2 = (progress - phase1End) / (1 - phase1End);
-                    // Incoming: Slide + Destretch
-                    const p1EndPos = defaults.top.y + SQ / 2 * (1 - stretchPeak);
-                    const stretch = lerp(stretchPeak, 1, p2);
-                    quadrants.top.scale.y = savedScaleY.top * stretch;
-                    quadrants.top.position.y = lerp(p1EndPos, defaults.bottom.y, p2);
-                    // Outgoing: bottom setzt Weg fort (30%→100%)
-                    const bottomP1End = lerp(defaults.bottom.y, defaults.bottomBottom.y, retreat);
-                    quadrants.bottom.position.y = lerp(bottomP1End, defaults.bottomBottom.y, p2);
-                    // Buffer: topTop rueckt nach
-                    quadrants.topTop.position.y = lerp(defaults.topTop.y, defaults.top.y, p2);
-                }
-            }
-
-            navState.needsRender = true;
-            if (rawProgress < 1) {
-                requestAnimationFrame(frame);
-            } else {
-                PANEL_NAMES_ALL.forEach(n => { quadrants[n].scale.y = savedScaleY[n]; });
-                resolve();
-            }
-        }
-        requestAnimationFrame(frame);
+        const tl = buildNavTransitionTimeline({
+            axis: 'y', direction, quadrants, defaults, SQ,
+            viewW: W, viewH: H,
+            onUpdate: () => { navState.needsRender = true; }
+        });
+        tl.then(resolve);
     });
 }
 
-// ========== RENDER LOOP ==========
+// ========== RENDER LOOP (via shared gsap.ticker) ==========
 
 function startRenderLoop() {
-    function loop() {
+    registerRenderCallback(() => {
         if (navState.needsRender || navState.isAnimating) {
             renderer.render(scene, camera);
             navState.needsRender = false;
         }
-        requestAnimationFrame(loop);
-    }
-    requestAnimationFrame(loop);
+    });
 }
 
 // ========== RESIZE ==========
@@ -879,7 +730,7 @@ function animateTransition(axis, direction, newCh, newPg) {
 
     const animFn = axis === 'x' ? animateX : animateY;
     animFn(direction).then(() => {
-        setTimeout(() => {
+        gsap.delayedCall(ANIM.resetDelay, () => {
             navState.currentChapter = newCh;
             navState.currentPage = newPg;
             resetToDefaults();
@@ -887,7 +738,7 @@ function animateTransition(axis, direction, newCh, newPg) {
             updateAllQuadrantContent();
             updateStatusDisplay();
             navState.isAnimating = false;
-        }, ANIM.resetDelay);
+        });
     });
 }
 

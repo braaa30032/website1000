@@ -13,10 +13,15 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import gsap from 'gsap';
+import Observer from 'gsap/Observer';
 import { LIBRARY, getChapterCount, getPageCount, getMainNodesForPage, getPageSections, getActivePalette } from '../../library.js?v=38';
 import { computeLayout, LAYOUT_CONST } from './layout.js';
-import { ANIM, lerp } from './shared/anim-config.js';
+import { ANIM, lerp, buildCDSTransitionTimeline, registerRenderCallback } from './shared/anim-config.js';
 import { splitFillBoxWords, computeFillBox, renderFillBox } from './shared/helpers.js';
+
+/* Register Observer plugin */
+gsap.registerPlugin(Observer);
 
 /* ═══════════════════════════════════════════════════════════════
    CONSTANTS
@@ -92,7 +97,7 @@ function init() {
 
     window.addEventListener('resize', _onResize);
     _setupPanning();
-    _animate();
+    _startRender();
     showPage(0, 0);
 }
 
@@ -493,6 +498,116 @@ function _bestNetz(rects, ref, dir) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   COLUMN / SECTION ENTRANCE — Independent-transform choreography
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * Animate column groups on entrance with staggered, independent transforms.
+ * Each property (position.y, scale.y, opacity) has its own duration & easing.
+ * Conservative: 0.06s stagger, subtle displacement.
+ *
+ * @param {THREE.Group[]} colGroups — array of per-column groups
+ */
+function _animateColumnEntrance(colGroups) {
+    if (!colGroups || colGroups.length === 0) return;
+
+    const STAGGER = 0.06;        // seconds between columns
+    const OFFSET_Y = -20;        // initial offset (px below final position)
+
+    colGroups.forEach((cg, i) => {
+        const delay = i * STAGGER;
+
+        /* Set initial state */
+        cg.position.y += OFFSET_Y;
+        cg.scale.y = 0.96;
+
+        /* Set all image materials to start transparent */
+        cg.traverse(child => {
+            if (child.isMesh && child.material && child.material.transparent) {
+                child.material.opacity = 0;
+            }
+        });
+
+        /* Independent transform 1: position.y springs back — "back.out" for gentle bounce */
+        gsap.to(cg.position, {
+            y: cg.position.y - OFFSET_Y,
+            duration: 0.7,
+            delay: delay,
+            ease: 'back.out(1.2)',
+            onUpdate: () => { needsRender = true; }
+        });
+
+        /* Independent transform 2: scale.y settles — different easing, slightly faster */
+        gsap.to(cg.scale, {
+            y: 1,
+            duration: 0.5,
+            delay: delay,
+            ease: 'power2.out',
+            onUpdate: () => { needsRender = true; }
+        });
+
+        /* Independent transform 3: opacity fades in — fast linear */
+        const _opac = { v: 0 };
+        gsap.to(_opac, {
+            v: 1,
+            duration: 0.35,
+            delay: delay,
+            ease: 'none',
+            onUpdate: () => {
+                cg.traverse(child => {
+                    if (child.isMesh && child.material && child.material.transparent) {
+                        child.material.opacity = _opac.v;
+                    }
+                });
+                needsRender = true;
+            }
+        });
+    });
+}
+
+/**
+ * Animate section groups on page entry.
+ * Used for normal pages with multiple sections.
+ * @param {THREE.Group} pageGroup — the page group containing section children
+ * @param {object} layout — computed layout with sectionRanges
+ */
+function _animateSectionEntrance(pageGroup, layout) {
+    if (!layout || !layout.sectionRanges || layout.sectionRanges.length <= 1) return;
+    /* For multi-section pages, apply subtle staggered entrance to the
+       images group children based on their Y position / section membership. */
+    const ig = pageGroup.children.find(g => g.name === 'images');
+    if (!ig) return;
+
+    const STAGGER = 0.04;
+    const sections = layout.sectionRanges;
+
+    sections.forEach((sec, si) => {
+        const delay = si * STAGGER;
+        ig.children.forEach(mesh => {
+            if (!mesh.isMesh) return;
+            const my = -mesh.position.y;
+            if (my >= sec.startY && my < sec.endY) {
+                /* Start slightly scaled down + faded */
+                mesh.scale.y = 0.97;
+                if (mesh.material && mesh.material.map) {
+                    mesh.material.transparent = true;
+                    mesh.material.opacity = 0;
+                    const _o = { v: 0 };
+                    gsap.to(_o, {
+                        v: 1, duration: 0.3, delay: delay, ease: 'none',
+                        onUpdate: () => { mesh.material.opacity = _o.v; needsRender = true; }
+                    });
+                }
+                gsap.to(mesh.scale, {
+                    y: 1, duration: 0.45, delay: delay, ease: 'power2.out',
+                    onUpdate: () => { needsRender = true; }
+                });
+            }
+        });
+    });
+}
+
+/* ═══════════════════════════════════════════════════════════════
    COLUMNS PAGE — special 10-column intro grid
    ═══════════════════════════════════════════════════════════════ */
 
@@ -562,15 +677,19 @@ async function _renderColumnsPage() {
     for (var i = 0; i < allThumbs.length; i++) colThumbs[colMap[i]].push(allThumbs[i]);
 
     /* ── Build layout & meshes ──
-       Within each column, images are arranged 3-across (left→right, top→bottom). */
+       Within each column, images are arranged 3-across (left→right, top→bottom).
+       Each column is a separate THREE.Group for independent-transform entrance. */
     var group = new THREE.Group();
     group.name = 'columnsPage';
     var maxH = 0;
     var bgColor = new THREE.Color(_pal().primary);
     var subCols = 3;   /* images per row inside each column */
     var subGap = 1;    /* gap between sub-images */
+    var colGroups = []; /* per-column groups for entrance animation */
 
     for (var ci2 = 0; ci2 < numCols; ci2++) {
+        var colGroup = new THREE.Group();
+        colGroup.name = 'col-' + ci2;
         var colLeft = SQ + ci2 * (colW + gap);
         var thumbs = colThumbs[ci2];
         var subW = Math.floor((colW - (subCols - 1) * subGap) / subCols);
@@ -588,18 +707,18 @@ async function _renderColumnsPage() {
             var bgMat = new THREE.MeshBasicMaterial({ color: bgColor, side: THREE.DoubleSide });
             var bgMesh = new THREE.Mesh(bgGeo, bgMat);
             bgMesh.position.set(px + pw / 2, -(cy + ph / 2), 2.5);
-            group.add(bgMesh);
+            colGroup.add(bgMesh);
 
             /* Image plane with downscaled CanvasTexture */
             var tex = new THREE.CanvasTexture(thumb.canvas);
             tex.colorSpace = THREE.SRGBColorSpace;
             tex.minFilter = THREE.LinearFilter;
             tex.generateMipmaps = false;
-            var mat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide });
+            var mat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, transparent: true });
             var geo = new THREE.PlaneGeometry(pw, ph);
             var mesh = new THREE.Mesh(geo, mat);
             mesh.position.set(px + pw / 2, -(cy + ph / 2), 3);
-            group.add(mesh);
+            colGroup.add(mesh);
 
             /* Advance Y when the row of 3 is complete (or last image in column) */
             if (col3 === subCols - 1 || ti === thumbs.length - 1) {
@@ -613,6 +732,8 @@ async function _renderColumnsPage() {
                 cy += rowH + subGap;
             }
         }
+        group.add(colGroup);
+        colGroups.push(colGroup);
         if (cy > maxH) maxH = cy;
     }
 
@@ -639,6 +760,13 @@ async function _renderColumnsPage() {
     panY = 0;
     _clampPan(); _applyPan(); _updateInfo(); _updateLandingBanners();
     needsRender = true;
+
+    /* ── Independent-transform column entrance choreography ──
+       Each column has its own staggered animation with independent
+       easing per property (position.y, scale.y, opacity).
+       Conservative: 0.06s stagger, subtle values. */
+    _animateColumnEntrance(colGroups);
+
     console.log('[CDS] Columns page: ' + allThumbs.length + ' thumbnails, ' + numCols + ' columns, totalH=' + currentLayout.totalContentHeight);
 }
 
@@ -875,6 +1003,9 @@ function renderCurrentPage() {
             panY = 0;
         }
         _applyPan(); _updateInfo(); _updateLandingBanners(); needsRender = true;
+
+        /* Staggered section entrance (independent transforms per section) */
+        _animateSectionEntrance(currentPageGroup, layout);
     }).catch(err => console.error('[CDS] renderCurrentPage FAILED:', err));
 }
 
@@ -899,36 +1030,13 @@ function transitionTo(ch, pg) {
    ═══════════════════════════════════════════════════════════════ */
 function _animateCoupledTransition(container, axis, direction, inGroup, outGroup, slideDistance, inLocalPos, SQ) {
     return new Promise(resolve => {
-        const t0 = performance.now();
-        let duration = ANIM.duration;
-        if (axis === 'x') { const distX = W - SQ, distY = H - SQ; if (distY > 0) duration = ANIM.duration * Math.sqrt(distX / distY); }
-        const peak = ANIM.stretchPeak, p1End = ANIM.phase1End, retreat = ANIM.phase1Retreat;
-        const totalSlide = slideDistance;
-        const inScaleOrig = { x: inGroup.scale.x, y: inGroup.scale.y };
-        const dim = axis, pageExtent = axis === 'x' ? W : -H;
-        const anchorFar = (direction === -1), gapDir = -Math.sign(inLocalPos);
-
-        function frame(now) {
-            const raw = Math.min((now - t0) / duration, 1);
-            const t = ANIM.easing(raw);
-            if (t < p1End) {
-                const p1 = t / p1End;
-                container.position[axis] = lerp(0, totalSlide * retreat, p1);
-                const stretch = 1 + (peak - 1) * p1;
-                inGroup.scale[dim] = inScaleOrig[dim] * stretch;
-                inGroup.position[dim] = inLocalPos + (anchorFar ? -pageExtent * (stretch - 1) : 0) + gapDir * SQ * (stretch - 1);
-            } else {
-                const p2 = (t - p1End) / (1 - p1End);
-                container.position[axis] = lerp(totalSlide * retreat, totalSlide, p2);
-                const stretch2 = lerp(peak, 1, p2);
-                inGroup.scale[dim] = inScaleOrig[dim] * stretch2;
-                inGroup.position[dim] = inLocalPos + (anchorFar ? -pageExtent * (stretch2 - 1) : 0) + gapDir * SQ * (stretch2 - 1);
-            }
-            needsRender = true;
-            if (raw < 1) requestAnimationFrame(frame);
-            else { container.position[axis] = totalSlide; inGroup.scale.set(inScaleOrig.x, inScaleOrig.y, 1); inGroup.position[dim] = inLocalPos; resolve(); }
-        }
-        requestAnimationFrame(frame);
+        const tl = buildCDSTransitionTimeline({
+            container, axis, direction, inGroup, outGroup,
+            slideDistance, inLocalPos, SQ,
+            viewW: W, viewH: H,
+            onUpdate: () => { needsRender = true; }
+        });
+        tl.then(resolve);
     });
 }
 
@@ -963,7 +1071,7 @@ function _performTransition(axis, direction, newChapter, newPage) {
 
     _animateCoupledTransition(container, axis, direction, inGroup, outGroup, totalSlide, inLocalPos, SQ)
         .then(() => {
-            setTimeout(() => {
+            gsap.delayedCall(ANIM.resetDelay, () => {
                 container.remove(inGroup); container.remove(outGroup);
                 scene.remove(container); _disposeTree(outGroup); _disposeTree(inGroup);
                 currentChapter = newChapter; currentPage = newPage;
@@ -972,7 +1080,7 @@ function _performTransition(axis, direction, newChapter, newPage) {
                 if (window.NavLayer && NavLayer.syncState) {
                     NavLayer.syncState(newChapter, newPage);
                 }
-            }, ANIM.resetDelay);
+            });
         });
 }
 
@@ -1071,7 +1179,7 @@ function _scrollSwap(direction) {
     renderCurrentPage();
 
     /* Cooldown before next scroll swap */
-    setTimeout(() => { _scrollSwapping = false; }, 400);
+    gsap.delayedCall(0.4, () => { _scrollSwapping = false; });
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1086,6 +1194,7 @@ function _resetOverscroll() { overscrollAcc = 0; overscrollDir = 0; }
 const HSCROLL_THRESHOLD = 200;       /* px of accumulated deltaX to trigger */
 let _hScrollAcc = 0, _hScrollDir = 0;
 let _hScrollCooldown = false;
+let _pointerDragging = false;        /* true during touch/pointer drags — prevents _handleHScroll from firing */
 
 function _handleHScroll(deltaX) {
     if (_hScrollCooldown || isAnimating || isFrozen || _scrollSwapping) return;
@@ -1096,7 +1205,7 @@ function _handleHScroll(deltaX) {
     if (_hScrollAcc >= HSCROLL_THRESHOLD) {
         _hScrollAcc = 0; _hScrollDir = 0;
         _hScrollCooldown = true;
-        setTimeout(() => { _hScrollCooldown = false; }, 600);
+        gsap.delayedCall(0.6, () => { _hScrollCooldown = false; });
         if (window.NavLayer && NavLayer.navigateX) NavLayer.navigateX(dir);
     }
 }
@@ -1107,93 +1216,79 @@ function _setupPanning() {
     document.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
     document.addEventListener('gestureend', e => e.preventDefault(), { passive: false });
 
-    /* ── Wheel / trackpad ──
-       Directional lock: whichever axis dominates in a single event wins.
-       Pure-horizontal → chapter change.  Vertical (or mixed-vertical) → page scroll. */
-    document.addEventListener('wheel', e => {
-        e.preventDefault();
-        if (isAnimating || isFrozen) return;
-        const dX = e.deltaX, dY = e.deltaY;
-        const aX = Math.abs(dX), aY = Math.abs(dY);
+    /* ── Observer: unified input handler with lockAxis ──
+       Handles wheel, touch, and pointer with automatic directional lock.
+       onChangeX / onChangeY fire separately so we get clean axis separation. */
 
-        if (aX > aY * 1.5 && aX > 4) {
-            /* Clearly horizontal → chapter change */
+    Observer.create({
+        target: renderer.domElement,
+        type: 'wheel,touch',          /* No 'pointer' — mouse drag handled separately below for grab cursor UX.
+                                         Observer's limitToTouch filters pointer events to touch-only. */
+        lockAxis: true,
+        tolerance: 10,
+        preventDefault: true,
+
+        onDragStart: () => { _pointerDragging = true; },
+
+        onChangeX: (self) => {
+            if (isAnimating || isFrozen) return;
             _resetOverscroll();
-            _handleHScroll(dX);
-        } else {
-            /* Vertical (or diagonal-enough) → page scroll */
-            _resetHScroll();
-            const oldPanY = panY; panY += dY; _clampPan(); _applyPan();
-            if (panY === oldPanY && dY !== 0) _handleOverscroll(dY); else _resetOverscroll();
-        }
-    }, { passive: false });
+            /* Only wheel uses accumulator-based horizontal navigation.
+               Touch/pointer drags are handled in onDragEnd instead.
+               Note: self.isDragging resets before the final update() call,
+               so we use our own _pointerDragging flag. */
+            if (!_pointerDragging) _handleHScroll(self.deltaX);
+        },
 
-    /* ── Mouse drag (vertical only — desktop) ── */
+        onChangeY: (self) => {
+            if (isAnimating || isFrozen) return;
+            _resetHScroll();
+            /* Wheel deltaY > 0 = scroll down → panY increases (correct).
+               Touch deltaY < 0 = finger up = scroll down → panY should increase.
+               So negate deltaY for touch/pointer drags. */
+            const dy = _pointerDragging ? -self.deltaY : self.deltaY;
+            const oldPanY = panY;
+            panY += dy;
+            _clampPan(); _applyPan();
+            if (panY === oldPanY && dy !== 0) _handleOverscroll(dy);
+            else _resetOverscroll();
+        },
+
+        onDragEnd: (self) => {
+            _pointerDragging = false;
+            /* Touch swipe end → detect horizontal chapter change.
+               Use total drag distance (x - startX), not per-frame deltaX.
+               Negative total distance = finger moved left = next chapter (dir=1). */
+            if (isAnimating || isFrozen) return;
+            const totalDX = self.x - self.startX;
+            if (self.axis === 'x' && Math.abs(totalDX) > 50) {
+                const dir = totalDX < 0 ? 1 : -1;
+                if (window.NavLayer && NavLayer.navigateX) NavLayer.navigateX(dir);
+            }
+            _resetOverscroll(); _resetHScroll();
+        },
+    });
+
+    /* ── Mouse drag (vertical only — desktop, for grab cursor) ── */
     const el = renderer.domElement;
     el.addEventListener('mousedown', e => { if (isAnimating || isFrozen) return; isPanning = true; panStartY = e.clientY; panStartPanY = panY; el.style.cursor = 'grabbing'; e.preventDefault(); });
     window.addEventListener('mousemove', e => { if (!isPanning || isAnimating || isFrozen) return; const dy = e.clientY - panStartY; const oldPanY = panY; panY = panStartPanY - dy; _clampPan(); _applyPan(); if (panY === oldPanY && dy !== 0) _handleOverscroll(-dy); else _resetOverscroll(); });
     window.addEventListener('mouseup', () => { isPanning = false; if (el) el.style.cursor = ''; _resetOverscroll(); });
-
-    /* ── Touch (mobile) — directional lock ──
-       After LOCK_PX of movement, lock to H or V for the rest of the gesture.
-       H = chapter change on swipe end.  V = page pan (existing logic). */
-    const LOCK_PX = 12;          /* pixels before direction is decided */
-    let _touchDir = null;        /* null | 'h' | 'v' */
-    let _touchStartX = 0, _touchStartY = 0, _touchPanY0 = 0;
-
-    el.addEventListener('touchstart', e => {
-        if (isAnimating || isFrozen || e.touches.length !== 1) return;
-        isPanning = true;
-        _touchDir = null;
-        _touchStartX = e.touches[0].clientX;
-        _touchStartY = e.touches[0].clientY;
-        _touchPanY0 = panY;
-    }, { passive: true });
-
-    el.addEventListener('touchmove', e => {
-        if (!isPanning || isAnimating || isFrozen || e.touches.length !== 1) return;
-        const cx = e.touches[0].clientX, cy = e.touches[0].clientY;
-        const dx = cx - _touchStartX, dy = cy - _touchStartY;
-        const ax = Math.abs(dx), ay = Math.abs(dy);
-
-        /* Decide direction once displacement exceeds LOCK_PX */
-        if (_touchDir === null && (ax > LOCK_PX || ay > LOCK_PX)) {
-            _touchDir = (ax > ay * 1.3) ? 'h' : 'v';
-        }
-
-        if (_touchDir === 'v') {
-            e.preventDefault();
-            const oldPanY = panY;
-            panY = _touchPanY0 - dy;
-            _clampPan(); _applyPan();
-            if (panY === oldPanY && dy !== 0) _handleOverscroll(-dy); else _resetOverscroll();
-        }
-        /* h → do nothing during move; handle on touchend */
-    }, { passive: false });
-
-    el.addEventListener('touchend', e => {
-        if (isPanning && _touchDir === 'h') {
-            /* Horizontal swipe → chapter change */
-            const touch = e.changedTouches[0];
-            const dx = touch.clientX - _touchStartX;
-            if (Math.abs(dx) > 50) {
-                const dir = dx < 0 ? 1 : -1;   /* swipe left = next chapter */
-                if (window.NavLayer && NavLayer.navigateX) NavLayer.navigateX(dir);
-            }
-        }
-        isPanning = false; _touchDir = null;
-        _resetOverscroll(); _resetHScroll();
-    });
 }
 
 /* ═══════════════════════════════════════════════════════════════
    BOUNDARY FLASH / RENDER LOOP / RESIZE / INFO
    ═══════════════════════════════════════════════════════════════ */
-function _flashBoundary() { if (!flashEl) return; flashEl.classList.add('active'); setTimeout(() => flashEl.classList.remove('active'), 50); }
+function _flashBoundary() { if (!flashEl) return; flashEl.classList.add('active'); gsap.delayedCall(0.05, () => flashEl.classList.remove('active')); }
 
-function _animate() {
-    requestAnimationFrame(_animate);
-    if (needsRender && renderer && scene && camera) { renderer.render(scene, camera); needsRender = false; }
+/* ── Render via shared gsap.ticker (registered in anim-config.js) ── */
+function _startRender() {
+    registerRenderCallback(() => {
+        if (needsRender && renderer && scene && camera) {
+            renderer.render(scene, camera);
+            needsRender = false;
+        }
+    });
 }
 
 function _onResize() {
