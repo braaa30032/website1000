@@ -81,10 +81,59 @@ export var LIBRARY = [
         ],
         pages: [
 
-            // --- Seite 0 (1 Main-Nodes) ---
-            [
-                { id: 'null-flower-start', type: 'image', url: 'https://raw.githubusercontent.com/DavidStHH/Website-Assets/main/assets/flower-1.png', color: '#3498DB' }
-            ],
+            // --- Seite 0: INTRO — 10-column grid overview ---
+            [{
+                layout: 'columns',
+                thumbnail: 128,
+                baseUrl: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/',
+                columns: [
+                    { name: 'tent poles', items: [
+                        '001.jpg','002.jpg','003.jpg','004.jpg','008.png','005.png','0051.png','007.JPG','006.png',
+                        '009.png','010.png','011.png','16.png','14.jpg','15.png','13.jpg','017.png','021.png',
+                        '024.jpg','023.png','022.jpg','0263.png','0261.jpg','0262.png','025.png','029.png','030.png',
+                        '019.jpg','020.png','018.png','027.png','0271.png','028.png','0281.png','037.png','036.png',
+                        '043.png','049.jpg','047.jpg','046.jpg','048.jpg','050.jpg','0511.jpg','0513.png','045.jpg',
+                        '053.jpg','056.jpg','057.jpg','058.jpg','066.jpg','068.jpg','067.jpg','072.jpg','073.jpeg',
+                        '074.jpeg','071.jpg','070.jpg','069.jpg','061.jpg','092.png','093.png','094.png','112.png',
+                        '141.jpg','142.png','143.png','1411.png'
+                    ]},
+                    { name: 'ballon', items: [
+                        '035.png','031.png','032.png','033.png','034.png','039.png','040.png','042.png','041.png',
+                        '0362.jpg','0362.jpg','052.jpg'
+                    ]},
+                    { name: 'clothing', items: ['059.jpg','060.png','065.jpg'] },
+                    { name: 'drape', items: [
+                        '076.png','077.jpg','078.png','079.png','080.png','083.jpeg','084.png','087.png','090.png',
+                        '085.png','086.png','091.png','089.png'
+                    ]},
+                    { name: 'meme', items: ['081.png','082.png'] },
+                    { name: 'standard', items: [
+                        '105.png','098.png','104.png','099.png','102.png','103.png','097.png','095.png','100.png','101.png'
+                    ]},
+                    { name: 'buiness card artefacts', items: [
+                        '113.png','114.png','115.png','116.png','117.png','118.png','119.png','120.png','121.png',
+                        '122.png','123.png','124.png','125.png','126.jpg','127.jpg','128.jpg','129.jpg','130.png',
+                        '131.png','132.png','138.png','133.png','1331.png','134.png','139.png','135.png','1351.png',
+                        '137.png','136.png'
+                    ]},
+                    { name: 'communication', items: ['140.png'] },
+                    { name: '(bad) dart', items: [
+                        '144.png','151.png','145.png','150.png','149.png','146.png','148.png','1481.jpg','153.jpg',
+                        '1531.png','154.jpg','155.jpg','1551.png','156.jpg','1561.png','1562.png','1563.png','157.jpg',
+                        '158.jpg','1581.png','159.jpg','162.jpg','160.jpg','1601.jpg','1605.png','1602.png','1603.png',
+                        '1602.png','1601.jpg','1604.png','161.jpg','1611.png','1612.png','1613.png','163.jpg','164.jpg',
+                        '1641.png','165.jpg','166.jpg','167.png','1671.jpg','1672.png','1673.png','168.jpg','169.png',
+                        '1691.png','170.jpg','1701.jpg','171.png','1711.png','172.png','1721.png','173.png','174.jpg',
+                        '1741.png','1742.png','175.jpg','1761.png','177.jpg','178.jpg','1771.png','179.jpg','1792.png',
+                        '1791.png'
+                    ]},
+                    { name: 'warp weft', items: [
+                        '180.png','1801.png','1802.png','1803.png','181.png','182.png','1821.png','1822.png','1823.png',
+                        '1824.png','1825.png','183.png','1831.png','184.png','1841.png','185.jpg','1851.png','186.jpg',
+                        '1861.png','1863.png','1862.png','187.jpg','1871.png','190.jpg','189.jpg','1891.png'
+                    ]}
+                ]
+            }],
 
 
             // --- Seite 1: sprints 1 (40 Main-Nodes) ---
@@ -837,6 +886,15 @@ export function getMainNodesForPage(chapterIdx, pageIdx) {
     if (!ch || pageIdx >= ch.pages.length) return [];
     var page = ch.pages[pageIdx];
     var defaultColor = ch.color;
+
+    /* Special: columns layout page → return single dummy node for transition compat */
+    if (page.length === 1 && page[0].layout === 'columns') {
+        return [{
+            id: 'columns-' + chapterIdx + '-' + pageIdx,
+            type: 'image', color: defaultColor, image: null, label: '',
+            children: [], pets: [], connectsTo: [], netzTexts: [], grid: null
+        }];
+    }
 
     var nodes = [];
     for (var m = 0; m < page.length; m++) {

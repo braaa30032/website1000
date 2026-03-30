@@ -13,7 +13,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { LIBRARY, getChapterCount, getPageCount, getMainNodesForPage, getPageSections, getActivePalette } from '../../library.js?v=37';
+import { LIBRARY, getChapterCount, getPageCount, getMainNodesForPage, getPageSections, getActivePalette } from '../../library.js?v=38';
 import { computeLayout, LAYOUT_CONST } from './layout.js';
 import { ANIM, lerp } from './shared/anim-config.js';
 import { splitFillBoxWords, computeFillBox, renderFillBox } from './shared/helpers.js';
@@ -493,6 +493,140 @@ function _bestNetz(rects, ref, dir) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   COLUMNS PAGE — special 10-column intro grid
+   ═══════════════════════════════════════════════════════════════ */
+
+/** Detect whether a page uses the columns layout. */
+function _isColumnsPage(ch, pg) {
+    var lib = LIBRARY[ch];
+    if (!lib) return false;
+    var page = lib.pages[pg];
+    return page && page.length === 1 && page[0] && page[0].layout === 'columns';
+}
+
+/**
+ * Load an image and downscale it to a small canvas (max `maxW` px wide).
+ * Returns { canvas, w, h, aspect }.
+ */
+function _loadThumbnail(url, maxW) {
+    return new Promise(function (resolve) {
+        var img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function () {
+            var iw = img.naturalWidth || 1, ih = img.naturalHeight || 1;
+            var scale = Math.min(maxW / iw, 1);
+            var tw = Math.round(iw * scale), th = Math.round(ih * scale);
+            var c = document.createElement('canvas');
+            c.width = tw; c.height = th;
+            c.getContext('2d').drawImage(img, 0, 0, tw, th);
+            resolve({ canvas: c, w: tw, h: th, aspect: iw / ih });
+        };
+        img.onerror = function () {
+            var c = document.createElement('canvas');
+            c.width = 4; c.height = 4;
+            resolve({ canvas: c, w: 4, h: 4, aspect: 1 });
+        };
+        img.src = url;
+    });
+}
+
+/**
+ * Async render function for columns pages.
+ * Loads all thumbnails, computes column layout, creates planes.
+ */
+async function _renderColumnsPage() {
+    var page = LIBRARY[currentChapter].pages[currentPage];
+    var colData = page[0];
+    var baseUrl = colData.baseUrl;
+    var maxThumbW = colData.thumbnail || 128;
+    var numCols = colData.columns.length;
+    var SQ = Math.min(W, H) / 4;
+    var innerW = W - 2 * SQ;
+    var gap = 2;
+    var colW = Math.floor((innerW - (numCols - 1) * gap) / numCols);
+
+    /* ── Load ALL thumbnails in parallel ── */
+    var allPromises = [], colMap = [];
+    for (var ci = 0; ci < numCols; ci++) {
+        var items = colData.columns[ci].items;
+        for (var ii = 0; ii < items.length; ii++) {
+            allPromises.push(_loadThumbnail(baseUrl + items[ii], maxThumbW));
+            colMap.push(ci);
+        }
+    }
+    var allThumbs = await Promise.all(allPromises);
+
+    /* Organize into per-column arrays */
+    var colThumbs = [];
+    for (var c = 0; c < numCols; c++) colThumbs.push([]);
+    for (var i = 0; i < allThumbs.length; i++) colThumbs[colMap[i]].push(allThumbs[i]);
+
+    /* ── Build layout & meshes ── */
+    var group = new THREE.Group();
+    group.name = 'columnsPage';
+    var maxH = 0;
+    var bgColor = new THREE.Color(_pal().primary);
+
+    for (var ci2 = 0; ci2 < numCols; ci2++) {
+        var cx = SQ + ci2 * (colW + gap);
+        var cy = SQ;
+        var thumbs = colThumbs[ci2];
+
+        for (var ti = 0; ti < thumbs.length; ti++) {
+            var thumb = thumbs[ti];
+            var pw = colW;
+            var ph = Math.round(pw / thumb.aspect);
+
+            /* Background fill for PNGs */
+            var bgGeo = new THREE.PlaneGeometry(pw, ph);
+            var bgMat = new THREE.MeshBasicMaterial({ color: bgColor, side: THREE.DoubleSide });
+            var bgMesh = new THREE.Mesh(bgGeo, bgMat);
+            bgMesh.position.set(cx + pw / 2, -(cy + ph / 2), 2.5);
+            group.add(bgMesh);
+
+            /* Image plane with downscaled CanvasTexture */
+            var tex = new THREE.CanvasTexture(thumb.canvas);
+            tex.colorSpace = THREE.SRGBColorSpace;
+            tex.minFilter = THREE.LinearFilter;
+            tex.generateMipmaps = false;
+            var mat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide });
+            var geo = new THREE.PlaneGeometry(pw, ph);
+            var mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(cx + pw / 2, -(cy + ph / 2), 3);
+            group.add(mesh);
+
+            cy += ph + gap;
+        }
+        if (cy > maxH) maxH = cy;
+    }
+
+    /* ── Tear down old page & install new ── */
+    if (currentPageGroup) { scene.remove(currentPageGroup); _disposeTree(currentPageGroup); }
+    if (fixedNavGroup) { scene.remove(fixedNavGroup); _disposeTree(fixedNavGroup); fixedNavGroup = null; }
+    if (navColumnAnimGroup) { scene.remove(navColumnAnimGroup); _disposeTree(navColumnAnimGroup); navColumnAnimGroup = null; navColumnAnimData = null; }
+
+    currentPageGroup = group;
+    scene.add(group);
+
+    /* Layout info for scrolling / nav covers */
+    currentLayout = {
+        SQ: SQ,
+        totalContentHeight: maxH + SQ,
+        navTL: { x: 0, y: 0, w: SQ, h: SQ },
+        navTR: { x: W - SQ, y: 0, w: SQ, h: SQ },
+        navBL: { x: 0, y: H - SQ, w: SQ, h: SQ },
+        navBR: { x: W - SQ, y: H - SQ, w: SQ, h: SQ }
+    };
+    fixedNavGroup = _buildFixedNavGroup(currentLayout);
+    scene.add(fixedNavGroup);
+
+    panY = 0;
+    _clampPan(); _applyPan(); _updateInfo(); _updateLandingBanners();
+    needsRender = true;
+    console.log('[CDS] Columns page: ' + allThumbs.length + ' thumbnails, ' + numCols + ' columns, totalH=' + currentLayout.totalContentHeight);
+}
+
+/* ═══════════════════════════════════════════════════════════════
    PAGE GROUP BUILDING
    ═══════════════════════════════════════════════════════════════ */
 function _buildPageGroup(layout, chIdx, pgIdx, skipNav, nodes) {
@@ -685,6 +819,12 @@ function _buildPageConfig(nodes, aspects, sectionDefs) {
    RENDER CURRENT PAGE
    ═══════════════════════════════════════════════════════════════ */
 function renderCurrentPage() {
+    /* ── Columns layout shortcut ── */
+    if (_isColumnsPage(currentChapter, currentPage)) {
+        _renderColumnsPage();
+        return;
+    }
+
     const nodes = getMainNodesForPage(currentChapter, currentPage);
     pageNodes = nodes;
     const sectionDefs = getPageSections(currentChapter, currentPage);
