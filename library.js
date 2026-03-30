@@ -448,7 +448,7 @@ export var LIBRARY = [
     // ===== Kapitel 3: spitzenkollektion =====
     {
         name: 'spitzenkollektion', color: '#9B59B6',
-        pageNames: ['intro', 'abstract', 'sketches', 'mood', 'visual research', 'combined research', 'key ideas', 'development', 'summary'],
+        pageNames: ['intro', 'abstract', 'mood', 'dev blouse', 'dev summer pants', 'dev capris', 'dev longsleeve', 'dev bomber', 'dev office top', 'summery'],
         materialSet: [
             { color: '#9B59B6', roughness: 0.7, metalness: 0.0, sheen: 1.0, sheenColor: '#D2B4DE', sheenRoughness: 0.5 },
             { color: '#8E44AD', roughness: 0.3, metalness: 0.0, clearcoat: 0.4 },
@@ -458,110 +458,269 @@ export var LIBRARY = [
         ],
         pages: [
 
-            // --- Seite 0: intro (1 Main-Node: text + 1 Sub: image) ---
+            // ── Seite 0: intro ──
             [
                 {
                     type: 'text',
-                    text: 'In this collection, I developed a collection based solely on the idea of a spiek. This idea gave rise to seven garments that brought this design element to the body, starting with the cut from the spike outgoing.',
-                    color: '#9B59B6',
+                    text: 'In this collection, I developed a collection based solely on the idea of a spike. This idea gave rise to seven garments that brought this design element to the body, starting with the cut from the spike outgoing.',
                     subs: [
-                        { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200034.jpg', color: '#9B59B6' }
+                        { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200034.jpg' }
                     ],
                     netzTexts: [
-                        { position: 'above-main', text: 'spitzenkollektion', color: '#9B59B6' },
-                        { position: 'above-sub-0', text: '6th term project', color: '#9B59B6' },
-                        { position: 'below-main', text: 'Period of origin 2024, 4 months\nSupervision Prof. Sibylle Klose\nPhotogrphy Ferle Reisige\nTalents Juli Eller, Lydia Puschendorf, Caro', color: '#9B59B6' }
+                        { position: 'above-main', text: 'spitzenkollektion' },
+                        { position: 'above-sub-0', text: '6th term project' },
+                        { position: 'below-main', text: 'Period of origin 2024, 4 months\nSupervision Prof. Sibylle Klose\nPhotography Ferle Reisige\nTalents Juli Eller, Lydia Puschendorf, Caro' }
                     ]
                 }
             ],
 
-            // --- Seite 1: abstract (7 Main-Nodes) ---
+            // ── Seite 1: abstract (6 Mains – one hero per garment) ──
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/capris_halb_vorne.png', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/longer_pants_detail.png', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/longsleeve_detail.png', color: '#AF7AC5' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/longsleeve_vorne.png', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal.png', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_doppel.png', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz.png', color: '#7D3C98' }
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/blouse_vorne.png' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/capris_halb_vorne.png' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/longsleeve_vorne.png' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_vorne_ganz.png' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz.png' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/summer_pantspng.png' }
             ],
 
-            // --- Seite 2: sketches (7 Main-Nodes) ---
+            // ── Seite 2: mood ──
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz_eingedreht.png', color: '#AF7AC5' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz_eingedreht_verschwommen.png', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz_verschwommen.png', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/summer_pants_verschwommen.png', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/summer_pantspng.png', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/am_model/blouse_am_model.png', color: '#AF7AC5' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/am_model/capris_am_model.png', color: '#9B59B6' }
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/mood/DSCF3882.JPG' }
             ],
 
-            // --- Seite 3: mood (7 Main-Nodes) ---
+            // ── Seite 3: dev blouse ──
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/am_model/office_top_am_model.png', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/blouse_back.png', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/blouse_front.png', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/bomber_hinten.png', color: '#AF7AC5' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/bomber_vorne.png', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/capri_shorts_hinten.png', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/capri_shorts_vorne.png', color: '#BB8FCE' }
+                // Section: shooting
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/blouse_vorne.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/blouse_hinten_detail.png' }
+                ]},
+                // Section: am_model
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/am_model/blouse_am_model.png' },
+                // Section: tecnicals
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/blouse_front.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/blouse_back.png' }
+                ]},
+                // Section: drapes
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/drapes/drape_blouse.png' },
+                // Section: schnitt
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/schnitt/schnitt_blouse.png' },
+                // Section: process/blouse (21 images → 2 groups)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_163727.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_163738.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_163813.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_163838.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_164007.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_165039.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_165111.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_165656.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_165708.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_165713.jpg' }
+                ]},
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_113510.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_113520.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_113537.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_113544.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_125854.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_152553.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_154118.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_155210.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240417_153449.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240424_092131.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240517_132830.jpg' }
+                ]}
             ],
 
-            // --- Seite 4: visual research (8 Main-Nodes) ---
+            // ── Seite 4: dev summer pants ──
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/long_pants_back.png', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/long_pants_front.png', color: '#AF7AC5' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/longsleeve_back.png', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/longsleeve_front.png', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/office_top_hinten.png', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/office_top_vorne.png', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/summer_pants_back.png', color: '#AF7AC5' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/summer_pants_front.png', color: '#9B59B6' }
+                // Section: shooting
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/summer_pantspng.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/summer_pants_verschwommen.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/longer_pants_detail.png' }
+                ]},
+                // Section: tecnicals (summer pants + long pants)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/summer_pants_front.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/summer_pants_back.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/long_pants_front.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/long_pants_back.png' }
+                ]},
+                // Section: process/summer pants (13 images → 2 groups)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240508_164049.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240508_164056.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240508_164826.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_112916.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_121635.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_121642.jpg' }
+                ]},
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_145839.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_150418.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_151031.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_151505.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_151536.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_152702.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240515_141341.jpg' }
+                ]},
+                // Section: process/long_pants
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/long_pants/20240624_164716.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/long_pants/20240624_164736.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/long_pants/20240624_164900.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/long_pants/20240624_185654.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/long_pants/20240624_185709.jpg' }
+                ]}
             ],
 
-            // --- Seite 5: combined research (7 Main-Nodes) ---
+            // ── Seite 5: dev capris ──
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/drapes/drape_blouse.png', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/drapes/drape_capris.png', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/drapes/drape_office_top.png', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/schnitt/schnitt_blouse.png', color: '#AF7AC5' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/schnitt/schnitt_capris.png', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/schnitt/schnitt_office_top.png', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/mood/DSCF3882.JPG', color: '#BB8FCE' }
+                // Section: shooting
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/capris_halb_vorne.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/capris_halb_unten.png' }
+                ]},
+                // Section: am_model
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/am_model/capris_am_model.png' },
+                // Section: tecnicals
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/capri_shorts_vorne.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/capri_shorts_hinten.png' }
+                ]},
+                // Section: drapes
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/drapes/drape_capris.png' },
+                // Section: schnitt
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/schnitt/schnitt_capris.png' },
+                // Section: process/capris (11 images → 2 groups)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240524_183811.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240524_183827.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240528_160243.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240528_163557.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240528_163608.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240528_163947.jpg' }
+                ]},
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240528_164008.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240528_164020.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240528_173418.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240624_163244.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240624_163248.jpg' }
+                ]}
             ],
 
-            // --- Seite 6: key ideas (7 Main-Nodes) ---
+            // ── Seite 6: dev longsleeve ──
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_163727.jpg', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_125854.jpg', color: '#AF7AC5' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240622_110945.jpg', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240626_182843.jpg', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240528_163947.jpg', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240624_163244.jpg', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/longsleeve/20240603_172135.jpg', color: '#AF7AC5' }
+                // Section: shooting
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/longsleeve_vorne.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/longsleeve_detail.png' }
+                ]},
+                // Section: tecnicals
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/longsleeve_front.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/longsleeve_back.png' }
+                ]},
+                // Section: process/longsleeve
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/longsleeve/20240601_180225.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/longsleeve/20240603_144829.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/longsleeve/20240603_144836.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/longsleeve/20240603_172135.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/longsleeve/20240619_195211.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/longsleeve/20240619_195218.jpg' }
+                ]}
             ],
 
-            // --- Seite 7: development (7 Main-Nodes) ---
+            // ── Seite 7: dev bomber ──
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/long_pants/20240624_164900.jpg', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_203521.jpg', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240622_174255.jpg', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240514_153100.jpg', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240524_134620.jpg', color: '#AF7AC5' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_163734.jpg', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_163743.jpg', color: '#8E44AD' }
+                // Section: shooting
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_vorne_ganz.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_vorne_verdreht.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_seite_boden.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_seite_verschwommen.png' }
+                ]},
+                // Section: tecnicals
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/bomber_vorne.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/bomber_hinten.png' }
+                ]},
+                // Section: process/bomber (14 images → 2 groups)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240608_195711.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240608_195719.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240608_195928.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240608_195939.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240611_192905.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240615_203236.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240617_185229.jpg' }
+                ]},
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240622_110945.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240622_110952.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240622_111214.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240622_111828.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240626_182615.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240626_182618.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240626_182843.jpg' }
+                ]}
             ],
 
-            // --- Seite 8: summary (7 Main-Nodes) ---
+            // ── Seite 8: dev office top ──
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_164009.jpg', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_164028.jpg', color: '#7D3C98' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_164035.jpg', color: '#AF7AC5' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240626_121837.jpg', color: '#9B59B6' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240626_122031.jpg', color: '#8E44AD' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240627_145750.jpg', color: '#BB8FCE' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240627_145751.jpg', color: '#7D3C98' }
+                // Section: shooting (6 images)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_doppel.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz_eingedreht.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz_eingedreht_verschwommen.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz_verschwommen.png' }
+                ]},
+                // Section: am_model
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/am_model/office_top_am_model.png' },
+                // Section: tecnicals
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/office_top_vorne.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/office_top_hinten.png' }
+                ]},
+                // Section: drapes
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/drapes/drape_office_top.png' },
+                // Section: schnitt
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/schnitt/schnitt_office_top.png' },
+                // Section: process/office_top (18 images → 2 groups)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240610_174233.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200017.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200027.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200034.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200059.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_203521.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_203724.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_203732.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_203739.jpg' }
+                ]},
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_203750.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_204150.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_204156.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_204202.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_204206.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240627_155535.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240627_155555.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240627_155903.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240627_155909.jpg' }
+                ]},
+                // Section: process/office_top/construction (separate section)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240611_100732.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240611_100734.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240611_100737.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240622_164002.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240622_164010.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240622_172352.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240622_174255.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240622_174309.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240624_220219.jpg' }
+                ]}
+            ],
+
+            // ── Seite 9: summery (process/looks – all 11 assembled-look images) ──
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240514_153100.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240524_134620.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_163734.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_163743.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_164009.jpg' }
+                ]},
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_164028.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_164035.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240626_121837.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240626_122031.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240627_145750.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240627_145751.jpg' }
+                ]}
             ]
         ]
     },
