@@ -182,7 +182,7 @@ function navInit() {
     // Events
     document.addEventListener('keydown', handleKeyDown);
     window.addEventListener('resize', handleResize);
-    _setupNavClickAndSwipe();
+    _setupNavQuadClicks();
 
     // Initialen Content anzeigen
     updateAllQuadrantContent();
@@ -528,74 +528,33 @@ function setAxisVisibility(axis) {
     navState.needsRender = true;
 }
 
-// ========== NAV QUAD CLICK + MOBILE SWIPE ==========
+// ========== NAV QUAD CLICK ==========
 
-function _setupNavClickAndSwipe() {
-    const navContainer = document.getElementById('nav-viewport');
-    if (!navContainer) return;
-
-    /* ── Click / tap on nav quads ── */
-    function _handleNavClick(clientX, clientY) {
+function _setupNavQuadClicks() {
+    /* Listen on document – nav-viewport has pointer-events:none so we
+       cannot attach click listeners there. */
+    document.addEventListener('click', e => {
         if (navState.isAnimating || _loadingActive) return;
-        /* Determine which corner quad was clicked using viewport coordinates */
         const sq = Math.min(W, H) / 4;
-        const inTL = clientX < sq && clientY < sq;
-        const inTR = clientX > W - sq && clientY < sq;
-        const inBL = clientX < sq && clientY > H - sq;
-        const inBR = clientX > W - sq && clientY > H - sq;
+        const cx = e.clientX, cy = e.clientY;
+
+        const inTR = cx > W - sq && cy < sq;
+        const inTL = cx < sq && cy < sq;
+        const inBL = cx < sq && cy > H - sq;
+        const inBR = cx > W - sq && cy > H - sq;
 
         if (inTR) {
-            /* Top-right = next chapter */
-            const content = getContentForPanel('next');
-            if (content && !content.endLabel) navigateX(1);
+            const c = getContentForPanel('next');
+            if (c && !c.endLabel) navigateX(1);
         } else if (inTL) {
-            /* Top-left = page label (current) — navigate to previous page */
-            const content = getContentForPanel('top');
-            /* Only go up if there's a page above */
             if (navState.currentPage > 0) navigateY(-1);
         } else if (inBL) {
-            /* Bottom-left = next page / prev chapter */
-            const content = getContentForPanel('bottom');
-            if (content && !content.endLabel) navigateY(1);
+            const c = getContentForPanel('bottom');
+            if (c && !c.endLabel) navigateY(1);
         } else if (inBR) {
-            /* Bottom-right = info / prev chapter */
             if (navState.currentChapter > 0) navigateX(-1);
         }
-    }
-
-    /* Click (desktop) */
-    navContainer.addEventListener('click', e => {
-        _handleNavClick(e.clientX, e.clientY);
     });
-
-    /* ── Mobile swipe (horizontal for chapter changes) ── */
-    let _swipeStartX = 0, _swipeStartY = 0, _swipeStartTime = 0;
-    const SWIPE_THRESHOLD = 60;  /* minimum px distance for a swipe */
-    const SWIPE_MAX_TIME = 500;  /* max ms for swipe gesture */
-
-    navContainer.addEventListener('touchstart', e => {
-        if (e.touches.length !== 1) return;
-        _swipeStartX = e.touches[0].clientX;
-        _swipeStartY = e.touches[0].clientY;
-        _swipeStartTime = Date.now();
-    }, { passive: true });
-
-    navContainer.addEventListener('touchend', e => {
-        if (navState.isAnimating || _loadingActive) return;
-        const dt = Date.now() - _swipeStartTime;
-        if (dt > SWIPE_MAX_TIME) return;
-        const touch = e.changedTouches[0];
-        const dx = touch.clientX - _swipeStartX;
-        const dy = touch.clientY - _swipeStartY;
-        const absDx = Math.abs(dx), absDy = Math.abs(dy);
-
-        if (absDx > SWIPE_THRESHOLD && absDx > absDy * 1.2) {
-            /* Horizontal swipe → chapter change */
-            if (dx < 0) navigateX(1);   /* swipe left = next chapter */
-            else navigateX(-1);         /* swipe right = prev chapter */
-        }
-        /* Vertical swipes are handled by CDS scroll panning */
-    }, { passive: true });
 }
 
 // ========== INPUT ==========

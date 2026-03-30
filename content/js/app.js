@@ -919,32 +919,115 @@ function _scrollSwap(direction) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SCROLLING / PANNING
+   SCROLLING / PANNING  (with directional lock for H↔V)
    ═══════════════════════════════════════════════════════════════ */
 function _applyPan() { if (currentPageGroup) currentPageGroup.position.y = panY; _updateNavColumnAnim(); needsRender = true; }
 function _clampPan() { let maxPan = 0; if (currentLayout && currentLayout.totalContentHeight) maxPan = Math.max(0, currentLayout.totalContentHeight - H); panY = Math.max(0, Math.min(maxPan, panY)); }
 function _handleOverscroll(delta) { if (!delta) return; const dir = delta > 0 ? 1 : -1; if (dir !== overscrollDir) { overscrollAcc = 0; overscrollDir = dir; } overscrollAcc += Math.abs(delta); if (overscrollAcc >= OVERSCROLL_THRESHOLD) { overscrollAcc = 0; overscrollDir = 0; _scrollSwap(dir); } }
 function _resetOverscroll() { overscrollAcc = 0; overscrollDir = 0; }
 
+/* ── Horizontal-scroll accumulator for chapter changes ── */
+const HSCROLL_THRESHOLD = 200;       /* px of accumulated deltaX to trigger */
+let _hScrollAcc = 0, _hScrollDir = 0;
+let _hScrollCooldown = false;
+
+function _handleHScroll(deltaX) {
+    if (_hScrollCooldown || isAnimating || isFrozen || _scrollSwapping) return;
+    if (window.NavLayer && NavLayer.isAnimating && NavLayer.isAnimating()) return;
+    const dir = deltaX > 0 ? 1 : -1;            /* positive = scroll right = next ch */
+    if (dir !== _hScrollDir) { _hScrollAcc = 0; _hScrollDir = dir; }
+    _hScrollAcc += Math.abs(deltaX);
+    if (_hScrollAcc >= HSCROLL_THRESHOLD) {
+        _hScrollAcc = 0; _hScrollDir = 0;
+        _hScrollCooldown = true;
+        setTimeout(() => { _hScrollCooldown = false; }, 600);
+        if (window.NavLayer && NavLayer.navigateX) NavLayer.navigateX(dir);
+    }
+}
+function _resetHScroll() { _hScrollAcc = 0; _hScrollDir = 0; }
+
 function _setupPanning() {
     document.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
     document.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
     document.addEventListener('gestureend', e => e.preventDefault(), { passive: false });
+
+    /* ── Wheel / trackpad ──
+       Directional lock: whichever axis dominates in a single event wins.
+       Pure-horizontal → chapter change.  Vertical (or mixed-vertical) → page scroll. */
     document.addEventListener('wheel', e => {
-        e.preventDefault(); if (isAnimating || isFrozen) return;
-        const dY = e.deltaY, oldPanY = panY; panY += dY; _clampPan(); _applyPan();
-        if (panY === oldPanY && dY !== 0) _handleOverscroll(dY); else _resetOverscroll();
+        e.preventDefault();
+        if (isAnimating || isFrozen) return;
+        const dX = e.deltaX, dY = e.deltaY;
+        const aX = Math.abs(dX), aY = Math.abs(dY);
+
+        if (aX > aY * 1.5 && aX > 4) {
+            /* Clearly horizontal → chapter change */
+            _resetOverscroll();
+            _handleHScroll(dX);
+        } else {
+            /* Vertical (or diagonal-enough) → page scroll */
+            _resetHScroll();
+            const oldPanY = panY; panY += dY; _clampPan(); _applyPan();
+            if (panY === oldPanY && dY !== 0) _handleOverscroll(dY); else _resetOverscroll();
+        }
     }, { passive: false });
 
+    /* ── Mouse drag (vertical only — desktop) ── */
     const el = renderer.domElement;
     el.addEventListener('mousedown', e => { if (isAnimating || isFrozen) return; isPanning = true; panStartY = e.clientY; panStartPanY = panY; el.style.cursor = 'grabbing'; e.preventDefault(); });
     window.addEventListener('mousemove', e => { if (!isPanning || isAnimating || isFrozen) return; const dy = e.clientY - panStartY; const oldPanY = panY; panY = panStartPanY - dy; _clampPan(); _applyPan(); if (panY === oldPanY && dy !== 0) _handleOverscroll(-dy); else _resetOverscroll(); });
     window.addEventListener('mouseup', () => { isPanning = false; if (el) el.style.cursor = ''; _resetOverscroll(); });
 
-    let touchStartY = 0, touchStartPanY2 = 0;
-    el.addEventListener('touchstart', e => { if (isAnimating || isFrozen || e.touches.length !== 1) return; isPanning = true; touchStartY = e.touches[0].clientY; touchStartPanY2 = panY; }, { passive: true });
-    el.addEventListener('touchmove', e => { if (!isPanning || isAnimating || isFrozen || e.touches.length !== 1) return; e.preventDefault(); const dy = e.touches[0].clientY - touchStartY; const oldPanY = panY; panY = touchStartPanY2 - dy; _clampPan(); _applyPan(); if (panY === oldPanY && dy !== 0) _handleOverscroll(-dy); else _resetOverscroll(); }, { passive: false });
-    el.addEventListener('touchend', () => { isPanning = false; _resetOverscroll(); });
+    /* ── Touch (mobile) — directional lock ──
+       After LOCK_PX of movement, lock to H or V for the rest of the gesture.
+       H = chapter change on swipe end.  V = page pan (existing logic). */
+    const LOCK_PX = 12;          /* pixels before direction is decided */
+    let _touchDir = null;        /* null | 'h' | 'v' */
+    let _touchStartX = 0, _touchStartY = 0, _touchPanY0 = 0;
+
+    el.addEventListener('touchstart', e => {
+        if (isAnimating || isFrozen || e.touches.length !== 1) return;
+        isPanning = true;
+        _touchDir = null;
+        _touchStartX = e.touches[0].clientX;
+        _touchStartY = e.touches[0].clientY;
+        _touchPanY0 = panY;
+    }, { passive: true });
+
+    el.addEventListener('touchmove', e => {
+        if (!isPanning || isAnimating || isFrozen || e.touches.length !== 1) return;
+        const cx = e.touches[0].clientX, cy = e.touches[0].clientY;
+        const dx = cx - _touchStartX, dy = cy - _touchStartY;
+        const ax = Math.abs(dx), ay = Math.abs(dy);
+
+        /* Decide direction once displacement exceeds LOCK_PX */
+        if (_touchDir === null && (ax > LOCK_PX || ay > LOCK_PX)) {
+            _touchDir = (ax > ay * 1.3) ? 'h' : 'v';
+        }
+
+        if (_touchDir === 'v') {
+            e.preventDefault();
+            const oldPanY = panY;
+            panY = _touchPanY0 - dy;
+            _clampPan(); _applyPan();
+            if (panY === oldPanY && dy !== 0) _handleOverscroll(-dy); else _resetOverscroll();
+        }
+        /* h → do nothing during move; handle on touchend */
+    }, { passive: false });
+
+    el.addEventListener('touchend', e => {
+        if (isPanning && _touchDir === 'h') {
+            /* Horizontal swipe → chapter change */
+            const touch = e.changedTouches[0];
+            const dx = touch.clientX - _touchStartX;
+            if (Math.abs(dx) > 50) {
+                const dir = dx < 0 ? 1 : -1;   /* swipe left = next chapter */
+                if (window.NavLayer && NavLayer.navigateX) NavLayer.navigateX(dir);
+            }
+        }
+        isPanning = false; _touchDir = null;
+        _resetOverscroll(); _resetHScroll();
+    });
 }
 
 /* ═══════════════════════════════════════════════════════════════
