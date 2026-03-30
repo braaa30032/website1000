@@ -561,27 +561,33 @@ async function _renderColumnsPage() {
     for (var c = 0; c < numCols; c++) colThumbs.push([]);
     for (var i = 0; i < allThumbs.length; i++) colThumbs[colMap[i]].push(allThumbs[i]);
 
-    /* ── Build layout & meshes ── */
+    /* ── Build layout & meshes ──
+       Within each column, images are arranged 3-across (left→right, top→bottom). */
     var group = new THREE.Group();
     group.name = 'columnsPage';
     var maxH = 0;
     var bgColor = new THREE.Color(_pal().primary);
+    var subCols = 3;   /* images per row inside each column */
+    var subGap = 1;    /* gap between sub-images */
 
     for (var ci2 = 0; ci2 < numCols; ci2++) {
-        var cx = SQ + ci2 * (colW + gap);
-        var cy = SQ;
+        var colLeft = SQ + ci2 * (colW + gap);
         var thumbs = colThumbs[ci2];
+        var subW = Math.floor((colW - (subCols - 1) * subGap) / subCols);
+        var cy = SQ;
 
         for (var ti = 0; ti < thumbs.length; ti++) {
+            var col3 = ti % subCols;         /* 0, 1, 2 within the row */
             var thumb = thumbs[ti];
-            var pw = colW;
+            var pw = subW;
             var ph = Math.round(pw / thumb.aspect);
+            var px = colLeft + col3 * (subW + subGap);
 
             /* Background fill for PNGs */
             var bgGeo = new THREE.PlaneGeometry(pw, ph);
             var bgMat = new THREE.MeshBasicMaterial({ color: bgColor, side: THREE.DoubleSide });
             var bgMesh = new THREE.Mesh(bgGeo, bgMat);
-            bgMesh.position.set(cx + pw / 2, -(cy + ph / 2), 2.5);
+            bgMesh.position.set(px + pw / 2, -(cy + ph / 2), 2.5);
             group.add(bgMesh);
 
             /* Image plane with downscaled CanvasTexture */
@@ -592,10 +598,20 @@ async function _renderColumnsPage() {
             var mat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide });
             var geo = new THREE.PlaneGeometry(pw, ph);
             var mesh = new THREE.Mesh(geo, mat);
-            mesh.position.set(cx + pw / 2, -(cy + ph / 2), 3);
+            mesh.position.set(px + pw / 2, -(cy + ph / 2), 3);
             group.add(mesh);
 
-            cy += ph + gap;
+            /* Advance Y when the row of 3 is complete (or last image in column) */
+            if (col3 === subCols - 1 || ti === thumbs.length - 1) {
+                /* Row height = tallest image in this row */
+                var rowStart = ti - col3;
+                var rowH = 0;
+                for (var ri = rowStart; ri <= ti; ri++) {
+                    var rh = Math.round(subW / thumbs[ri].aspect);
+                    if (rh > rowH) rowH = rh;
+                }
+                cy += rowH + subGap;
+            }
         }
         if (cy > maxH) maxH = cy;
     }
