@@ -898,7 +898,8 @@ export function getMainNodesForPage(chapterIdx, pageIdx) {
                 color:      sub.color || nodeColor,
                 connectsTo: sub.connectsTo || [],
                 grid:       sub.grid || null,
-                pets:       []
+                pets:       [],
+                b2b:        !!sub.b2b   /* side-by-side with previous sub */
             };
 
             if (sub.type === 'image')      { child.image = sub.url; }

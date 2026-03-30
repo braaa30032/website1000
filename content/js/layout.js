@@ -35,6 +35,7 @@ export function computeLayout(cfg, W, H) {
     var isLand      = W >= H;
     var mainAspects = cfg.mainAspects || null;
     var subAspects  = cfg.subAspects  || null;
+    var subB2b      = cfg.subB2b      || null;
 
     var SQ_RATIO    = LAYOUT_CONST.SQ_RATIO;
     var MAIN_ASPECT = LAYOUT_CONST.MAIN_ASPECT;
@@ -144,7 +145,8 @@ export function computeLayout(cfg, W, H) {
                     ? ((smi < nM - 1) ? SQ + (smi + 1) * secSlotW : W - SQ)
                     : W - SQ;
                 var groupSubs = _placeSubs(mr, my, mb, anchorX, my,
-                    sWS, subHArrS, nSubsS, innerH, projections, projPts, contentCorners, W, H);
+                    sWS, subHArrS, nSubsS, innerH, projections, projPts, contentCorners, W, H,
+                    subB2b ? subB2b[gmi] : null, subAspects ? subAspects[gmi] : null);
                 subs.push(groupSubs);
                 secSubs.push(groupSubs);
             }
@@ -211,7 +213,8 @@ export function computeLayout(cfg, W, H) {
             var anchorX = (gi < mainCount - 1) ? SQ + (gi + 1) * sectionW : W - SQ;
 
             var groupSubs = _placeSubs(mr, my, mb, anchorX, SQ,
-                sW, subHArr, nSubs, innerH, projections, projPts, contentCorners, W, H);
+                sW, subHArr, nSubs, innerH, projections, projPts, contentCorners, W, H,
+                subB2b ? subB2b[gi] : null, subAspects ? subAspects[gi] : null);
             subs.push(groupSubs);
         }
     } else {
@@ -251,7 +254,8 @@ export function computeLayout(cfg, W, H) {
 
             var anchorX2 = W - SQ;
             var groupSubs2 = _placeSubs(mr2, my2, mb2, anchorX2, my2,
-                sWP, subHArrP, nSubsP, innerH, projections, projPts, contentCorners, W, H);
+                sWP, subHArrP, nSubsP, innerH, projections, projPts, contentCorners, W, H,
+                subB2b ? subB2b[gi2] : null, subAspects ? subAspects[gi2] : null);
             subs.push(groupSubs2);
 
             curY += innerH;
@@ -397,17 +401,59 @@ export function computeOffsetLayout(cfg, W, H, offsetX, offsetY) {
 
 /* ── Internal helpers ── */
 
-function _placeSubs(mainR, mainT, mainB, anchorX, anchorY, subW, subH, count, availH, proj, projPts, cc, W, H) {
+function _placeSubs(mainR, mainT, mainB, anchorX, anchorY, subW, subH, count, availH, proj, projPts, cc, W, H, b2bFlags, subAspects_i) {
     var g = [], curY = anchorY;
+
+    /* Group subs into rows: a b2b sub joins the previous sub's row */
+    var rows = [];  /* each row = [subIndex, ...] */
     for (var i = 0; i < count; i++) {
-        var sH = Array.isArray(subH) ? (subH[i] || Math.round(subW * 0.75)) : subH;
-        var sx = mainR, sR = sx + subW, sy = curY, sB = sy + sH;
-        g.push({ x:sx, y:sy, w:subW, h:sH, r:sR, b:sB });
-        cc.push([sx,sy],[sR,sy],[sR,sB],[sx,sB]);
-        proj.push({ from:[sx,sy], to:[sx,0] }, { from:[sx,sB], to:[sx,H] },
-                  { from:[sR,sy], to:[W,sy] }, { from:[sR,sB], to:[W,sB] });
-        projPts.push([sx,0],[sx,H],[W,sy],[W,sB]);
-        curY = sB;
+        if (b2bFlags && b2bFlags[i] && rows.length > 0) {
+            rows[rows.length - 1].push(i);
+        } else {
+            rows.push([i]);
+        }
+    }
+
+    var totalSubW = anchorX - mainR;  /* total available width for subs */
+    if (totalSubW < 10) totalSubW = subW;
+
+    for (var ri = 0; ri < rows.length; ri++) {
+        var row = rows[ri];
+        if (row.length === 1) {
+            /* Single sub in row → normal stacked placement */
+            var idx = row[0];
+            var sH = Array.isArray(subH) ? (subH[idx] || Math.round(subW * 0.75)) : subH;
+            var sx = mainR, sR = sx + subW, sy = curY, sB = sy + sH;
+            g[idx] = { x:sx, y:sy, w:subW, h:sH, r:sR, b:sB };
+            cc.push([sx,sy],[sR,sy],[sR,sB],[sx,sB]);
+            proj.push({ from:[sx,sy], to:[sx,0] }, { from:[sx,sB], to:[sx,H] },
+                      { from:[sR,sy], to:[W,sy] }, { from:[sR,sB], to:[W,sB] });
+            projPts.push([sx,0],[sx,H],[W,sy],[W,sB]);
+            curY = sB;
+        } else {
+            /* Multiple b2b subs → place side-by-side in a row */
+            var colW = Math.floor(totalSubW / row.length);
+            /* Row height = max of all sub heights in this row (scaled to colW) */
+            var rowH = 0;
+            for (var ci = 0; ci < row.length; ci++) {
+                var sidx = row[ci];
+                var asp = (subAspects_i && subAspects_i[sidx] != null) ? subAspects_i[sidx] : (colW / (Array.isArray(subH) ? (subH[sidx] || Math.round(subW * 0.75)) : subH));
+                var h = Math.round(colW / asp);
+                if (h > rowH) rowH = h;
+            }
+            for (var ci2 = 0; ci2 < row.length; ci2++) {
+                var sidx2 = row[ci2];
+                var sx2 = mainR + ci2 * colW;
+                var sR2 = sx2 + colW;
+                var sy2 = curY, sB2 = sy2 + rowH;
+                g[sidx2] = { x:sx2, y:sy2, w:colW, h:rowH, r:sR2, b:sB2 };
+                cc.push([sx2,sy2],[sR2,sy2],[sR2,sB2],[sx2,sB2]);
+                proj.push({ from:[sx2,sy2], to:[sx2,0] }, { from:[sx2,sB2], to:[sx2,H] },
+                          { from:[sR2,sy2], to:[W,sy2] }, { from:[sR2,sB2], to:[W,sB2] });
+                projPts.push([sx2,0],[sx2,H],[W,sy2],[W,sB2]);
+            }
+            curY += rowH;
+        }
     }
     return g;
 }

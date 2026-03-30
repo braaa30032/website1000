@@ -13,7 +13,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { LIBRARY, getChapterCount, getPageCount, getMainNodesForPage, getPageSections, getActivePalette } from '../../library.js?v=36';
+import { LIBRARY, getChapterCount, getPageCount, getMainNodesForPage, getPageSections, getActivePalette } from '../../library.js?v=37';
 import { computeLayout, LAYOUT_CONST } from './layout.js';
 import { ANIM, lerp } from './shared/anim-config.js';
 import { splitFillBoxWords, computeFillBox, renderFillBox } from './shared/helpers.js';
@@ -658,18 +658,25 @@ function _preloadPageAspects(nodes) {
    ═══════════════════════════════════════════════════════════════ */
 function _buildPageConfig(nodes, aspects, sectionDefs) {
     const subsPerMainArr = [], petsPerMainArr = [], petsPerSubArr = [], petDataArr = [];
+    const subB2bArr = [];  /* per-main array of b2b flags for each sub */
     for (let i = 0; i < nodes.length; i++) {
         const n = nodes[i];
         subsPerMainArr.push(n.children ? n.children.length : 0);
         petsPerMainArr.push(n.pets ? n.pets.length : 0);
         if (n.pets) n.pets.forEach(p => petDataArr.push(p));
-        if (n.children) n.children.forEach(ch => petsPerSubArr.push(ch.pets ? ch.pets.length : 0));
+        const b2bs = [];
+        if (n.children) n.children.forEach(ch => {
+            petsPerSubArr.push(ch.pets ? ch.pets.length : 0);
+            b2bs.push(!!ch.b2b);
+        });
+        subB2bArr.push(b2bs);
     }
     return {
         mainCount: nodes.length, subsPerMain: subsPerMainArr,
         petsPerMain: petsPerMainArr, petsPerSub: petsPerSubArr, petData: petDataArr,
         mainAspects: aspects ? aspects.mainAspects : null,
         subAspects: aspects ? aspects.subAspects : null,
+        subB2b: subB2bArr,
         sections: sectionDefs || null
     };
 }
@@ -903,6 +910,9 @@ function _scrollSwap(direction) {
     if (window.NavLayer && NavLayer.animateTransition) {
         NavLayer.animateTransition(axis, navDir, newCh, newPg);
     }
+
+    /* Re-render with real (preloaded) aspect ratios so images size correctly */
+    renderCurrentPage();
 
     /* Cooldown before next scroll swap */
     setTimeout(() => { _scrollSwapping = false; }, 400);
