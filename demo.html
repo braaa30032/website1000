@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GSAP Demo — 2 Chapters</title>
+
+    <!-- Shared layer styles -->
+    <link rel="stylesheet" href="content/css/style.css?v=40">
+    <link rel="stylesheet" href="nav/nav.css?v=17">
+
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            background: #1a1a2e;
+            font-family: Arial, Helvetica, sans-serif;
+            user-select: none; -webkit-user-select: none;
+            overscroll-behavior: none; touch-action: none;
+            -webkit-touch-callout: none;
+        }
+        body { position: fixed; top: 0; left: 0; }
+        ::-webkit-scrollbar { display: none; }
+
+        /* ── Demo info badge ── */
+        #demo-badge {
+            position: fixed; top: 8px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; padding: 6px 18px; border-radius: 20px;
+            background: rgba(233,69,96,0.9); color: #fff; font-size: 13px;
+            font-weight: bold; pointer-events: none; letter-spacing: 0.5px;
+        }
+        #demo-badge span { opacity: 0.7; font-weight: normal; }
+
+        /* ── Map overlay ── */
+        #demo-map {
+            position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; display: flex; gap: 6px; align-items: end;
+            pointer-events: none;
+        }
+        .map-chapter {
+            display: flex; flex-direction: column; gap: 3px; align-items: center;
+        }
+        .map-chapter .map-label {
+            font-size: 10px; color: rgba(255,255,255,0.5); margin-bottom: 2px;
+        }
+        .map-page {
+            width: 18px; height: 18px; border-radius: 3px;
+            border: 1.5px solid rgba(255,255,255,0.25);
+            transition: background 0.3s, border-color 0.3s;
+        }
+        .map-page.active {
+            border-color: #e94560;
+            background: rgba(233,69,96,0.6);
+        }
+        .map-sep { width: 1px; height: 30px; background: rgba(255,255,255,0.15); margin: 0 2px; }
+    </style>
+</head>
+<body>
+
+    <!-- Content Layer (WebGL) -->
+    <div id="content-layer"></div>
+
+    <!-- Flash overlay -->
+    <div class="flash-overlay" id="flash"></div>
+
+    <!-- Page info bar (always visible in demo) -->
+    <div id="cds-info" style="
+        position:fixed; bottom:40px; left:50%; transform:translateX(-50%);
+        z-index:9998; padding:4px 12px; border-radius:12px;
+        background:rgba(0,0,0,0.55); color:rgba(255,255,255,0.7);
+        font-size:11px; pointer-events:none; white-space:nowrap;
+    "></div>
+
+    <!-- Landing banners (hidden by default in demo) -->
+    <div id="landing-banners" style="display:none">
+        <div id="landing-h" class="landing-banner-h"><div class="landing-stripe-h"></div><div class="landing-h-text"><span id="landing-txt-h">projects</span></div></div>
+        <div id="landing-v" class="landing-banner-v"><div class="landing-stripe-v"></div><span id="landing-txt-v">pages</span></div>
+    </div>
+
+    <!-- Navigation Layer -->
+    <div id="nav-viewport">
+        <div class="load-tile load-tl" id="load-tl"><span class="load-letter">D</span></div>
+        <div class="load-tile load-tr" id="load-tr"><span class="load-letter">E</span></div>
+        <div class="load-tile load-bl" id="load-bl"><span class="load-letter">M</span></div>
+        <div class="load-tile load-br" id="load-br"><span class="load-letter">O</span></div>
+    </div>
+
+    <!-- Demo badge -->
+    <div id="demo-badge">GSAP DEMO <span>— 2 chapters · 4 pages</span></div>
+
+    <!-- Navigation map -->
+    <div id="demo-map">
+        <div class="map-chapter">
+            <div class="map-label">Alpha</div>
+            <div class="map-page" id="map-0-0"></div>
+            <div class="map-page" id="map-0-1"></div>
+        </div>
+        <div class="map-sep"></div>
+        <div class="map-chapter">
+            <div class="map-label">Beta</div>
+            <div class="map-page" id="map-1-0"></div>
+            <div class="map-page" id="map-1-1"></div>
+        </div>
+    </div>
+
+    <!-- Import Map: redirect library.js to demo-library.js via scopes -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/",
+            "gsap": "./content/js/vendor/gsap-core.js",
+            "gsap/Observer": "./content/js/vendor/Observer.js"
+        },
+        "scopes": {
+            "./content/": {
+                "../../library.js?v=38": "./demos/demo-library.js"
+            },
+            "./content/js/": {
+                "../../library.js?v=38": "./demos/demo-library.js"
+            },
+            "./nav/": {
+                "../library.js?v=38": "./demos/demo-library.js"
+            }
+        }
+    }
+    </script>
+
+    <!-- ES Modules (same as main site) -->
+    <script type="module" src="content/js/app.js?v=72"></script>
+    <script type="module" src="nav/nav.js?v=42"></script>
+
+    <!-- Demo map updater -->
+    <script>
+    (function() {
+        function updateMap() {
+            // Clear all
+            document.querySelectorAll('.map-page').forEach(function(el) {
+                el.classList.remove('active');
+            });
+            // Read current state
+            if (window.ContentLayer && ContentLayer.getState) {
+                var st = ContentLayer.getState();
+                var id = 'map-' + st.chapter + '-' + st.page;
+                var el = document.getElementById(id);
+                if (el) el.classList.add('active');
+            }
+        }
+        setInterval(updateMap, 300);
+    })();
+    </script>
+
+</body>
+</html>
