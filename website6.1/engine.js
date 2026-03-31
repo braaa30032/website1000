@@ -1,12 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════
-   ENGINE.JS — CDS Website 6.1
-   Pure DOM + CSS + GSAP  (no Three.js, no WebGL)
+   ENGINE.JS — CDS Website 6.1 — Continuous Chapter Scroll
 
-   Single file replaces:  app.js + nav.js + anim-config.js + helpers.js
-
-   Layout rectangles from layout.js → CSS absolute positioning.
-   GSAP timelines for 2-phase stretch-slide transitions.
-   GSAP Observer for scroll / touch / wheel input.
+   One scroll container per chapter, ALL pages stacked vertically.
+   GSAP timelines for chapter transitions (X-axis).
+   Smooth scroll to page boundaries (Y-axis, nav animation only).
    Nav quadrants as 4 fixed DOM divs with fill-box text.
    ═══════════════════════════════════════════════════════════════ */
 
@@ -43,22 +40,23 @@ const HSCROLL_THRESHOLD    = 200;
 let W = window.innerWidth;
 let H = window.innerHeight;
 let currentChapter = 0, currentPage = 0;
-let currentLayout  = null;
+let currentLayout  = null;    // { SQ, totalContentHeight, navTL/TR/BL/BR }
 let panY = 0;
 let isAnimating    = false;
 let isFrozen       = false;
 let overscrollAcc  = 0, overscrollDir = 0;
 let _hScrollAcc = 0, _hScrollDir = 0, _hScrollCooldown = false;
-let _scrollSwapping = false;
 let _pointerDragging = false;
-let _scrollLandAtEnd = false;
-let pageNodes = [];
+
+/* Chapter data */
+let chapterContainer = null;   // the single DOM container for the current chapter
+let pageBoundaries   = [];     // [{startY, endY, pageIdx}, ...]
+let totalChapterHeight = 0;
 
 /* ── DOM refs ── */
-let contentLayer, pageContainer;
-let navEls = {};          // { tl, tr, bl, br }
-let edgeEls = {};         // { top, bottom, left, right }
-let flashEl;
+let contentLayer, flashEl;
+let navEls  = {};   // { tl, tr, bl, br }
+let edgeEls = {};   // { top, bottom, left, right }
 
 /* ═══════════════════════════════════════════════════════════════
    FILL-BOX TEXT HELPERS  (from shared/helpers.js)
@@ -154,7 +152,6 @@ function _getMeasureCtx() {
 
 /**
  * Build fill-box text as DOM elements inside a container.
- * Each line becomes a positioned <div> with its own font-size.
  */
 function _buildFillBoxDom(text, container, hAlign, vAlign) {
     var ctx = _getMeasureCtx();
@@ -171,7 +168,6 @@ function _buildFillBoxDom(text, container, hAlign, vAlign) {
     var layout = computeFillBox(ctx, words, usW, usH);
     if (!layout) return;
 
-    /* Vertical offset */
     var extraV = usH - layout.totalH;
     var yOff;
     if (vAlign === 'top') yOff = padPx;
@@ -198,7 +194,6 @@ function _buildFillBoxDom(text, container, hAlign, vAlign) {
         if (goRight) {
             lineEl.style.right = padPx + 'px';
             lineEl.style.textAlign = 'right';
-            /* Build words right-to-left */
             for (var wi = line.words.length - 1; wi >= 0; wi--) {
                 var span = document.createElement('span');
                 span.textContent = line.words[wi];
@@ -225,17 +220,14 @@ function _buildFillBoxDom(text, container, hAlign, vAlign) {
 
 /**
  * Build fill-box text for content area (centered, alternating alignment).
- * Handles both single-paragraph and multi-paragraph text.
  */
 function _buildContentText(text, container) {
     var paragraphs = text.split('\n');
     var hasExplicitBreaks = paragraphs.length > 1;
 
     if (!hasExplicitBreaks) {
-        /* Single paragraph → fill-box (each word fills the width) */
         _buildFillBoxDom(text, container, 'alternate', 'center');
     } else {
-        /* Multi-paragraph → uniform font size, preserve line breaks */
         var ctx = _getMeasureCtx();
         var cW = parseFloat(container.style.width) || container.offsetWidth || 100;
         var cH = parseFloat(container.style.height) || container.offsetHeight || 100;
@@ -314,59 +306,8 @@ function init() {
     _setupInput();
     _setupNavClicks();
 
-    /* Show first page */
-    showPage(0, 0);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   ASPECT RATIO PRELOADING
-   ═══════════════════════════════════════════════════════════════ */
-var _aspectCache = {};
-
-function _loadAspect(url) {
-    if (_aspectCache[url] !== undefined) return Promise.resolve(_aspectCache[url]);
-    return new Promise(function (resolve) {
-        var img = new Image(); img.crossOrigin = 'anonymous';
-        img.onload = function () { _aspectCache[url] = (img.naturalWidth || 1) / (img.naturalHeight || 1); resolve(_aspectCache[url]); };
-        img.onerror = function () { _aspectCache[url] = LAYOUT_CONST.MAIN_ASPECT; resolve(LAYOUT_CONST.MAIN_ASPECT); };
-        img.src = url;
-    });
-}
-
-function _loadVideoAspect(url) {
-    if (_aspectCache[url] !== undefined) return Promise.resolve(_aspectCache[url]);
-    return new Promise(function (resolve) {
-        var v = document.createElement('video'); v.crossOrigin = 'anonymous'; v.preload = 'metadata';
-        v.onloadedmetadata = function () { _aspectCache[url] = (v.videoWidth || 1) / (v.videoHeight || 1); resolve(_aspectCache[url]); v.src = ''; };
-        v.onerror = function () { _aspectCache[url] = LAYOUT_CONST.MAIN_ASPECT; resolve(LAYOUT_CONST.MAIN_ASPECT); v.src = ''; };
-        v.src = url;
-    });
-}
-
-function _getNodeAspect(node, fallback) {
-    var url = node.image || node.url || node.video;
-    if (!url) return Promise.resolve(fallback);
-    if (node.type === 'video') return _loadVideoAspect(url);
-    if (node.type === 'image') return _loadAspect(url);
-    return Promise.resolve(fallback);
-}
-
-function _preloadPageAspects(nodes) {
-    var promises = [], structure = [];
-    for (var i = 0; i < nodes.length; i++) {
-        promises.push(_getNodeAspect(nodes[i], LAYOUT_CONST.MAIN_ASPECT));
-        var cc = (nodes[i].children || []).length; structure.push(cc);
-        for (var j = 0; j < cc; j++) promises.push(_getNodeAspect(nodes[i].children[j], LAYOUT_CONST.SUB_ASPECT));
-    }
-    return Promise.all(promises).then(function (results) {
-        var mainAspects = [], subAspects = [], idx = 0;
-        for (var i = 0; i < nodes.length; i++) {
-            mainAspects.push(results[idx++]);
-            var ca = []; for (var j = 0; j < structure[i]; j++) ca.push(results[idx++]);
-            subAspects.push(ca);
-        }
-        return { mainAspects: mainAspects, subAspects: subAspects };
-    });
+    /* Show first chapter */
+    showChapter(0);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -398,7 +339,7 @@ function _buildPageConfig(nodes, aspects, sectionDefs) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   COLUMNS PAGE (special intro grid)
+   COLUMNS PAGE HELPERS
    ═══════════════════════════════════════════════════════════════ */
 function _isColumnsPage(ch, pg) {
     var lib = LIBRARY[ch];
@@ -407,174 +348,282 @@ function _isColumnsPage(ch, pg) {
     return page && page.length === 1 && page[0] && page[0].layout === 'columns';
 }
 
-function _renderColumnsPage() {
-    var page = LIBRARY[currentChapter].pages[currentPage];
+/** Compute dimensions for a columns page (without building DOM) */
+function _computeColumnsLayout(ch, pg, SQ) {
+    var page = LIBRARY[ch].pages[pg];
     var colData = page[0];
-    var baseUrl = colData.baseUrl;
-    var maxThumbW = colData.thumbnail || 128;
     var numCols = colData.columns.length;
-    var SQ = Math.min(W, H) / 4;
     var innerW = W - 2 * SQ;
     var gap = 2;
     var colW = Math.floor((innerW - (numCols - 1) * gap) / numCols);
     var subCols = 3;
     var subGap = 1;
-
-    /* Build container */
-    var container = document.createElement('div');
-    container.className = 'page-container columns-page';
-    container.style.width = W + 'px';
+    var subW = Math.floor((colW - (subCols - 1) * subGap) / subCols);
 
     var maxH = 0;
-
     for (var ci = 0; ci < numCols; ci++) {
+        var items = colData.columns[ci].items;
+        var rows = Math.ceil(items.length / subCols);
+        var colH = SQ + rows * (subW + subGap);
+        if (colH > maxH) maxH = colH;
+    }
+
+    return {
+        height: maxH + SQ,
+        colData: colData,
+        baseUrl: colData.baseUrl,
+        colW: colW, numCols: numCols,
+        subCols: subCols, subGap: subGap, subW: subW, gap: gap
+    };
+}
+
+/** Append columns page content to a container at the given Y offset */
+function _appendColumnsContent(container, colLayout, yOffset, SQ) {
+    var baseUrl = colLayout.baseUrl || colLayout.colData.baseUrl;
+    var colData = colLayout.colData;
+
+    for (var ci = 0; ci < colLayout.numCols; ci++) {
         var items = colData.columns[ci].items;
         var colGroup = document.createElement('div');
         colGroup.className = 'column-group';
-        colGroup.style.left = (SQ + ci * (colW + gap)) + 'px';
-        colGroup.style.width = colW + 'px';
+        colGroup.style.left = (SQ + ci * (colLayout.colW + colLayout.gap)) + 'px';
+        colGroup.style.top = yOffset + 'px';
+        colGroup.style.width = colLayout.colW + 'px';
 
-        var subW = Math.floor((colW - (subCols - 1) * subGap) / subCols);
         var cy = SQ;
-
         for (var ti = 0; ti < items.length; ti++) {
-            var col3 = ti % subCols;
-            var px = col3 * (subW + subGap);
+            var col3 = ti % colLayout.subCols;
+            var px = col3 * (colLayout.subW + colLayout.subGap);
 
             var thumb = document.createElement('div');
             thumb.className = 'column-thumb';
             thumb.style.left = px + 'px';
             thumb.style.top = cy + 'px';
-            thumb.style.width = subW + 'px';
-            /* Height will be set after image loads, default square for now */
-            thumb.style.height = subW + 'px';
+            thumb.style.width = colLayout.subW + 'px';
+            thumb.style.height = colLayout.subW + 'px';
 
             var img = document.createElement('img');
             img.crossOrigin = 'anonymous';
             img.loading = 'lazy';
             img.src = baseUrl + items[ti];
-            /* Adjust height on load */
             (function (thumbEl, sw) {
                 img.onload = function () {
                     var aspect = (this.naturalWidth || 1) / (this.naturalHeight || 1);
                     thumbEl.style.height = Math.round(sw / aspect) + 'px';
                 };
-            })(thumb, subW);
+            })(thumb, colLayout.subW);
             thumb.appendChild(img);
             colGroup.appendChild(thumb);
 
-            /* Advance Y on row completion */
-            if (col3 === subCols - 1 || ti === items.length - 1) {
-                cy += subW + subGap; /* approximate; exact would need aspect preload */
+            if (col3 === colLayout.subCols - 1 || ti === items.length - 1) {
+                cy += colLayout.subW + colLayout.subGap;
             }
         }
         container.appendChild(colGroup);
-        if (cy > maxH) maxH = cy;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CHAPTER BUILDING — builds ALL pages as one scrollable container
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * Build chapter data + DOM without inserting into the document.
+ * Returns { container, pageBoundaries, totalHeight, layout }.
+ */
+function _buildChapter(ch) {
+    var SQ = Math.round(Math.min(W, H) * LAYOUT_CONST.SQ_RATIO);
+    var pageCount = getPageCount(ch);
+    var boundaries = [];
+    var cumY = 0;
+    var allPageData = [];
+
+    for (var pg = 0; pg < pageCount; pg++) {
+        if (_isColumnsPage(ch, pg)) {
+            var colData = _computeColumnsLayout(ch, pg, SQ);
+            allPageData.push({ type: 'columns', data: colData, yOffset: cumY, pg: pg });
+            boundaries.push({ startY: cumY, endY: cumY + colData.height, pageIdx: pg });
+            cumY += colData.height;
+        } else {
+            var nodes = getMainNodesForPage(ch, pg);
+            var sectionDefs = getPageSections(ch, pg);
+            var cfg = _buildPageConfig(nodes, null, sectionDefs);
+            var layout = computeLayout(cfg, W, H);
+            allPageData.push({ type: 'normal', layout: layout, nodes: nodes, yOffset: cumY, pg: pg });
+            boundaries.push({ startY: cumY, endY: cumY + layout.totalContentHeight, pageIdx: pg });
+            cumY += layout.totalContentHeight;
+        }
     }
 
-    container.style.height = (maxH + SQ) + 'px';
-
-    /* Swap into DOM */
-    _clearPage();
-    pageContainer = container;
-    contentLayer.appendChild(pageContainer);
-
-    currentLayout = {
+    var chLayout = {
         SQ: SQ,
-        totalContentHeight: maxH + SQ,
+        totalContentHeight: cumY,
         navTL: { x: 0, y: 0, w: SQ, h: SQ },
         navTR: { x: W - SQ, y: 0, w: SQ, h: SQ },
         navBL: { x: 0, y: H - SQ, w: SQ, h: SQ },
         navBR: { x: W - SQ, y: H - SQ, w: SQ, h: SQ }
     };
 
-    panY = 0;
-    _applyPan();
-    _updateNavQuads();
-}
+    var container = _buildChapterDom(allPageData, SQ, cumY);
 
-/* ═══════════════════════════════════════════════════════════════
-   PAGE BUILDING  (normal pages)
-   ═══════════════════════════════════════════════════════════════ */
-function showPage(ch, pg) {
-    currentChapter = ch;
-    currentPage    = pg;
-    renderCurrentPage();
-}
-
-function renderCurrentPage() {
-    if (_isColumnsPage(currentChapter, currentPage)) {
-        _renderColumnsPage();
-        return;
-    }
-
-    var nodes = getMainNodesForPage(currentChapter, currentPage);
-    pageNodes = nodes;
-    var sectionDefs = getPageSections(currentChapter, currentPage);
-    var landAtEnd = _scrollLandAtEnd;
-    _scrollLandAtEnd = false;
-
-    console.log('[CDS 6.1] renderCurrentPage ch=' + currentChapter + ' pg=' + currentPage + ' nodes=' + nodes.length);
-
-    /* Render immediately with default aspects (no waiting for images) */
-    var cfg = _buildPageConfig(nodes, null, sectionDefs);
-    var layout = computeLayout(cfg, W, H);
-    currentLayout = layout;
-
-    _clearPage();
-    pageContainer = _buildPageDom(layout, nodes);
-    contentLayer.appendChild(pageContainer);
-
-    if (landAtEnd) {
-        panY = Math.max(0, layout.totalContentHeight - H);
-    } else {
-        panY = 0;
-    }
-    _applyPan();
-    _updateNavQuads();
-    _updateEdgeStrips();
-
-    console.log('[CDS 6.1] page built ✓ mains=' + layout.mains.length + ' totalH=' + layout.totalContentHeight);
-
-    /* Optionally re-layout with real aspect ratios once images load */
-    var snapCh = currentChapter, snapPg = currentPage;
-    _preloadPageAspects(nodes).then(function (aspects) {
-        if (currentChapter !== snapCh || currentPage !== snapPg) return;
-        var cfg2 = _buildPageConfig(nodes, aspects, sectionDefs);
-        var layout2 = computeLayout(cfg2, W, H);
-        if (Math.abs(layout2.totalContentHeight - layout.totalContentHeight) < 2) return;
-        currentLayout = layout2;
-        _clearPage();
-        pageContainer = _buildPageDom(layout2, nodes);
-        contentLayer.appendChild(pageContainer);
-        _clampPan();
-        _applyPan();
-        console.log('[CDS 6.1] re-layout with real aspects, totalH=' + layout2.totalContentHeight);
-    }).catch(function (err) {
-        console.warn('[CDS 6.1] aspect preload failed (non-critical):', err.message);
-    });
-}
-
-function _clearPage() {
-    if (pageContainer && pageContainer.parentNode) {
-        pageContainer.parentNode.removeChild(pageContainer);
-    }
-    pageContainer = null;
+    return {
+        container: container,
+        pageBoundaries: boundaries,
+        totalHeight: cumY,
+        layout: chLayout
+    };
 }
 
 /**
- * Build a page's DOM from layout rectangles and library node data.
- * Returns a .page-container div with absolutely-positioned children.
+ * Show a chapter: build + insert into DOM + set scroll position.
+ * @param {number} ch — chapter index
+ * @param {object} [opts] — { landAtEnd, targetPage }
  */
-function _buildPageDom(layout, nodes) {
+function showChapter(ch, opts) {
+    opts = opts || {};
+    currentChapter = ch;
+
+    var result = _buildChapter(ch);
+    pageBoundaries = result.pageBoundaries;
+    totalChapterHeight = result.totalHeight;
+    currentLayout = result.layout;
+
+    _clearPage();
+    chapterContainer = result.container;
+    contentLayer.appendChild(chapterContainer);
+
+    if (opts.landAtEnd) {
+        panY = Math.max(0, totalChapterHeight - H);
+    } else if (opts.targetPage !== undefined && pageBoundaries[opts.targetPage]) {
+        panY = pageBoundaries[opts.targetPage].startY;
+    } else {
+        panY = 0;
+    }
+
+    _clampPan();
+    _applyPan();
+    _updateCurrentPage();
+    _updateNavQuads();
+    _updateEdgeStrips();
+
+    console.log('[CDS 6.1] showChapter(' + ch + ') pages=' + pageBoundaries.length +
+        ' totalH=' + totalChapterHeight);
+}
+
+/**
+ * Build the combined DOM container for all pages in a chapter.
+ */
+function _buildChapterDom(allPageData, SQ, totalH) {
     var pal = getActivePalette();
     var container = document.createElement('div');
     container.className = 'page-container';
     container.style.width  = W + 'px';
-    container.style.height = layout.totalContentHeight + 'px';
+    container.style.height = totalH + 'px';
 
-    /* ── Netz quads (background fill areas) ── */
-    layout.netz.forEach(function (nq) {
+    /* Collect ALL content rects (with global Y offsets) for unified netz */
+    var allMainRects = [];
+    var allSubRects  = [];
+    var columnsBlockers = [];
+
+    for (var i = 0; i < allPageData.length; i++) {
+        var pd = allPageData[i];
+        var yOff = pd.yOffset;
+
+        if (pd.type === 'columns') {
+            /* Columns page — custom DOM, block area for netz */
+            _appendColumnsContent(container, pd.data, yOff, SQ);
+            columnsBlockers.push({
+                x: SQ, y: yOff, r: W - SQ, b: yOff + pd.data.height
+            });
+        } else {
+            /* Normal page — build mains, subs, pets, netz-text overlays */
+            var layout = pd.layout;
+            var nodes  = pd.nodes;
+
+            /* ── Mains ── */
+            layout.mains.forEach(function (m, mi) {
+                var node = nodes[mi];
+                if (!node) return;
+                var oRect = {
+                    x: m.x, y: m.y + yOff, w: m.w, h: m.h,
+                    r: m.r, b: m.b + yOff
+                };
+                allMainRects.push(oRect);
+                var el = _createMediaElement(oRect, node);
+                if (el) container.appendChild(el);
+            });
+
+            /* ── Subs ── */
+            layout.subs.forEach(function (group, gi) {
+                group.forEach(function (s, si) {
+                    var node = nodes[gi] && nodes[gi].children && nodes[gi].children[si]
+                        ? nodes[gi].children[si] : null;
+                    if (!node) return;
+                    var oRect = {
+                        x: s.x, y: s.y + yOff, w: s.w, h: s.h,
+                        r: s.r, b: s.b + yOff
+                    };
+                    allSubRects.push(oRect);
+                    var el = _createMediaElement(oRect, node);
+                    if (el) container.appendChild(el);
+                });
+            });
+
+            /* ── Pets ── */
+            if (layout.pets) {
+                layout.pets.forEach(function (pet) {
+                    var petNode = null;
+                    if (pet.parentType === 'main' && nodes[pet.parentIndex]) {
+                        var mn = nodes[pet.parentIndex];
+                        if (mn.pets && mn.pets[pet.petIndex]) petNode = mn.pets[pet.petIndex];
+                    } else if (pet.parentType === 'sub' && nodes[pet.parentIndex]) {
+                        var mn2 = nodes[pet.parentIndex];
+                        if (mn2.children && mn2.children[pet.subIndex]) {
+                            var sn = mn2.children[pet.subIndex];
+                            if (sn.pets && sn.pets[pet.petIndex]) petNode = sn.pets[pet.petIndex];
+                        }
+                    }
+                    if (petNode && (petNode.image || petNode.video || petNode.type === 'text')) {
+                        var el = _createMediaElement(
+                            { x: pet.x - pet.w / 2, y: pet.y - pet.h / 2 + yOff,
+                              w: pet.w, h: pet.h },
+                            petNode
+                        );
+                        if (el) { el.classList.add('pet-node'); container.appendChild(el); }
+                    }
+                });
+            }
+
+            /* ── Netz text overlays ── */
+            nodes.forEach(function (node, mi) {
+                if (!node.netzTexts || node.netzTexts.length === 0) return;
+                var mainRect = layout.mains[mi];
+                if (!mainRect) return;
+                var subRects = layout.subs[mi] || [];
+                node.netzTexts.forEach(function (nt) {
+                    var matched = _findNetzByPosition(
+                        layout.netz, nt.position, mainRect, subRects, layout.SQ
+                    );
+                    if (matched && matched.type === 'rect') {
+                        var el = document.createElement('div');
+                        el.className = 'content-node';
+                        el.style.left   = matched.x + 'px';
+                        el.style.top    = (matched.y + yOff) + 'px';
+                        el.style.width  = matched.w + 'px';
+                        el.style.height = matched.h + 'px';
+                        el.style.backgroundColor = pal.primary;
+                        el.style.zIndex = '1';
+                        _buildContentText(nt.text, el);
+                        container.appendChild(el);
+                    }
+                });
+            });
+        }
+    }
+
+    /* ── Unified netz for entire chapter ── */
+    var netz = _buildChapterNetz(allMainRects, allSubRects, columnsBlockers, SQ, totalH);
+    netz.forEach(function (nq) {
         if (nq.type !== 'rect') return;
         var el = document.createElement('div');
         el.className = 'netz-quad';
@@ -585,78 +634,87 @@ function _buildPageDom(layout, nodes) {
         container.appendChild(el);
     });
 
-    /* ── Mains ── */
-    layout.mains.forEach(function (m, mi) {
-        var node = nodes[mi];
-        if (!node) return;
-        var el = _createMediaElement(m, node);
-        if (el) container.appendChild(el);
-    });
-
-    /* ── Subs ── */
-    layout.subs.forEach(function (group, gi) {
-        group.forEach(function (s, si) {
-            var node = nodes[gi] && nodes[gi].children && nodes[gi].children[si]
-                ? nodes[gi].children[si] : null;
-            if (!node) return;
-            var el = _createMediaElement(s, node);
-            if (el) container.appendChild(el);
-        });
-    });
-
-    /* ── Pets ── */
-    if (layout.pets) {
-        layout.pets.forEach(function (pet) {
-            var petNode = null;
-            if (pet.parentType === 'main' && nodes[pet.parentIndex]) {
-                var mn = nodes[pet.parentIndex];
-                if (mn.pets && mn.pets[pet.petIndex]) petNode = mn.pets[pet.petIndex];
-            } else if (pet.parentType === 'sub' && nodes[pet.parentIndex]) {
-                var mn2 = nodes[pet.parentIndex];
-                if (mn2.children && mn2.children[pet.subIndex]) {
-                    var sn = mn2.children[pet.subIndex];
-                    if (sn.pets && sn.pets[pet.petIndex]) petNode = sn.pets[pet.petIndex];
-                }
-            }
-            if (petNode && (petNode.image || petNode.video || petNode.type === 'text')) {
-                var el = _createMediaElement(
-                    { x: pet.x - pet.w / 2, y: pet.y - pet.h / 2, w: pet.w, h: pet.h },
-                    petNode
-                );
-                if (el) { el.classList.add('pet-node'); container.appendChild(el); }
-            }
-        });
-    }
-
-    /* ── Netz text overlays ── */
-    nodes.forEach(function (node, mi) {
-        if (!node.netzTexts || node.netzTexts.length === 0) return;
-        var mainRect = layout.mains[mi];
-        if (!mainRect) return;
-        var subRects = layout.subs[mi] || [];
-        node.netzTexts.forEach(function (nt) {
-            var matched = _findNetzByPosition(layout.netz, nt.position, mainRect, subRects, layout.SQ);
-            if (matched && matched.type === 'rect') {
-                var el = document.createElement('div');
-                el.className = 'content-node';
-                el.style.left   = matched.x + 'px';
-                el.style.top    = matched.y + 'px';
-                el.style.width  = matched.w + 'px';
-                el.style.height = matched.h + 'px';
-                el.style.backgroundColor = pal.primary;
-                el.style.zIndex = '1';
-                _buildContentText(nt.text, el);
-                container.appendChild(el);
-            }
-        });
-    });
-
     return container;
 }
 
+function _clearPage() {
+    if (chapterContainer && chapterContainer.parentNode) {
+        chapterContainer.parentNode.removeChild(chapterContainer);
+    }
+    chapterContainer = null;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NETZ HELPERS  (unified chapter netz — no nav-quad blockers)
+   ═══════════════════════════════════════════════════════════════ */
+function _netzUSort(a) {
+    var s = {}, r = [];
+    a.forEach(function (v) { if (!s[v]) { s[v] = 1; r.push(v); } });
+    r.sort(function (a, b) { return a - b; });
+    return r;
+}
+
+function _netzOverAny(x, y, r, b, occ) {
+    for (var i = 0; i < occ.length; i++) {
+        var o = occ[i];
+        if (x < o.r - 1 && r > o.x + 1 && y < o.b - 1 && b > o.y + 1) return true;
+    }
+    return false;
+}
+
+function _netzMergeV(netz) {
+    var changed = true;
+    while (changed) {
+        changed = false;
+        netz.sort(function (a, b) { return (a.x - b.x) || (a.w - b.w) || (a.y - b.y); });
+        for (var i = 0; i < netz.length - 1; i++) {
+            var a = netz[i], b = netz[i + 1];
+            if (a.type === 'rect' && b.type === 'rect' &&
+                a.x === b.x && a.w === b.w && a.y + a.h === b.y) {
+                netz[i] = { id: a.id, type: 'rect', x: a.x, y: a.y, w: a.w, h: a.h + b.h };
+                netz.splice(i + 1, 1); changed = true; i--;
+            }
+        }
+    }
+    return netz;
+}
+
 /**
- * Create a single media element (image, video, or text) inside an abs-positioned div.
+ * Build a single netz grid for the entire chapter.
+ * No nav-quad blockers — nav quads are fixed overlays on top.
  */
+function _buildChapterNetz(mainRects, subRects, columnsBlockers, SQ, totalH) {
+    var xC = [0, SQ, W - SQ, W];
+    var yC = [0, totalH];
+
+    mainRects.forEach(function (m) { xC.push(m.x, m.r); yC.push(m.y, m.b); });
+    subRects.forEach(function (s) { xC.push(s.x, s.r); yC.push(s.y, s.b); });
+    columnsBlockers.forEach(function (b) { xC.push(b.x, b.r); yC.push(b.y, b.b); });
+
+    xC = _netzUSort(xC);
+    yC = _netzUSort(yC);
+
+    var occ = [];
+    mainRects.forEach(function (m) { occ.push({ x: m.x, y: m.y, r: m.r, b: m.b }); });
+    subRects.forEach(function (s) { occ.push({ x: s.x, y: s.y, r: s.r, b: s.b }); });
+    columnsBlockers.forEach(function (b) { occ.push(b); });
+
+    var netz = [], nI = 0;
+    for (var xi = 0; xi < xC.length - 1; xi++) {
+        for (var yi = 0; yi < yC.length - 1; yi++) {
+            var cx = xC[xi], cy = yC[yi], cw = xC[xi + 1] - cx, ch = yC[yi + 1] - cy;
+            if (cw < 2 || ch < 2) continue;
+            if (!_netzOverAny(cx, cy, cx + cw, cy + ch, occ)) {
+                netz.push({ id: 'n' + (nI++), type: 'rect', x: cx, y: cy, w: cw, h: ch });
+            }
+        }
+    }
+    return _netzMergeV(netz);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MEDIA ELEMENT CREATION
+   ═══════════════════════════════════════════════════════════════ */
 function _createMediaElement(rect, nodeData) {
     if (!nodeData) return null;
     var pal = getActivePalette();
@@ -669,7 +727,6 @@ function _createMediaElement(rect, nodeData) {
 
     if (nodeData.type === 'image' && (nodeData.image || nodeData.url)) {
         var url = nodeData.image || nodeData.url;
-        /* PNG images get background fill */
         if (url.toLowerCase().split('?')[0].endsWith('.png')) {
             el.style.backgroundColor = pal.primary;
         }
@@ -734,20 +791,33 @@ function _bestNetz(rects, ref, dir) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   PAGE TRACKING  (dynamic page detection from scroll position)
+   ═══════════════════════════════════════════════════════════════ */
+function _updateCurrentPage() {
+    var oldPage = currentPage;
+    currentPage = 0;
+    for (var i = 0; i < pageBoundaries.length; i++) {
+        if (panY >= pageBoundaries[i].startY) {
+            currentPage = pageBoundaries[i].pageIdx;
+        }
+    }
+    if (currentPage !== oldPage) {
+        _updateNavQuads();
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    NAV QUADRANTS
    ═══════════════════════════════════════════════════════════════ */
 function _updateNavQuads() {
     var SQ = currentLayout ? currentLayout.SQ : Math.round(Math.min(W, H) * 0.25);
 
-    /* Position & size each quad */
     _positionNavQuad(navEls.tl, 0, 0, SQ, SQ);
     _positionNavQuad(navEls.tr, W - SQ, 0, SQ, SQ);
     _positionNavQuad(navEls.bl, 0, H - SQ, SQ, SQ);
     _positionNavQuad(navEls.br, W - SQ, H - SQ, SQ, SQ);
 
-    /* Fill each quad with text content */
     var ch = currentChapter, pg = currentPage;
-    var chName = CHAPTER_DEFS[ch] ? CHAPTER_DEFS[ch].name : '';
     var pageNames = LIBRARY[ch] && LIBRARY[ch].pageNames ? LIBRARY[ch].pageNames : null;
     var pageLabel = pageNames && pageNames[pg] ? pageNames[pg] : 'page ' + (pg + 1);
 
@@ -775,7 +845,7 @@ function _updateNavQuads() {
         navEls.bl.classList.add('inactive');
     }
 
-    /* BR: previous chapter / 0fun (navigate left) */
+    /* BR: previous chapter (navigate left) */
     var prevCh = ch - 1;
     if (prevCh >= 0) {
         _fillNavQuad(navEls.br, CHAPTER_DEFS[prevCh].name, 'right', 'bottom');
@@ -794,37 +864,32 @@ function _positionNavQuad(el, x, y, w, h) {
 }
 
 function _fillNavQuad(el, text, hAlign, vAlign) {
-    /* Remove old fill-box content */
     var old = el.querySelector('.fillbox');
     if (old) el.removeChild(old);
     _buildFillBoxDom(text, el, hAlign, vAlign);
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   EDGE STRIPS (between nav corners)
+   EDGE STRIPS
    ═══════════════════════════════════════════════════════════════ */
 function _updateEdgeStrips() {
     var SQ = currentLayout ? currentLayout.SQ : Math.round(Math.min(W, H) * 0.25);
 
-    /* Top: between TL and TR */
     edgeEls.top.style.left   = SQ + 'px';
     edgeEls.top.style.top    = '0px';
     edgeEls.top.style.width  = (W - 2 * SQ) + 'px';
     edgeEls.top.style.height = SQ + 'px';
 
-    /* Bottom: between BL and BR */
     edgeEls.bottom.style.left   = SQ + 'px';
     edgeEls.bottom.style.top    = (H - SQ) + 'px';
     edgeEls.bottom.style.width  = (W - 2 * SQ) + 'px';
     edgeEls.bottom.style.height = SQ + 'px';
 
-    /* Left: between TL and BL */
     edgeEls.left.style.left   = '0px';
     edgeEls.left.style.top    = SQ + 'px';
     edgeEls.left.style.width  = SQ + 'px';
     edgeEls.left.style.height = (H - 2 * SQ) + 'px';
 
-    /* Right: between TR and BR */
     edgeEls.right.style.left   = (W - SQ) + 'px';
     edgeEls.right.style.top    = SQ + 'px';
     edgeEls.right.style.width  = SQ + 'px';
@@ -862,7 +927,6 @@ function _setupInput() {
     document.addEventListener('gesturechange', function (e) { e.preventDefault(); }, { passive: false });
     document.addEventListener('gestureend', function (e) { e.preventDefault(); }, { passive: false });
 
-    /* GSAP Observer: unified input with lockAxis */
     Observer.create({
         target: contentLayer,
         type: 'wheel,touch',
@@ -914,17 +978,18 @@ function _setupInput() {
 }
 
 function _applyPan() {
-    if (pageContainer) {
-        pageContainer.style.transform = 'translateY(' + (-panY) + 'px)';
+    if (chapterContainer) {
+        chapterContainer.style.transform = 'translateY(' + (-panY) + 'px)';
     }
+    _updateCurrentPage();
 }
 
 function _clampPan() {
-    var maxPan = currentLayout ? Math.max(0, currentLayout.totalContentHeight - H) : 0;
+    var maxPan = Math.max(0, totalChapterHeight - H);
     panY = Math.max(0, Math.min(maxPan, panY));
 }
 
-/* ── Overscroll (vertical → page change) ── */
+/* ── Overscroll → chapter change ── */
 function _handleOverscroll(delta) {
     if (!delta) return;
     var dir = delta > 0 ? 1 : -1;
@@ -932,14 +997,16 @@ function _handleOverscroll(delta) {
     overscrollAcc += Math.abs(delta);
     if (overscrollAcc >= OVERSCROLL_THRESHOLD) {
         overscrollAcc = 0; overscrollDir = 0;
-        _scrollSwap(dir);
+        /* At bottom scrolling down → next chapter (dir=1)
+           At top scrolling up → prev chapter (dir=-1) */
+        _navigateX(dir);
     }
 }
 function _resetOverscroll() { overscrollAcc = 0; overscrollDir = 0; }
 
-/* ── Horizontal scroll accumulator (→ chapter change) ── */
+/* ── Horizontal scroll → chapter change ── */
 function _handleHScroll(deltaX) {
-    if (_hScrollCooldown || isAnimating || isFrozen || _scrollSwapping) return;
+    if (_hScrollCooldown || isAnimating || isFrozen) return;
     var dir = deltaX > 0 ? 1 : -1;
     if (dir !== _hScrollDir) { _hScrollAcc = 0; _hScrollDir = dir; }
     _hScrollAcc += Math.abs(deltaX);
@@ -955,102 +1022,122 @@ function _resetHScroll() { _hScrollAcc = 0; _hScrollDir = 0; }
 /* ═══════════════════════════════════════════════════════════════
    NAVIGATION
    ═══════════════════════════════════════════════════════════════ */
+
+/** Navigate to adjacent chapter (X-axis transition) */
 function _navigateX(direction) {
     if (isAnimating || isFrozen) return;
     var newCh = currentChapter + direction;
     if (newCh < 0 || newCh >= getChapterCount()) { _flashBoundary(); return; }
-    var newPg = (direction === -1 && _scrollLandAtEnd)
-        ? Math.max(0, getPageCount(newCh) - 1) : 0;
-    _performTransition('x', direction, newCh, newPg);
+    /* Going left → land at end of previous chapter */
+    var landAtEnd = (direction === -1);
+    _performTransition('x', direction, newCh, landAtEnd);
 }
 
+/** Navigate to adjacent page (smooth scroll within chapter) */
 function _navigateY(direction) {
     if (isAnimating || isFrozen) return;
-    var maxPg = getPageCount(currentChapter) - 1;
-    var newPg = currentPage + direction;
-    if (newPg < 0) {
-        if (currentChapter > 0) { _scrollLandAtEnd = true; _navigateX(-1); }
-        else _flashBoundary();
+    var targetPg = currentPage + direction;
+
+    if (targetPg < 0) {
+        /* At first page, try previous chapter */
+        if (currentChapter > 0) {
+            _performTransition('x', -1, currentChapter - 1, true);
+        } else {
+            _flashBoundary();
+        }
         return;
     }
-    if (newPg > maxPg) {
-        if (currentChapter < getChapterCount() - 1) { _navigateX(1); }
-        else _flashBoundary();
+
+    if (targetPg >= getPageCount(currentChapter)) {
+        /* At last page, try next chapter */
+        if (currentChapter < getChapterCount() - 1) {
+            _performTransition('x', 1, currentChapter + 1, false);
+        } else {
+            _flashBoundary();
+        }
         return;
     }
-    _performTransition('y', direction, currentChapter, newPg);
-}
 
-/* ── Scroll-triggered page swap (instant, no content animation) ── */
-function _scrollSwap(direction) {
-    if (isAnimating || isFrozen || _scrollSwapping) return;
-    _scrollSwapping = true;
+    /* Smooth-scroll to the target page boundary */
+    var boundary = pageBoundaries[targetPg];
+    if (!boundary) return;
 
-    var ch = LIBRARY[currentChapter];
-    var newCh = currentChapter, newPg = currentPage + direction;
+    var targetY = boundary.startY;
+    isAnimating = true;
 
-    if (newPg < 0) {
-        if (currentChapter > 0) { newCh = currentChapter - 1; newPg = Math.max(0, getPageCount(newCh) - 1); }
-        else { _flashBoundary(); _scrollSwapping = false; return; }
-    } else if (newPg >= ch.pages.length) {
-        if (currentChapter < getChapterCount() - 1) { newCh = currentChapter + 1; newPg = 0; }
-        else { _flashBoundary(); _scrollSwapping = false; return; }
-    }
+    var proxy = { v: panY };
+    gsap.to(proxy, {
+        v: targetY,
+        duration: 0.5,
+        ease: 'power2.inOut',
+        onUpdate: function () {
+            panY = proxy.v;
+            _clampPan();
+            _applyPan();
+        },
+        onComplete: function () {
+            panY = targetY;
+            _clampPan();
+            _applyPan();
+            _updateCurrentPage();
+            _updateNavQuads();
+            gsap.delayedCall(ANIM.resetDelay, function () { isAnimating = false; });
+        }
+    });
 
-    overscrollAcc = 0; overscrollDir = 0;
-    currentChapter = newCh;
-    currentPage = newPg;
-
-    if (direction === -1) _scrollLandAtEnd = true;
-    renderCurrentPage();
-
-    gsap.delayedCall(0.4, function () { _scrollSwapping = false; });
+    /* Vertical nav animation for page-change feedback */
+    var SQ = currentLayout ? currentLayout.SQ : Math.round(Math.min(W, H) * 0.25);
+    _animateNavQuads('y', direction, SQ, 0.5);
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   TRANSITIONS — 2-phase stretch-slide on DOM transforms
+   TRANSITIONS — chapter change with 2-phase stretch-slide
    ═══════════════════════════════════════════════════════════════ */
-function _performTransition(axis, direction, newCh, newPg) {
+function _performTransition(axis, direction, newCh, landAtEnd) {
     isAnimating = true;
 
-    /* Build incoming page off-screen */
-    var newNodes = getMainNodesForPage(newCh, newPg);
-    var newSectionDefs = getPageSections(newCh, newPg);
-    var newCfg = _buildPageConfig(newNodes, null, newSectionDefs);
-    var inLayout = computeLayout(newCfg, W, H);
-    var SQ = inLayout.SQ;
+    /* Build incoming chapter off-screen */
+    var result = _buildChapter(newCh);
+    var inContainer = result.container;
+    var SQ = result.layout.SQ;
+    var targetPanY = landAtEnd ? Math.max(0, result.totalHeight - H) : 0;
 
-    var inPage = _buildPageDom(inLayout, newNodes);
-    var outPage = pageContainer;
+    var outContainer = chapterContainer;
 
     /* Transition wrapper */
     var wrapper = document.createElement('div');
     wrapper.className = 'transition-wrapper';
 
-    /* Move outgoing page into wrapper */
-    if (outPage && outPage.parentNode) outPage.parentNode.removeChild(outPage);
-    if (outPage) {
-        outPage.style.position = 'absolute';
-        outPage.style.top  = '0';
-        outPage.style.left = '0';
-        wrapper.appendChild(outPage);
+    /* Move outgoing into wrapper (preserves its current translateY(-panY) transform) */
+    if (outContainer && outContainer.parentNode) {
+        outContainer.parentNode.removeChild(outContainer);
+    }
+    if (outContainer) {
+        outContainer.style.position = 'absolute';
+        outContainer.style.top  = '0';
+        outContainer.style.left = '0';
+        wrapper.appendChild(outContainer);
     }
 
-    /* Position incoming page */
+    /* Position incoming container */
     var viewSize = axis === 'x' ? W : H;
     var dockOffset = viewSize - SQ;
-    inPage.style.position = 'absolute';
-    inPage.style.top  = '0';
-    inPage.style.left = '0';
+    inContainer.style.position = 'absolute';
+    inContainer.style.top  = '0';
+    inContainer.style.left = '0';
+
+    /* Include target panY so incoming shows correct scroll position during transition */
     if (axis === 'x') {
-        inPage.style.transform = 'translateX(' + (direction * dockOffset) + 'px)';
+        inContainer.style.transform =
+            'translateX(' + (direction * dockOffset) + 'px) translateY(' + (-targetPanY) + 'px)';
     } else {
-        inPage.style.transform = 'translateY(' + (-direction * dockOffset) + 'px)';
+        inContainer.style.transform =
+            'translateY(' + (-direction * dockOffset - targetPanY) + 'px)';
     }
-    wrapper.appendChild(inPage);
+    wrapper.appendChild(inContainer);
     contentLayer.appendChild(wrapper);
 
-    /* Compute animation parameters */
+    /* Animation parameters */
     var dur = ANIM.duration;
     if (axis === 'x') {
         var distX = W - SQ, distY = H - SQ;
@@ -1065,16 +1152,42 @@ function _performTransition(axis, direction, newCh, newPg) {
     var dim = axis === 'x' ? 'X' : 'Y';
     var slideTotal = axis === 'x' ? -direction * dockOffset : direction * dockOffset;
 
-    /* Set transform-origin for stretch effect */
+    /* Transform origin for stretch effect */
     if (axis === 'x') {
-        inPage.style.transformOrigin = direction === 1 ? 'left center' : 'right center';
+        inContainer.style.transformOrigin = direction === 1 ? 'left center' : 'right center';
     } else {
-        inPage.style.transformOrigin = direction === 1 ? 'center top' : 'center bottom';
+        inContainer.style.transformOrigin = direction === 1 ? 'center top' : 'center bottom';
     }
 
     var tl = gsap.timeline({
         onComplete: function () {
-            _finishTransition(wrapper, inPage, inLayout, newNodes, newCh, newPg);
+            /* Remove transition wrapper */
+            if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
+
+            /* Install new chapter */
+            currentChapter = newCh;
+            pageBoundaries = result.pageBoundaries;
+            totalChapterHeight = result.totalHeight;
+            currentLayout = result.layout;
+            chapterContainer = inContainer;
+
+            /* Reset container styles and insert into content layer */
+            inContainer.style.position = '';
+            inContainer.style.top  = '';
+            inContainer.style.left = '';
+            inContainer.style.transform = '';
+            inContainer.style.transformOrigin = '';
+            contentLayer.appendChild(inContainer);
+
+            /* Set scroll position */
+            panY = targetPanY;
+            _clampPan();
+            _applyPan();
+            _updateCurrentPage();
+            _updateNavQuads();
+            _updateEdgeStrips();
+
+            gsap.delayedCall(ANIM.resetDelay, function () { isAnimating = false; });
         }
     });
 
@@ -1082,6 +1195,15 @@ function _performTransition(axis, direction, newCh, newPg) {
     var wrapperPos = { v: 0 };
     var inStretch  = { v: 1 };
     var inOffset   = direction * dockOffset;
+
+    /* Build transform string helper */
+    function _inTransform(stretch) {
+        if (axis === 'x') {
+            return 'translateX(' + inOffset + 'px) translateY(' + (-targetPanY) + 'px) scaleX(' + stretch + ')';
+        } else {
+            return 'translateY(' + (-direction * dockOffset - targetPanY) + 'px) scaleY(' + stretch + ')';
+        }
+    }
 
     /* ── Phase 1: stretch + retreat ── */
     tl.to(wrapperPos, {
@@ -1098,8 +1220,7 @@ function _performTransition(axis, direction, newCh, newPg) {
         duration: p1Dur,
         ease: 'power2.in',
         onUpdate: function () {
-            var t = 'translate' + dim + '(' + inOffset + 'px) scale' + dim + '(' + inStretch.v + ')';
-            inPage.style.transform = t;
+            inContainer.style.transform = _inTransform(inStretch.v);
         }
     }, 0);
 
@@ -1118,8 +1239,7 @@ function _performTransition(axis, direction, newCh, newPg) {
         duration: p2Dur,
         ease: 'back.out(1.4)',
         onUpdate: function () {
-            var t = 'translate' + dim + '(' + inOffset + 'px) scale' + dim + '(' + inStretch.v + ')';
-            inPage.style.transform = t;
+            inContainer.style.transform = _inTransform(inStretch.v);
         }
     }, p1Dur);
 
@@ -1127,26 +1247,8 @@ function _performTransition(axis, direction, newCh, newPg) {
     _animateNavQuads(axis, direction, SQ, dur);
 }
 
-function _finishTransition(wrapper, inPage, inLayout, newNodes, newCh, newPg) {
-    /* Remove transition wrapper */
-    if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
-
-    /* Install clean page */
-    currentChapter = newCh;
-    currentPage    = newPg;
-    currentLayout  = inLayout;
-    pageNodes      = newNodes;
-
-    /* Re-render with real aspects (preloaded), the transition used default aspects */
-    renderCurrentPage();
-
-    gsap.delayedCall(ANIM.resetDelay, function () {
-        isAnimating = false;
-    });
-}
-
 /* ═══════════════════════════════════════════════════════════════
-   NAV QUAD TRANSITION ANIMATION
+   NAV QUAD TRANSITION ANIMATION  (basic — will be enhanced in Step 3)
    ═══════════════════════════════════════════════════════════════ */
 function _animateNavQuads(axis, direction, SQ, dur) {
     var peak    = ANIM.stretchPeak;
@@ -1162,78 +1264,70 @@ function _animateNavQuads(axis, direction, SQ, dur) {
 }
 
 function _animateNavX(direction, SQ, peak, retreat, p1Dur, p2Dur) {
-    /* X transition: TR (next) and BR (prev) are the active nav quads */
+    /* Both right-side quads (TR + BR) participate in X transitions.
+       Active quad stretches at full peak; companion stretches at ~40%. */
+    var activeQuad, compQuad, activeOrigin, compOrigin;
     if (direction === 1) {
-        /* Going right → TR stretches in, slides to TL position visually */
-        var tr = navEls.tr;
-        /* Phase 1: stretch TR */
-        gsap.to(tr, {
-            scaleX: peak,
-            duration: p1Dur,
-            ease: 'power2.in',
-            transformOrigin: 'left top',
-        });
-        /* Phase 2: destretch */
-        gsap.to(tr, {
-            scaleX: 1,
-            duration: p2Dur,
-            delay: p1Dur,
-            ease: 'back.out(1.4)',
-            onComplete: function () { _updateNavQuads(); }
-        });
+        activeQuad = navEls.tr;  compQuad = navEls.br;
+        activeOrigin = 'left top';  compOrigin = 'left bottom';
     } else {
-        /* Going left → BR stretches in */
-        var br = navEls.br;
-        gsap.to(br, {
-            scaleX: peak,
-            duration: p1Dur,
-            ease: 'power2.in',
-            transformOrigin: 'right bottom',
-        });
-        gsap.to(br, {
-            scaleX: 1,
-            duration: p2Dur,
-            delay: p1Dur,
-            ease: 'back.out(1.4)',
-            onComplete: function () { _updateNavQuads(); }
-        });
+        activeQuad = navEls.br;  compQuad = navEls.tr;
+        activeOrigin = 'right bottom';  compOrigin = 'right top';
     }
+
+    /* Phase 1: stretch */
+    gsap.to(activeQuad, {
+        scaleX: peak, duration: p1Dur, ease: 'power2.in',
+        transformOrigin: activeOrigin,
+    });
+    gsap.to(compQuad, {
+        scaleX: 1 + (peak - 1) * 0.4, duration: p1Dur, ease: 'power1.in',
+        transformOrigin: compOrigin,
+    });
+
+    /* Phase 2: destretch */
+    gsap.to(activeQuad, {
+        scaleX: 1, duration: p2Dur, delay: p1Dur, ease: 'back.out(1.4)',
+        onComplete: function () { _updateNavQuads(); }
+    });
+    gsap.to(compQuad, {
+        scaleX: 1, duration: p2Dur, delay: p1Dur, ease: 'power2.out',
+    });
 }
 
 function _animateNavY(direction, SQ, peak, retreat, p1Dur, p2Dur) {
+    /* Both left-side quads (TL + BL) participate in Y transitions.
+       Active quad stretches at full peak; companion stretches at ~30%.
+       Y-axis companion is gentler than X-axis (matches original). */
+    var activeQuad, compQuad, activeOrigin, compOrigin;
     if (direction === 1) {
-        /* Going down → BL stretches upward */
-        var bl = navEls.bl;
-        gsap.to(bl, {
-            scaleY: peak,
-            duration: p1Dur,
-            ease: 'power2.in',
-            transformOrigin: 'left bottom',
-        });
-        gsap.to(bl, {
-            scaleY: 1,
-            duration: p2Dur,
-            delay: p1Dur,
-            ease: 'back.out(1.4)',
-            onComplete: function () { _updateNavQuads(); }
-        });
+        /* Going down → BL stretches upward, TL companion */
+        activeQuad = navEls.bl;  compQuad = navEls.tl;
+        activeOrigin = 'left bottom';  compOrigin = 'left top';
     } else {
-        /* Going up → TL stretches downward */
-        var tl = navEls.tl;
-        gsap.to(tl, {
-            scaleY: peak,
-            duration: p1Dur,
-            ease: 'power2.in',
-            transformOrigin: 'left top',
-        });
-        gsap.to(tl, {
-            scaleY: 1,
-            duration: p2Dur,
-            delay: p1Dur,
-            ease: 'back.out(1.4)',
-            onComplete: function () { _updateNavQuads(); }
-        });
+        /* Going up → TL stretches downward, BL companion */
+        activeQuad = navEls.tl;  compQuad = navEls.bl;
+        activeOrigin = 'left top';  compOrigin = 'left bottom';
     }
+
+    /* Phase 1: stretch */
+    gsap.to(activeQuad, {
+        scaleY: peak, duration: p1Dur, ease: 'power2.in',
+        transformOrigin: activeOrigin,
+    });
+    gsap.to(compQuad, {
+        scaleY: 1 + (peak - 1) * 0.3, duration: p1Dur, ease: 'power1.in',
+        transformOrigin: compOrigin,
+    });
+
+    /* Phase 2: destretch */
+    gsap.to(activeQuad, {
+        scaleY: 1, duration: p2Dur, delay: p1Dur, ease: 'back.out(1.4)',
+        onComplete: function () { _updateNavQuads(); }
+    });
+    gsap.to(compQuad, {
+        scaleY: 1, duration: p2Dur, delay: p1Dur, ease: 'power2.out',
+    });
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1248,7 +1342,9 @@ function _flashBoundary() {
 function _onResize() {
     W = window.innerWidth;
     H = window.innerHeight;
-    if (!isAnimating) renderCurrentPage();
+    if (!isAnimating) {
+        showChapter(currentChapter, { targetPage: currentPage });
+    }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1267,8 +1363,12 @@ function _safeInit() {
     catch (e) { _showError(e.message + '\n' + e.stack); }
 }
 
-window.addEventListener('error', function(e) { _showError(e.message + ' @ ' + e.filename + ':' + e.lineno); });
-window.addEventListener('unhandledrejection', function(e) { _showError('Promise: ' + (e.reason ? (e.reason.message || e.reason) : 'unknown')); });
+window.addEventListener('error', function (e) {
+    _showError(e.message + ' @ ' + e.filename + ':' + e.lineno);
+});
+window.addEventListener('unhandledrejection', function (e) {
+    _showError('Promise: ' + (e.reason ? (e.reason.message || e.reason) : 'unknown'));
+});
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', _safeInit);
