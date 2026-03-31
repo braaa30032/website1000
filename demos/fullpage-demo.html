@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>fullPage.js Demo — 2-Axis Navigation</title>
+
+    <!-- fullpage.js v4 from CDN (GPLv3) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullpage.js@4/dist/fullpage.min.css">
+
+    <style>
+        /* ── Reset ── */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { font-family: 'Inter', system-ui, -apple-system, sans-serif; overflow: hidden; }
+
+        /* ── Section / Slide base ── */
+        .section { position: relative; }
+        .slide { position: relative; }
+
+        /* ── Content card inside each slide ── */
+        .page-content {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 60px 40px 40px;
+            gap: 20px;
+        }
+
+        /* ── Section grid: shows images in a grid within a slide ── */
+        .section-grid {
+            display: grid;
+            gap: 12px;
+            width: 100%;
+            max-width: 1100px;
+            flex: 1;
+            min-height: 0;
+        }
+        .section-grid.cols-1 { grid-template-columns: 1fr; }
+        .section-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+        .section-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+        /* ── Section divider (for multi-section pages) ── */
+        .section-divider {
+            width: 100%; max-width: 1100px;
+            display: flex; align-items: center; gap: 12px;
+            padding: 6px 0;
+        }
+        .section-divider::before, .section-divider::after {
+            content: ''; flex: 1; height: 1px;
+            background: rgba(255,255,255,0.15);
+        }
+        .section-divider span {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 2px;
+            color: rgba(255,255,255,0.35); white-space: nowrap;
+        }
+
+        /* ── Image card ── */
+        .img-card {
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            background: rgba(255,255,255,0.05);
+            min-height: 120px;
+        }
+        .img-card img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .img-card:hover img { transform: scale(1.04); }
+        .img-card .img-label {
+            position: absolute; bottom: 8px; left: 10px;
+            font-size: 11px; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 6px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* ── Page header inside each slide ── */
+        .page-header {
+            width: 100%; max-width: 1100px;
+            display: flex; align-items: baseline; gap: 12px;
+        }
+        .page-header h2 {
+            font-size: 24px; font-weight: 700;
+            color: rgba(255,255,255,0.9);
+        }
+        .page-header .page-meta {
+            font-size: 13px; color: rgba(255,255,255,0.35);
+        }
+
+        /* ── Scrollable multi-section page (uses scrollOverflow) ── */
+        .scrollable-content {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .scrollable-content .section-block {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .scrollable-content .section-block h3 {
+            font-size: 14px; font-weight: 600;
+            color: rgba(255,255,255,0.5); margin-bottom: 12px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .scrollable-content .section-block .img-row {
+            display: grid; gap: 10px;
+        }
+        .scrollable-content .section-block .img-row.r2 { grid-template-columns: 1fr 1fr; }
+        .scrollable-content .section-block .img-row.r3 { grid-template-columns: 1fr 1fr 1fr; }
+        .scrollable-content .section-block .img-row.r1 { grid-template-columns: 1fr; }
+        .scrollable-content .section-block .img-row img {
+            width: 100%; border-radius: 8px; aspect-ratio: 4/3; object-fit: cover;
+        }
+
+        /* ── Demo overlay badge ── */
+        #demo-badge {
+            position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; padding: 6px 20px; border-radius: 20px;
+            background: rgba(0,0,0,0.6); color: #fff; font-size: 12px;
+            font-weight: 600; pointer-events: none; letter-spacing: 0.5px;
+            backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1);
+        }
+        #demo-badge span { opacity: 0.5; font-weight: 400; }
+
+        /* ── Navigation info ── */
+        #nav-info {
+            position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; display: flex; gap: 24px; align-items: center;
+            padding: 10px 24px; border-radius: 30px;
+            background: rgba(0,0,0,0.55); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+            pointer-events: none;
+        }
+        .nav-hint {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 12px; color: rgba(255,255,255,0.45);
+        }
+        .nav-hint .arrow {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 22px; height: 22px; border-radius: 5px;
+            background: rgba(255,255,255,0.08); font-size: 11px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        /* ── Current position indicator ── */
+        #position-indicator {
+            position: fixed; top: 10px; right: 16px; z-index: 9999;
+            padding: 6px 14px; border-radius: 8px;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 12px; color: rgba(255,255,255,0.7);
+            font-family: 'SF Mono', monospace;
+            pointer-events: none;
+        }
+
+        /* ── Minimap ── */
+        #minimap {
+            position: fixed; top: 50%; right: 16px; transform: translateY(-50%);
+            z-index: 9998; display: flex; flex-direction: column; gap: 12px;
+            pointer-events: none;
+        }
+        .mm-chapter {
+            display: flex; flex-direction: column; gap: 3px; align-items: center;
+        }
+        .mm-label {
+            font-size: 9px; text-transform: uppercase; letter-spacing: 1px;
+            color: rgba(255,255,255,0.25); writing-mode: vertical-rl;
+            text-orientation: mixed; margin-bottom: 4px;
+        }
+        .mm-dots { display: flex; gap: 4px; }
+        .mm-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            border: 1.5px solid rgba(255,255,255,0.2);
+            transition: all 0.4s ease;
+        }
+        .mm-dot.active {
+            background: var(--dot-color, #e94560);
+            border-color: var(--dot-color, #e94560);
+            box-shadow: 0 0 8px var(--dot-color, #e94560);
+        }
+        .mm-sep {
+            width: 12px; height: 1px; background: rgba(255,255,255,0.1);
+            align-self: center;
+        }
+
+        /* ── fullpage.js slide arrow overrides ── */
+        .fp-arrow { border-color: rgba(255,255,255,0.4) !important; }
+        .fp-arrow:hover { border-color: rgba(255,255,255,0.8) !important; }
+        .fp-slidesNav ul li a span {
+            background: rgba(255,255,255,0.3) !important;
+        }
+        .fp-slidesNav ul li a.active span {
+            background: rgba(255,255,255,0.8) !important;
+        }
+
+        /* ── Section colors ── */
+        .section-alpha { background: #1a1a2e; }
+        .section-beta  { background: #0f2027; }
+
+        /* ── fullpage credits override for GPLv3 demo ── */
+        .fp-watermark { opacity: 0.15 !important; }
+    </style>
+</head>
+<body>
+
+    <!-- Demo badge -->
+    <div id="demo-badge">fullPage.js DEMO <span>— ↕ Kapitel · ↔ Seiten</span></div>
+
+    <!-- Position indicator -->
+    <div id="position-indicator">—</div>
+
+    <!-- Minimap -->
+    <div id="minimap">
+        <div class="mm-chapter">
+            <div class="mm-label">Alpha</div>
+            <div class="mm-dots">
+                <div class="mm-dot" id="mm-0-0" style="--dot-color:#e94560"></div>
+                <div class="mm-dot" id="mm-0-1" style="--dot-color:#e94560"></div>
+            </div>
+        </div>
+        <div class="mm-sep"></div>
+        <div class="mm-chapter">
+            <div class="mm-label">Beta</div>
+            <div class="mm-dots">
+                <div class="mm-dot" id="mm-1-0" style="--dot-color:#4fc3f7"></div>
+                <div class="mm-dot" id="mm-1-1" style="--dot-color:#4fc3f7"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nav hints -->
+    <div id="nav-info">
+        <div class="nav-hint"><span class="arrow">↑↓</span> Kapitel</div>
+        <div class="nav-hint"><span class="arrow">←→</span> Seiten</div>
+        <div class="nav-hint"><span class="arrow">⇕</span> Scroll (wenn Inhalt)</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         FULLPAGE STRUCTURE
+         Section = Kapitel, Slide = Seite
+         ═══════════════════════════════════════════ -->
+    <div id="fullpage">
+
+        <!-- ══════ CHAPTER 0: Alpha ══════ -->
+        <div class="section section-alpha" data-anchor="alpha">
+
+            <!-- Page 0: 3 images, 1 section -->
+            <div class="slide" data-anchor="page0">
+                <div class="page-content">
+                    <div class="page-header">
+                        <h2>Alpha — Seite 1</h2>
+                        <span class="page-meta">1 Section · 3 Bilder</span>
+                    </div>
+                    <div class="section-grid cols-3">
+                        <div class="img-card">
+                            <img src="https://picsum.photos/seed/a0a/600/450" alt="">
+                            <div class="img-label">Bild 1</div>
+                        </div>
+                        <div class="img-card">
+                            <img src="https://picsum.photos/seed/a0b/600/450" alt="">
+                            <div class="img-label">Bild 2</div>
+                        </div>
+                        <div class="img-card">
+                            <img src="https://picsum.photos/seed/a0c/600/450" alt="">
+                            <div class="img-label">Bild 3</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 1: 2 images, 1 section -->
+            <div class="slide" data-anchor="page1">
+                <div class="page-content">
+                    <div class="page-header">
+                        <h2>Alpha — Seite 2</h2>
+                        <span class="page-meta">1 Section · 2 Bilder</span>
+                    </div>
+                    <div class="section-grid cols-2">
+                        <div class="img-card">
+                            <img src="https://picsum.photos/seed/a1a/600/800" alt="">
+                            <div class="img-label">Portrait 1</div>
+                        </div>
+                        <div class="img-card">
+                            <img src="https://picsum.photos/seed/a1b/600/800" alt="">
+                            <div class="img-label">Portrait 2</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ══════ CHAPTER 1: Beta ══════ -->
+        <div class="section section-beta" data-anchor="beta">
+
+            <!-- Page 0: 4 images, 2 sections (2+2), scrollable -->
+            <div class="slide" data-anchor="page0">
+                <div class="page-content">
+                    <div class="page-header">
+                        <h2>Beta — Seite 1</h2>
+                        <span class="page-meta">2 Sections · 4 Bilder (2+2) · scrollbar</span>
+                    </div>
+                    <div class="scrollable-content">
+                        <div class="section-block">
+                            <h3>Section A — Landscapes</h3>
+                            <div class="img-row r2">
+                                <img src="https://picsum.photos/seed/b0a/800/600" alt="">
+                                <img src="https://picsum.photos/seed/b0b/800/600" alt="">
+                            </div>
+                        </div>
+                        <div class="section-divider"><span>Section Break</span></div>
+                        <div class="section-block">
+                            <h3>Section B — Details</h3>
+                            <div class="img-row r2">
+                                <img src="https://picsum.photos/seed/b0c/800/600" alt="">
+                                <img src="https://picsum.photos/seed/b0d/800/600" alt="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 1: 4 images, 2 sections (1+3), scrollable -->
+            <div class="slide" data-anchor="page1">
+                <div class="page-content">
+                    <div class="page-header">
+                        <h2>Beta — Seite 2</h2>
+                        <span class="page-meta">2 Sections · 4 Bilder (1+3) · scrollbar</span>
+                    </div>
+                    <div class="scrollable-content">
+                        <div class="section-block">
+                            <h3>Section A — Hero</h3>
+                            <div class="img-row r1">
+                                <img src="https://picsum.photos/seed/b1a/1200/600" alt="" style="aspect-ratio:2/1">
+                            </div>
+                        </div>
+                        <div class="section-divider"><span>Section Break</span></div>
+                        <div class="section-block">
+                            <h3>Section B — Gallery</h3>
+                            <div class="img-row r3">
+                                <img src="https://picsum.photos/seed/b1b/500/700" alt="" style="aspect-ratio:5/7">
+                                <img src="https://picsum.photos/seed/b1c/500/700" alt="" style="aspect-ratio:5/7">
+                                <img src="https://picsum.photos/seed/b1d/500/700" alt="" style="aspect-ratio:5/7">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- fullpage.js -->
+    <script src="https://cdn.jsdelivr.net/npm/fullpage.js@4/dist/fullpage.min.js"></script>
+
+    <script>
+    (function() {
+        'use strict';
+
+        /* ── Chapter definitions (mirrors our LIBRARY structure) ── */
+        var chapters = [
+            { name: 'Alpha', pages: ['Seite 1 (1 Sec)', 'Seite 2 (1 Sec)'] },
+            { name: 'Beta',  pages: ['Seite 1 (2 Sec)', 'Seite 2 (2 Sec)'] },
+        ];
+
+        var posEl = document.getElementById('position-indicator');
+
+        function updateUI(sectionIndex, slideIndex) {
+            /* Position indicator */
+            var ch = chapters[sectionIndex];
+            if (posEl && ch) {
+                posEl.textContent = ch.name + ' › ' + ch.pages[slideIndex || 0];
+            }
+
+            /* Minimap */
+            document.querySelectorAll('.mm-dot').forEach(function(d) {
+                d.classList.remove('active');
+            });
+            var dotId = 'mm-' + sectionIndex + '-' + (slideIndex || 0);
+            var dot = document.getElementById(dotId);
+            if (dot) dot.classList.add('active');
+        }
+
+        /* ── Initialize fullpage.js ── */
+        new fullpage('#fullpage', {
+            /* GPL v3 — no license key for open source demo */
+            licenseKey: 'gplv3-license',
+
+            /* Navigation */
+            anchors: ['alpha', 'beta'],
+            navigation: true,
+            navigationPosition: 'left',
+            navigationTooltips: ['Alpha', 'Beta'],
+            slidesNavigation: true,
+            slidesNavPosition: 'bottom',
+
+            /* Scrolling */
+            scrollingSpeed: 800,
+            css3: true,
+            easingcss3: 'cubic-bezier(0.16, 1, 0.3, 1)',
+            loopHorizontal: false,
+            scrollOverflow: true,
+
+            /* Design */
+            verticalCentered: false,
+            controlArrows: true,
+
+            /* Callbacks */
+            afterLoad: function(origin, destination, direction) {
+                var slideIdx = 0;
+                var activeSlide = destination.item.querySelector('.slide.active');
+                if (activeSlide) {
+                    var slides = destination.item.querySelectorAll('.slide');
+                    for (var i = 0; i < slides.length; i++) {
+                        if (slides[i] === activeSlide) { slideIdx = i; break; }
+                    }
+                }
+                updateUI(destination.index, slideIdx);
+            },
+
+            afterSlideLoad: function(section, origin, destination, direction) {
+                updateUI(section.index, destination.index);
+            },
+
+            afterRender: function() {
+                updateUI(0, 0);
+            }
+        });
+
+    })();
+    </script>
+
+</body>
+</html>
