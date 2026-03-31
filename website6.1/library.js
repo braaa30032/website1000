@@ -1,0 +1,984 @@
+/* ============================================
+   LIBRARY – Zentrale Content-Datenbank (website6.1)
+   ============================================
+
+   Hierarchische Struktur:
+   LIBRARY[kapitel].pages[seite][mainNode].subs[subNode]
+
+   Kapitel-Felder: name, color, pages, pageNames, pageSections
+   Main-Node-Felder: type, url, color, subs (optional)
+   Sub-Node-Felder: type, url/title/text, color (optional)
+
+   ============================================ */
+
+/* ═══════════════════════════════════════════════════════════════
+   FARBPALETTEN — zentrale Stelle für alle Farben
+   60 % = primary  (Netz-Quads, Main/Sub-Hintergründe, Landing-Banner)
+   30 % = secondary (Nav-Quadranten-Hintergrund, Loading-Tiles)
+   10 % = accent    (Texte, Nav-Beschriftungen)
+   ═══════════════════════════════════════════════════════════════ */
+export var COLOR_PALETTES = [
+    { name: 'Mint-Rose',     primary: '#2bffdf', secondary: '#ec677a', accent: '#00e105' },
+    { name: 'Lavender-Fire', primary: '#dad5eb', secondary: '#ff5b00', accent: '#00ffa2' },
+];
+
+/** Index der aktiven Palette (0-basiert). Ändere nur diesen Wert. */
+export var activePaletteIndex = 0;
+
+/** Gibt die aktuell aktive Palette zurück. */
+export function getActivePalette() {
+    return COLOR_PALETTES[activePaletteIndex] || COLOR_PALETTES[0];
+}
+
+/* Nav-Quadranten: '2d' = Canvas-Fill-Box | '3d' = 3D-Letter-System */
+export var NAV_TEXT_MODE = '2d';
+
+export var LIBRARY = [
+
+    // ===== Kapitel 0: David Asche =====
+    {
+        name: 'David Asche', color: '#E74C3C',
+        pages: [
+
+            // --- Seite 0 (1 Main-Nodes) ---
+            [
+                { id: 'david-portrait', type: 'image', url: 'https://raw.githubusercontent.com/DavidStHH/Website-Assets/main/assets/WhatsApp%20Image%202025-12-23%20at%2021.40.23%20(1).jpeg', color: '#E74C3C' }
+            ]
+        ]
+    },
+
+    // ===== Kapitel 1: 0 =====
+    {
+        name: '0', color: '#3498DB',
+        pageNames: ["intro","sprints 1","sprints 2","sprints 3","sprints 4","sprints 5","sprints 6","video","bild 3","bild 4","bild 5","bild 6","bild 7","bild 8","video 2"],
+        pages: [
+
+            // --- Seite 0: INTRO — 10-column grid overview ---
+            [{
+                layout: 'columns',
+                thumbnail: 128,
+                baseUrl: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/',
+                columns: [
+                    { name: 'tent poles', items: [
+                        '001.jpg','002.jpg','003.jpg','004.jpg','008.png','005.png','0051.png','007.JPG','006.png',
+                        '009.png','010.png','011.png','16.png','14.jpg','15.png','13.jpg','017.png','021.png',
+                        '024.jpg','023.png','022.jpg','0263.png','0261.jpg','0262.png','025.png','029.png','030.png',
+                        '019.jpg','020.png','018.png','027.png','0271.png','028.png','0281.png','037.png','036.png',
+                        '043.png','049.jpg','047.jpg','046.jpg','048.jpg','050.jpg','0511.jpg','0513.png','045.jpg',
+                        '053.jpg','056.jpg','057.jpg','058.jpg','066.jpg','068.jpg','067.jpg','072.jpg','073.jpeg',
+                        '074.jpeg','071.jpg','070.jpg','069.jpg','061.jpg','092.png','093.png','094.png','112.png',
+                        '141.jpg','142.png','143.png','1411.png'
+                    ]},
+                    { name: 'ballon', items: [
+                        '035.png','031.png','032.png','033.png','034.png','039.png','040.png','042.png','041.png',
+                        '0362.jpg','0362.jpg','052.jpg'
+                    ]},
+                    { name: 'clothing', items: ['059.jpg','060.png','065.jpg'] },
+                    { name: 'drape', items: [
+                        '076.png','077.jpg','078.png','079.png','080.png','083.jpeg','084.png','087.png','090.png',
+                        '085.png','086.png','091.png','089.png'
+                    ]},
+                    { name: 'meme', items: ['081.png','082.png'] },
+                    { name: 'standard', items: [
+                        '105.png','098.png','104.png','099.png','102.png','103.png','097.png','095.png','100.png','101.png'
+                    ]},
+                    { name: 'buiness card artefacts', items: [
+                        '113.png','114.png','115.png','116.png','117.png','118.png','119.png','120.png','121.png',
+                        '122.png','123.png','124.png','125.png','126.jpg','127.jpg','128.jpg','129.jpg','130.png',
+                        '131.png','132.png','138.png','133.png','1331.png','134.png','139.png','135.png','1351.png',
+                        '137.png','136.png'
+                    ]},
+                    { name: 'communication', items: ['140.png'] },
+                    { name: '(bad) dart', items: [
+                        '144.png','151.png','145.png','150.png','149.png','146.png','148.png','1481.jpg','153.jpg',
+                        '1531.png','154.jpg','155.jpg','1551.png','156.jpg','1561.png','1562.png','1563.png','157.jpg',
+                        '158.jpg','1581.png','159.jpg','162.jpg','160.jpg','1601.jpg','1605.png','1602.png','1603.png',
+                        '1602.png','1601.jpg','1604.png','161.jpg','1611.png','1612.png','1613.png','163.jpg','164.jpg',
+                        '1641.png','165.jpg','166.jpg','167.png','1671.jpg','1672.png','1673.png','168.jpg','169.png',
+                        '1691.png','170.jpg','1701.jpg','171.png','1711.png','172.png','1721.png','173.png','174.jpg',
+                        '1741.png','1742.png','175.jpg','1761.png','177.jpg','178.jpg','1771.png','179.jpg','1792.png',
+                        '1791.png'
+                    ]},
+                    { name: 'warp weft', items: [
+                        '180.png','1801.png','1802.png','1803.png','181.png','182.png','1821.png','1822.png','1823.png',
+                        '1824.png','1825.png','183.png','1831.png','184.png','1841.png','185.jpg','1851.png','186.jpg',
+                        '1861.png','1863.png','1862.png','187.jpg','1871.png','190.jpg','189.jpg','1891.png'
+                    ]}
+                ]
+            }],
+
+
+            // --- Seite 1: sprints 1 (40 Main-Nodes) ---
+            [
+                {
+                    type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/001.jpg', color: '#3498DB',
+                    subs: [
+                        { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/002.jpg', color: '#3498DB' },
+                        { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/003.jpg', color: '#3498DB' },
+                        { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/004.jpg', color: '#3498DB' },
+                        { type: 'text', color: '#3498DB', text: 'Erste Performanzen Skizze mit Fiberglaszeltstangen' }
+                    ]
+                },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/005.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/0051.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/006.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/007.JPG', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/008.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/009.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/010.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/011.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/017.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/018.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/019.jpg', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/020.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/021.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/022.jpg', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/023.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/024.jpg', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/025.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/0261.jpg', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/0262.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/0263.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/027.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/0271.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/028.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/0281.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/029.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/030.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/031.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/032.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/033.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/034.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/035.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/036.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/0361.JPG', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/0362.jpg', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/037.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/039.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/040.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/041.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/042.png', color: '#1A5276' }
+            ],
+
+            // --- Seite 2: sprints 2 (40 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/043.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/044.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/045.jpg', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/046.jpg', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/047.jpg', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/048.jpg', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/049.jpg', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/050.jpg', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/0511.jpg', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/0513.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/0514.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/052.jpg', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/053.jpg', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/056.jpg', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/057.jpg', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/058.jpg', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/059.jpg', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/060.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/061.jpg', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/065.jpg', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/066.jpg', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/067.jpg', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/068.jpg', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/069.jpg', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/070.jpg', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/071.jpg', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/072.jpg', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/073.jpeg', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/074.jpeg', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/076.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/077.jpg', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/078.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/079.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/080.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/081.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/082.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/083.jpeg', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/084.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/085.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/086.png', color: '#1A5276' }
+            ],
+
+            // --- Seite 3: sprints 3 (40 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/087.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/089.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/090.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/091.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/092.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/093.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/094.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/095.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/097.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/098.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/099.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/100.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/101.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/102.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/103.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/104.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/105.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/106.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/107.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/108.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/109.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/110.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/111.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/112.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/113.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/114.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/115.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/116.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/117.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/118.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/119.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/12.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/120.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/121.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/122.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/123.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/124.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/125.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/126.jpg', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/127.jpg', color: '#1A5276' }
+            ],
+
+            // --- Seite 4: sprints 4 (40 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/128.jpg', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/129.jpg', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/13.jpg', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/130.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/131.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/132.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/133.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/134.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/135.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/136.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/137.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/138.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/139.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/14.jpg', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/140.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/141.jpg', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/142.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/143.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/144.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/145.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/146.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/148.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1481.jpg', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/149.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/15.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/150.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/151.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/153.jpg', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1531.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/154.jpg', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/155.jpg', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1551.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/156.jpg', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1561.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1562.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1563.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/157.jpg', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/158.jpg', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1581.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/159.jpg', color: '#1A5276' }
+            ],
+
+            // --- Seite 5: sprints 5 (40 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/16.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/160.jpg', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1601.jpg', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1601.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1602.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1603.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1604.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1605.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1606.jpg', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/161.jpg', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/161.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1611.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1612.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/162.jpg', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/163.jpg', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/164.jpg', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1641.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/165.jpg', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/166.jpg', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1661.jpg', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/167.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1671.jpg', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1672.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1673.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/168.jpg', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/169.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1691.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/170.jpg', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1701.jpg', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/171.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1711.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1712.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/172.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1721.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/173.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/174.jpg', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1741.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1742.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/175.jpg', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/176.jpg', color: '#1A5276' }
+            ],
+
+            // --- Seite 6: sprints 6 (33 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1761.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/177.jpg', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/177.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1771.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/179.jpg', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/179.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1791.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/180.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1801.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1802.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1803.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/181.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/182.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1821.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1822.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1823.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1824.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1825.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/183.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1831.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/184.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1841.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/185.jpg', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1851.png', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/186.jpg', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1861.png', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1862.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1863.png', color: '#2471A3' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/187.jpg', color: '#1F618D' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1871.png', color: '#1A5276' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/189.jpg', color: '#3498DB' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/1891.png', color: '#2980B9' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/sprints/190.jpg', color: '#2471A3' }
+            ],
+
+
+            // --- Seite 2 (1 Main-Nodes) ---
+            [
+                { type: 'video', url: 'https://raw.githubusercontent.com/DavidStHH/Website-Assets/main/assets/Sequenz%2001.mp4', color: '#3498DB' }
+            ],
+
+            // --- Seite 3 (1 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://raw.githubusercontent.com/DavidStHH/Website-Assets/main/assets/WhatsApp%20Image%202025-12-18%20at%2017.09.46%20(1).jpeg', color: '#3498DB' }
+            ],
+
+            // --- Seite 4 (1 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://raw.githubusercontent.com/DavidStHH/Website-Assets/main/assets/flower-3.png', color: '#3498DB' }
+            ],
+
+            // --- Seite 5 (1 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://raw.githubusercontent.com/DavidStHH/Website-Assets/main/assets/WhatsApp%20Image%202025-12-18%20at%2017.09.46%20(2).jpeg', color: '#3498DB' }
+            ],
+
+            // --- Seite 6 (1 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://raw.githubusercontent.com/DavidStHH/Website-Assets/main/assets/WhatsApp%20Image%202025-12-23%20at%2021.40.23%20(1).jpeg', color: '#3498DB' }
+            ],
+
+            // --- Seite 7 (1 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://raw.githubusercontent.com/DavidStHH/Website-Assets/main/assets/flower-1.png', color: '#3498DB' }
+            ],
+
+            // --- Seite 8 (1 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://raw.githubusercontent.com/DavidStHH/Website-Assets/main/assets/3.png', color: '#3498DB' }
+            ],
+
+            // --- Seite 9 (1 Main-Nodes) ---
+            [
+                { type: 'video', url: 'https://raw.githubusercontent.com/DavidStHH/Website-Assets/main/assets/Sequenz%2001.mp4', color: '#3498DB' }
+            ]
+        ]
+    },
+
+    // ===== Kapitel 2: freie arbeiten =====
+    {
+        name: 'freie arbeiten', color: '#2ECC71',
+        pageNames: ['drawings', 'print painting', 'enamel'],
+        pageSections: {
+            0: [{ mainCount: 2 }, { mainCount: 3 }]
+        },
+        pages: [
+
+            // --- Seite 0: Zeichnung ---
+            // Sektion 1: Bild1, Bild5(+Sub Bild6)
+            // Sektion 2: Bild2, Bild3(+Sub Bild4), Bild7
+            [
+                { type: 'image', color: '#2ECC71', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/20210601_155721%20(2).jpg' },
+                {
+                    type: 'image', color: '#27AE60', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/weiblicher_akt.jpg',
+                    subs: [
+                        { type: 'image', color: '#82E0AA', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/weiblicher_akt_koloriert.jpg' }
+                    ]
+                },
+                { type: 'image', color: '#1ABC9C', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/innenkamera1.jpg' },
+                {
+                    type: 'image', color: '#2ECC71', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/innenkamera2.jpg',
+                    subs: [
+                        { type: 'image', color: '#27AE60', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/skizze_taenzer.jpg' }
+                    ]
+                },
+                { type: 'image', color: '#82E0AA', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/weibliches_modell_cowboy_hut.jpg' }
+            ],
+
+            // --- Seite 1: druck (1 Bild) ---
+            [
+                { type: 'image', color: '#2ECC71', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/druck/20211201_145651.jpg' }
+            ],
+
+            // --- Seite 2: email (2 Bilder) ---
+            [
+                { type: 'image', color: '#2ECC71', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/email/WhatsApp%20Image%202026-02-08%20at%2016.53.57.jpeg' },
+                { type: 'image', color: '#27AE60', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/email/asche_david_jewelery_enamel.jpeg' }
+            ]
+
+        ]
+    },
+
+    // ===== Kapitel 3: spitzenkollektion =====
+    {
+        name: 'spitzenkollektion', color: '#9B59B6',
+        pageNames: ['intro', 'abstract', 'mood', 'dev blouse', 'dev summer pants', 'dev capris', 'dev longsleeve', 'dev bomber', 'dev office top', 'summery'],
+        pages: [
+
+            // ── Seite 0: intro ──
+            [
+                {
+                    type: 'text',
+                    text: 'In this collection, I developed a collection based solely on the idea of a spike. This idea gave rise to seven garments that brought this design element to the body, starting with the cut from the spike outgoing.',
+                    subs: [
+                        { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200034.jpg' }
+                    ],
+                    netzTexts: [
+                        { position: 'above-main', text: 'spitzenkollektion' },
+                        { position: 'above-sub-0', text: '6th term project' },
+                        { position: 'below-main', text: 'Period of origin 2024, 4 months\nSupervision Prof. Sibylle Klose\nPhotography Ferle Reisige\nTalents Juli Eller, Lydia Puschendorf, Caro' }
+                    ]
+                }
+            ],
+
+            // ── Seite 1: abstract (6 Mains – one hero per garment) ──
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/blouse_vorne.png' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/capris_halb_vorne.png' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/longsleeve_vorne.png' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_vorne_ganz.png' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz.png' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/summer_pantspng.png' }
+            ],
+
+            // ── Seite 2: mood ──
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/mood/DSCF3882.JPG' }
+            ],
+
+            // ── Seite 3: dev blouse ──
+            [
+                // Section: shooting
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/blouse_vorne.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/blouse_hinten_detail.png' }
+                ]},
+                // Section: am_model
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/am_model/blouse_am_model.png' },
+                // Section: tecnicals
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/blouse_front.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/blouse_back.png' }
+                ]},
+                // Section: drapes
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/drapes/drape_blouse.png' },
+                // Section: schnitt
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/schnitt/schnitt_blouse.png' },
+                // Section: process/blouse (21 images → 2 groups)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_163727.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_163738.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_163813.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_163838.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_164007.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_165039.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_165111.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_165656.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_165708.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240415_165713.jpg' }
+                ]},
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_113510.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_113520.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_113537.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_113544.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_125854.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_152553.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_154118.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240416_155210.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240417_153449.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240424_092131.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/blouse/20240517_132830.jpg' }
+                ]}
+            ],
+
+            // ── Seite 4: dev summer pants ──
+            [
+                // Section: shooting
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/summer_pantspng.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/summer_pants_verschwommen.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/longer_pants_detail.png' }
+                ]},
+                // Section: tecnicals (summer pants + long pants)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/summer_pants_front.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/summer_pants_back.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/long_pants_front.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/long_pants_back.png' }
+                ]},
+                // Section: process/summer pants (13 images → 2 groups)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240508_164049.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240508_164056.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240508_164826.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_112916.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_121635.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_121642.jpg' }
+                ]},
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_145839.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_150418.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_151031.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_151505.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_151536.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240514_152702.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/summer%20pants/20240515_141341.jpg' }
+                ]},
+                // Section: process/long_pants
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/long_pants/20240624_164716.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/long_pants/20240624_164736.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/long_pants/20240624_164900.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/long_pants/20240624_185654.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/long_pants/20240624_185709.jpg' }
+                ]}
+            ],
+
+            // ── Seite 5: dev capris ──
+            [
+                // Section: shooting
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/capris_halb_vorne.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/capris_halb_unten.png' }
+                ]},
+                // Section: am_model
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/am_model/capris_am_model.png' },
+                // Section: tecnicals
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/capri_shorts_vorne.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/capri_shorts_hinten.png' }
+                ]},
+                // Section: drapes
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/drapes/drape_capris.png' },
+                // Section: schnitt
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/schnitt/schnitt_capris.png' },
+                // Section: process/capris (11 images → 2 groups)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240524_183811.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240524_183827.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240528_160243.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240528_163557.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240528_163608.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240528_163947.jpg' }
+                ]},
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240528_164008.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240528_164020.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240528_173418.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240624_163244.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/capris/20240624_163248.jpg' }
+                ]}
+            ],
+
+            // ── Seite 6: dev longsleeve ──
+            [
+                // Section: shooting
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/longsleeve_vorne.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/longsleeve_detail.png' }
+                ]},
+                // Section: tecnicals
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/longsleeve_front.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/longsleeve_back.png' }
+                ]},
+                // Section: process/longsleeve
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/longsleeve/20240601_180225.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/longsleeve/20240603_144829.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/longsleeve/20240603_144836.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/longsleeve/20240603_172135.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/longsleeve/20240619_195211.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/longsleeve/20240619_195218.jpg' }
+                ]}
+            ],
+
+            // ── Seite 7: dev bomber ──
+            [
+                // Section: shooting
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_vorne_ganz.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_vorne_verdreht.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_seite_boden.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_seite_verschwommen.png' }
+                ]},
+                // Section: tecnicals
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/bomber_vorne.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/bomber_hinten.png' }
+                ]},
+                // Section: process/bomber (14 images → 2 groups)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240608_195711.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240608_195719.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240608_195928.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240608_195939.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240611_192905.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240615_203236.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240617_185229.jpg' }
+                ]},
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240622_110945.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240622_110952.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240622_111214.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240622_111828.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240626_182615.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240626_182618.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/bomber/20240626_182843.jpg' }
+                ]}
+            ],
+
+            // ── Seite 8: dev office top ──
+            [
+                // Section: shooting (6 images)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_doppel.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz_eingedreht.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz_eingedreht_verschwommen.png' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz_verschwommen.png' }
+                ]},
+                // Section: am_model
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/am_model/office_top_am_model.png' },
+                // Section: tecnicals
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/office_top_vorne.png', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/tecnicals/office_top_hinten.png' }
+                ]},
+                // Section: drapes
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/drapes/drape_office_top.png' },
+                // Section: schnitt
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/schnitt/schnitt_office_top.png' },
+                // Section: process/office_top (18 images → 2 groups)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240610_174233.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200017.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200027.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200034.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200059.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_203521.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_203724.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_203732.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_203739.jpg' }
+                ]},
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_203750.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_204150.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_204156.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_204202.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240622_204206.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240627_155535.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240627_155555.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240627_155903.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240627_155909.jpg' }
+                ]},
+                // Section: process/office_top/construction (separate section)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240611_100732.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240611_100734.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240611_100737.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240622_164002.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240622_164010.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240622_172352.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240622_174255.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240622_174309.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/construction/20240624_220219.jpg' }
+                ]}
+            ],
+
+            // ── Seite 9: summery (process/looks – all 11 assembled-look images) ──
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240514_153100.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240524_134620.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_163734.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_163743.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_164009.jpg' }
+                ]},
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_164028.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240624_164035.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240626_121837.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240626_122031.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240627_145750.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/looks/20240627_145751.jpg' }
+                ]}
+            ]
+        ]
+    },
+
+    // ===== Kapitel 4: displaydisplay =====
+    {
+        name: 'displaydisplay', color: '#F39C12',
+        pageNames: ['intro', 'abstract', 'sketches', 'mood', 'visual research', 'combined research', 'key ideas', 'development', 'summary'],
+        pages: [
+
+            // --- Seite 0: intro (4 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200034.jpg', color: '#F39C12' }
+            ],
+
+            // --- Seite 1: abstract (4 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/mantel_toille_hinten.png', color: '#9C640C' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/mantel_zeichnung1.png', color: '#F39C12' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/pulli.png', color: '#E67E22' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/shrock.png', color: '#D68910' }
+            ],
+
+            // --- Seite 2: sketches (4 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/tank_top.png', color: '#B9770E' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/am_k%C3%B6rper/clo_3d_sketch_pixel_aufw%C3%A4rts.png', color: '#9C640C' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/abg_blender.png', color: '#F39C12' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/bag_3d_print_hinten.png', color: '#E67E22' }
+            ],
+
+            // --- Seite 3: mood (4 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/bag_3d_print_hinten_zentral.png', color: '#D68910' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/bag_3d_print_side.png', color: '#B9770E' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/bag_3d_print_vorne.png', color: '#9C640C' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/bag_black.png', color: '#F39C12' }
+            ],
+
+            // --- Seite 4: visual research (4 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/bag_blender_render.png', color: '#E67E22' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/bag_stoff_huelle.png', color: '#D68910' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/blender_bag_side.png', color: '#B9770E' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/freigestellte_blender_bag_dynamisch_unten.png', color: '#9C640C' }
+            ],
+
+            // --- Seite 5: combined research (3 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/freugestellte_blender_bag_vorne.png', color: '#F39C12' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/pixelig_soft_surface.png', color: '#E67E22' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/schnitt_bag_radial.jpg', color: '#D68910' }
+            ],
+
+            // --- Seite 6: key ideas (3 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/bag/tasche_stoff_technical_sketch.png', color: '#B9770E' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/handzeichnungen/sketch1_dynamische%20figur.png', color: '#9C640C' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/handzeichnungen/sketch1_dynamische_figur_front.png', color: '#F39C12' }
+            ],
+
+            // --- Seite 7: development (3 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/handzeichnungen/sketch_falling_character.png', color: '#E67E22' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/handzeichnungen/sketch_pixel_am_koerper.png', color: '#D68910' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/handzeichnungen/sketch_subject_and_bag.png', color: '#B9770E' }
+            ],
+
+            // --- Seite 8: summary (3 Main-Nodes) ---
+            [
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/schuh/schuh_hinten.png', color: '#9C640C' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/schuh/schuh_vorne.png', color: '#F39C12' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/4sem/assets/schuh/schuh_vorne_innen.png', color: '#E67E22' }
+            ]
+        ]
+    }
+];
+
+
+/* ============================================
+   BUILDER-FUNKTIONEN
+   Interface bleibt gleich – nur die Implementierung liest
+   jetzt aus der hierarchischen Struktur statt aus flachen Keys.
+   ============================================ */
+
+/** Anzahl Kapitel */
+export function getChapterCount() {
+    return LIBRARY.length;
+}
+
+/** Zaehlt die Seiten eines Kapitels. */
+export function getPageCount(chapterIdx) {
+    var ch = LIBRARY[chapterIdx];
+    return ch ? ch.pages.length : 0;
+}
+
+/**
+ * Baut die Main-Nodes fuer eine Seite.
+ * Rueckgabe: Array von Node-Objekten mit id, color, type,
+ * image/video, children[], pets[], connectsTo[].
+ *
+ * IDs: Nutzt entry.id wenn vorhanden, sonst auto-generiert
+ * (z.B. 'ch1-p2-m0').  Gleiche Logik fuer Children.
+ */
+export function getMainNodesForPage(chapterIdx, pageIdx) {
+    var ch = LIBRARY[chapterIdx];
+    if (!ch || pageIdx >= ch.pages.length) return [];
+    var page = ch.pages[pageIdx];
+    var defaultColor = ch.color;
+
+    /* Special: columns layout page → return single dummy node for transition compat */
+    if (page.length === 1 && page[0].layout === 'columns') {
+        return [{
+            id: 'columns-' + chapterIdx + '-' + pageIdx,
+            type: 'image', color: defaultColor, image: null, label: '',
+            children: [], pets: [], connectsTo: [], netzTexts: [], grid: null
+        }];
+    }
+
+    var nodes = [];
+    for (var m = 0; m < page.length; m++) {
+        var entry = page[m];
+        var nodeColor = entry.color || defaultColor;
+        var autoId = 'ch' + chapterIdx + '-p' + pageIdx + '-m' + m;
+
+        var node = {
+            id:         entry.id || autoId,
+            type:       entry.type || 'image',
+            color:      nodeColor,
+            label:      entry.label || '',
+            connectsTo: entry.connectsTo || [],
+            grid:       entry.grid || null,
+            pets:       [],
+            children:   []
+        };
+
+        /* media */
+        if (entry.type === 'image') { node.image = entry.url; }
+        else if (entry.type === 'video') { node.video = entry.url; }
+        else if (entry.type === 'text') {
+            node.title = entry.title || '';
+            node.text  = entry.text  || '';
+        }
+
+        /* pets (main-level) */
+        var mainPets = entry.pets || [];
+        for (var p = 0; p < mainPets.length; p++) {
+            var mp = mainPets[p];
+            var petObj = {
+                id:    mp.id || (node.id + '-pet' + p),
+                type:  mp.type || 'image',
+                image: mp.type === 'image' ? mp.url : undefined,
+                video: mp.type === 'video' ? mp.url : undefined,
+                title: mp.title || '',
+                text:  mp.text  || '',
+                color: mp.color || nodeColor
+            };
+            /* Optional manual placement (absolute px offsets from parent top-left) */
+            if (mp.x !== undefined) petObj.x = mp.x;
+            if (mp.y !== undefined) petObj.y = mp.y;
+            if (mp.scale !== undefined) petObj.scale = mp.scale;
+            node.pets.push(petObj);
+        }
+
+        /* netzTexts — text overlays for netz quads near this main */
+        node.netzTexts = entry.netzTexts || [];
+
+        /* children (subs) */
+        var subs = entry.subs || [];
+        for (var s = 0; s < subs.length; s++) {
+            var sub = subs[s];
+            var childId = sub.id || (node.id + '-sub' + s);
+
+            var child = {
+                id:         childId,
+                type:       sub.type || 'image',
+                color:      sub.color || nodeColor,
+                connectsTo: sub.connectsTo || [],
+                grid:       sub.grid || null,
+                pets:       [],
+                b2b:        !!sub.b2b   /* side-by-side with previous sub */
+            };
+
+            if (sub.type === 'image')      { child.image = sub.url; }
+            else if (sub.type === 'video') { child.video = sub.url; }
+            else if (sub.type === 'text')  {
+                child.title = sub.title || '';
+                child.text  = sub.text  || '';
+            }
+
+            /* child pets */
+            var childPets = sub.pets || [];
+            for (var cp = 0; cp < childPets.length; cp++) {
+                var cpet = childPets[cp];
+                var cpetObj = {
+                    id:    cpet.id || (childId + '-pet' + cp),
+                    type:  cpet.type || 'image',
+                    image: cpet.type === 'image' ? cpet.url : undefined,
+                    video: cpet.type === 'video' ? cpet.url : undefined,
+                    title: cpet.title || '',
+                    text:  cpet.text  || '',
+                    color: cpet.color || child.color
+                };
+                /* Optional manual placement (absolute px offsets from parent top-left) */
+                if (cpet.x !== undefined) cpetObj.x = cpet.x;
+                if (cpet.y !== undefined) cpetObj.y = cpet.y;
+                if (cpet.scale !== undefined) cpetObj.scale = cpet.scale;
+                child.pets.push(cpetObj);
+            }
+
+            node.children.push(child);
+        }
+
+        nodes.push(node);
+    }
+    return nodes;
+}
+
+/**
+ * Returns section definitions for a page.
+ * If the chapter has pageSections[pageIdx], returns that array.
+ * Otherwise DEFAULT: every main gets its own section (vertical scroll).
+ *
+ * To group multiple mains into ONE section (e.g. side-by-side landscape),
+ * add a pageSections entry to the chapter:
+ *
+ *   pageSections: {
+ *       0: [{ mainCount: 3 }],                       // page 0: all 3 mains in 1 section
+ *       1: [{ mainCount: 2 }, { mainCount: 1 }],      // page 1: 2 mains in sec0, 1 in sec1
+ *   }
+ *
+ * Format: [{mainCount: N}, {mainCount: M}, ...]
+ */
+export function getPageSections(chapterIdx, pageIdx) {
+    var ch = LIBRARY[chapterIdx];
+    if (!ch) return [{ mainCount: 0 }];
+    if (ch.pageSections && ch.pageSections[pageIdx] !== undefined) {
+        return ch.pageSections[pageIdx];
+    }
+    /* Default: each main = its own section (stacked vertically, scrollable) */
+    var page = ch.pages[pageIdx];
+    var n = page ? page.length : 0;
+    var sections = [];
+    for (var i = 0; i < n; i++) sections.push({ mainCount: 1 });
+    return sections;
+}
+
+/** Backward-compatible CHAPTER_DEFS (reads from LIBRARY). */
+export var CHAPTER_DEFS = LIBRARY.map(function(ch) {
+    return { name: ch.name, color: ch.color };
+});
+
+

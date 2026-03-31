@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>0fun.online — website6.1</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Content area: holds the current page, scrollable vertically -->
+    <div id="content-layer"></div>
+
+    <!-- Nav quadrants: 4 fixed corner divs -->
+    <div id="nav-tl" class="nav-quad"></div>
+    <div id="nav-tr" class="nav-quad"></div>
+    <div id="nav-bl" class="nav-quad"></div>
+    <div id="nav-br" class="nav-quad"></div>
+
+    <!-- Edge strips (between nav corners) -->
+    <div id="edge-top"    class="edge-strip"></div>
+    <div id="edge-bottom" class="edge-strip"></div>
+    <div id="edge-left"   class="edge-strip"></div>
+    <div id="edge-right"  class="edge-strip"></div>
+
+    <!-- Flash overlay (boundary feedback) -->
+    <div id="flash"></div>
+
+    <!-- GSAP via import map (references vendor files from parent project) -->
+    <script type="importmap">
+    {
+        "imports": {
+            "gsap": "../content/js/vendor/gsap-core.js",
+            "gsap/Observer": "../content/js/vendor/Observer.js"
+        }
+    }
+    </script>
+
+    <script type="module" src="engine.js"></script>
+
+</body>
+</html>
