@@ -11,6 +11,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import gsap from 'gsap';
+import { CSSPlugin } from 'gsap/CSSPlugin';
 import Observer from 'gsap/Observer';
 import {
     LIBRARY, getActivePalette, NAV_TEXT_MODE,
@@ -19,7 +20,7 @@ import {
 } from './library.js';
 import { computeLayout, LAYOUT_CONST } from './layout.js';
 
-gsap.registerPlugin(Observer);
+gsap.registerPlugin(CSSPlugin, Observer);
 
 /* ═══════════════════════════════════════════════════════════════
    ANIMATION CONFIG
@@ -285,6 +286,7 @@ function _buildContentText(text, container) {
    INIT
    ═══════════════════════════════════════════════════════════════ */
 function init() {
+    console.log('[CDS 6.1] init() starting…', W + 'x' + H);
     W = window.innerWidth;
     H = window.innerHeight;
 
@@ -512,27 +514,44 @@ function renderCurrentPage() {
     var landAtEnd = _scrollLandAtEnd;
     _scrollLandAtEnd = false;
 
+    console.log('[CDS 6.1] renderCurrentPage ch=' + currentChapter + ' pg=' + currentPage + ' nodes=' + nodes.length);
+
+    /* Render immediately with default aspects (no waiting for images) */
+    var cfg = _buildPageConfig(nodes, null, sectionDefs);
+    var layout = computeLayout(cfg, W, H);
+    currentLayout = layout;
+
+    _clearPage();
+    pageContainer = _buildPageDom(layout, nodes);
+    contentLayer.appendChild(pageContainer);
+
+    if (landAtEnd) {
+        panY = Math.max(0, layout.totalContentHeight - H);
+    } else {
+        panY = 0;
+    }
+    _applyPan();
+    _updateNavQuads();
+    _updateEdgeStrips();
+
+    console.log('[CDS 6.1] page built ✓ mains=' + layout.mains.length + ' totalH=' + layout.totalContentHeight);
+
+    /* Optionally re-layout with real aspect ratios once images load */
+    var snapCh = currentChapter, snapPg = currentPage;
     _preloadPageAspects(nodes).then(function (aspects) {
-        var cfg = _buildPageConfig(nodes, aspects, sectionDefs);
-        var layout = computeLayout(cfg, W, H);
-        currentLayout = layout;
-
+        if (currentChapter !== snapCh || currentPage !== snapPg) return;
+        var cfg2 = _buildPageConfig(nodes, aspects, sectionDefs);
+        var layout2 = computeLayout(cfg2, W, H);
+        if (Math.abs(layout2.totalContentHeight - layout.totalContentHeight) < 2) return;
+        currentLayout = layout2;
         _clearPage();
-        pageContainer = _buildPageDom(layout, nodes);
+        pageContainer = _buildPageDom(layout2, nodes);
         contentLayer.appendChild(pageContainer);
-
-        /* Scroll position: backward → bottom of page, forward → top */
-        if (landAtEnd) {
-            panY = Math.max(0, layout.totalContentHeight - H);
-        } else {
-            panY = 0;
-        }
+        _clampPan();
         _applyPan();
-        _updateNavQuads();
-        _updateEdgeStrips();
-
-        console.log('[CDS 6.1] ch=' + currentChapter + ' pg=' + currentPage +
-            ' mains=' + layout.mains.length + ' totalH=' + layout.totalContentHeight);
+        console.log('[CDS 6.1] re-layout with real aspects, totalH=' + layout2.totalContentHeight);
+    }).catch(function (err) {
+        console.warn('[CDS 6.1] aspect preload failed (non-critical):', err.message);
     });
 }
 
@@ -1235,8 +1254,24 @@ function _onResize() {
 /* ═══════════════════════════════════════════════════════════════
    BOOTSTRAP
    ═══════════════════════════════════════════════════════════════ */
+function _showError(msg) {
+    console.error('[CDS 6.1 ERROR]', msg);
+    var d = document.createElement('pre');
+    d.style.cssText = 'position:fixed;top:10px;left:10px;z-index:9999;background:#000;color:#f44;padding:12px;font-size:13px;max-width:90vw;white-space:pre-wrap;border-radius:6px';
+    d.textContent = '[CDS 6.1] ' + msg;
+    document.body.appendChild(d);
+}
+
+function _safeInit() {
+    try { init(); }
+    catch (e) { _showError(e.message + '\n' + e.stack); }
+}
+
+window.addEventListener('error', function(e) { _showError(e.message + ' @ ' + e.filename + ':' + e.lineno); });
+window.addEventListener('unhandledrejection', function(e) { _showError('Promise: ' + (e.reason ? (e.reason.message || e.reason) : 'unknown')); });
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', _safeInit);
 } else {
-    init();
+    _safeInit();
 }
