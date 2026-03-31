@@ -3,293 +3,425 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>fullPage.js Demo — 2-Axis Navigation</title>
+    <title>fullPage.js Demo — CDS Layout</title>
 
     <!-- fullpage.js v4 from CDN (GPLv3) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullpage.js@4/dist/fullpage.min.css">
 
     <style>
-        /* ── Reset ── */
+        /* ═══════════════════════════════════════════
+           RESET & BASE
+           ═══════════════════════════════════════════ */
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { font-family: 'Inter', system-ui, -apple-system, sans-serif; overflow: hidden; }
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            font-family: Arial, Helvetica, sans-serif;
+            user-select: none; -webkit-user-select: none;
+            overscroll-behavior: none; touch-action: none;
+            background: var(--pal-primary);
+        }
+        body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 
-        /* ── Section / Slide base ── */
+        /* ═══════════════════════════════════════════
+           PALETTE (matches library.js COLOR_PALETTES)
+           ═══════════════════════════════════════════ */
+        :root {
+            --pal-primary:   #1a1a2e;
+            --pal-secondary: #16213e;
+            --pal-accent:    #e94560;
+            --sq: 25vmin;
+        }
+
+        /* ═══════════════════════════════════════════
+           LOADING TILES (identical to CDS)
+           ═══════════════════════════════════════════ */
+        .load-tile {
+            position: fixed;
+            background: var(--pal-secondary);
+            z-index: 300;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            will-change: width, height;
+            width: 50.1%; height: 50.1%;
+            pointer-events: none;
+            transition: none;
+        }
+        .load-tile.load-tl { top: 0; left: 0; }
+        .load-tile.load-tr { top: 0; right: 0; }
+        .load-tile.load-bl { bottom: 0; left: 0; }
+        .load-tile.load-br { bottom: 0; right: 0; }
+
+        .load-letter {
+            font-size: min(12vw, 14vh); font-weight: 900; line-height: 1;
+            color: var(--pal-accent); opacity: 0;
+            transition: opacity 0.18s ease;
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); white-space: nowrap;
+        }
+        .load-tile.lit .load-letter { opacity: 1; }
+        .load-tile.shrink {
+            transition: width 0.85s cubic-bezier(0.76, 0, 0.24, 1),
+                        height 0.85s cubic-bezier(0.76, 0, 0.24, 1);
+        }
+        .load-tile.gone { display: none; }
+
+        /* ═══════════════════════════════════════════
+           NAV QUADRANTS (4 corners)
+           TL = current page label
+           TR = next chapter
+           BL = next page
+           BR = prev chapter / info
+           ═══════════════════════════════════════════ */
+        #nav-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 200; pointer-events: none;
+            opacity: 0; transition: opacity 0.4s ease;
+        }
+        #nav-overlay.visible { opacity: 1; }
+
+        .nav-quad {
+            position: absolute;
+            width: var(--sq); height: var(--sq);
+            background: var(--pal-secondary);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            pointer-events: auto; cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .nav-quad:hover { background: color-mix(in srgb, var(--pal-secondary) 80%, white); }
+        .nav-quad.disabled { opacity: 0.25; pointer-events: none; cursor: default; }
+        .nav-quad.tl { top: 0; left: 0; }
+        .nav-quad.tr { top: 0; right: 0; }
+        .nav-quad.bl { bottom: 0; left: 0; }
+        .nav-quad.br { bottom: 0; right: 0; }
+
+        .nav-quad-text {
+            font-weight: 900; line-height: 0.95;
+            text-transform: lowercase; word-break: break-all;
+            color: var(--pal-accent);
+            padding: 8%;
+            width: 100%; height: 100%;
+            display: flex;
+        }
+        .nav-quad.tl .nav-quad-text { align-items: flex-start; justify-content: flex-start; text-align: left; }
+        .nav-quad.tr .nav-quad-text { align-items: flex-start; justify-content: flex-end; text-align: right; }
+        .nav-quad.bl .nav-quad-text { align-items: flex-end; justify-content: flex-start; text-align: left; }
+        .nav-quad.br .nav-quad-text { align-items: flex-end; justify-content: flex-end; text-align: right; }
+
+        /* ═══════════════════════════════════════════
+           LANDING BANNERS (ch0 p0 only)
+           ═══════════════════════════════════════════ */
+        #landing-banners {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 150; pointer-events: none;
+            display: none;
+        }
+        #landing-banners.visible { display: block; }
+
+        .landing-banner-h {
+            position: absolute; top: 0; left: 0; width: 100%;
+            height: var(--sq); overflow: hidden;
+        }
+        .landing-stripe-h {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(90deg,
+                var(--pal-accent) 0px, var(--pal-accent) 3px,
+                transparent 3px, transparent 18px);
+            opacity: 0.08;
+        }
+        .landing-h-text {
+            position: absolute;
+            left: var(--sq); right: var(--sq);
+            top: 0; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        #landing-txt-h {
+            font-weight: 900; color: var(--pal-accent); opacity: 0.12;
+            white-space: nowrap; transform-origin: center center;
+        }
+        .landing-banner-v {
+            position: absolute; top: 0; left: 0;
+            width: var(--sq); height: 100%; overflow: hidden;
+        }
+        .landing-stripe-v {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg,
+                var(--pal-accent) 0px, var(--pal-accent) 3px,
+                transparent 3px, transparent 18px);
+            opacity: 0.08;
+        }
+        #landing-txt-v {
+            position: absolute;
+            font-weight: 900; color: var(--pal-accent); opacity: 0.12;
+            white-space: nowrap; transform-origin: center center;
+        }
+
+        /* ═══════════════════════════════════════════
+           FLASH OVERLAY (boundary feedback)
+           ═══════════════════════════════════════════ */
+        .flash-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 250; pointer-events: none;
+            transition: box-shadow 0.3s ease;
+            box-shadow: none;
+        }
+        .flash-overlay.flash-right  { box-shadow: inset -20px 0 30px rgba(255,0,0,0.5); }
+        .flash-overlay.flash-left   { box-shadow: inset 20px 0 30px rgba(255,0,0,0.5); }
+        .flash-overlay.flash-top    { box-shadow: inset 0 20px 30px rgba(255,0,0,0.5); }
+        .flash-overlay.flash-bottom { box-shadow: inset 0 -20px 30px rgba(255,0,0,0.5); }
+
+        /* ═══════════════════════════════════════════
+           STATUS DISPLAY
+           ═══════════════════════════════════════════ */
+        #status-display {
+            position: fixed;
+            top: calc(var(--sq) + 8px);
+            left: 50%; transform: translateX(-50%);
+            z-index: 201;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
+            padding: 5px 16px; border-radius: 14px;
+            font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.65);
+            pointer-events: none;
+            border: 1px solid rgba(255,255,255,0.06);
+            font-family: 'SF Mono', 'Menlo', monospace;
+        }
+
+        /* ═══════════════════════════════════════════
+           FULLPAGE CONTENT AREA
+           ═══════════════════════════════════════════ */
         .section { position: relative; }
         .slide { position: relative; }
 
-        /* ── Content card inside each slide ── */
-        .page-content {
-            width: 100%; height: 100%;
+        /* Inner content wrapper — inset by SQ on all sides */
+        .page-inner {
+            position: absolute;
+            top: var(--sq); left: var(--sq);
+            width: calc(100% - 2 * var(--sq));
+            height: calc(100% - 2 * var(--sq));
             display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            padding: 60px 40px 40px;
-            gap: 20px;
-        }
-
-        /* ── Section grid: shows images in a grid within a slide ── */
-        .section-grid {
-            display: grid;
-            gap: 12px;
-            width: 100%;
-            max-width: 1100px;
-            flex: 1;
-            min-height: 0;
-        }
-        .section-grid.cols-1 { grid-template-columns: 1fr; }
-        .section-grid.cols-2 { grid-template-columns: 1fr 1fr; }
-        .section-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
-
-        /* ── Section divider (for multi-section pages) ── */
-        .section-divider {
-            width: 100%; max-width: 1100px;
-            display: flex; align-items: center; gap: 12px;
-            padding: 6px 0;
-        }
-        .section-divider::before, .section-divider::after {
-            content: ''; flex: 1; height: 1px;
-            background: rgba(255,255,255,0.15);
-        }
-        .section-divider span {
-            font-size: 11px; text-transform: uppercase; letter-spacing: 2px;
-            color: rgba(255,255,255,0.35); white-space: nowrap;
-        }
-
-        /* ── Image card ── */
-        .img-card {
-            border-radius: 10px;
             overflow: hidden;
-            position: relative;
-            background: rgba(255,255,255,0.05);
-            min-height: 120px;
-        }
-        .img-card img {
-            width: 100%; height: 100%;
-            object-fit: cover;
-            display: block;
-            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .img-card:hover img { transform: scale(1.04); }
-        .img-card .img-label {
-            position: absolute; bottom: 8px; left: 10px;
-            font-size: 11px; color: rgba(255,255,255,0.6);
-            background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 6px;
-            backdrop-filter: blur(4px);
         }
 
-        /* ── Page header inside each slide ── */
         .page-header {
-            width: 100%; max-width: 1100px;
-            display: flex; align-items: baseline; gap: 12px;
+            flex-shrink: 0;
+            padding: 12px 0 8px;
+            display: flex; align-items: baseline; gap: 10px;
         }
         .page-header h2 {
-            font-size: 24px; font-weight: 700;
-            color: rgba(255,255,255,0.9);
+            font-size: 18px; font-weight: 700;
+            color: rgba(255,255,255,0.75);
         }
         .page-header .page-meta {
-            font-size: 13px; color: rgba(255,255,255,0.35);
+            font-size: 11px; color: rgba(255,255,255,0.25);
+            letter-spacing: 0.5px;
         }
 
-        /* ── Scrollable multi-section page (uses scrollOverflow) ── */
-        .scrollable-content {
-            width: 100%;
-            max-width: 1100px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+        /* Image grid */
+        .page-grid {
+            flex: 1; min-height: 0;
+            display: grid; gap: 4px;
+            align-content: center;
         }
-        .scrollable-content .section-block {
+        .page-grid.g1 { grid-template-columns: 1fr; }
+        .page-grid.g2 { grid-template-columns: 1fr 1fr; }
+        .page-grid.g3 { grid-template-columns: 1fr 1fr 1fr; }
+
+        .img-card {
+            border-radius: 4px; overflow: hidden;
+            position: relative;
             background: rgba(255,255,255,0.03);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid rgba(255,255,255,0.06);
         }
-        .scrollable-content .section-block h3 {
-            font-size: 14px; font-weight: 600;
-            color: rgba(255,255,255,0.5); margin-bottom: 12px;
+        .img-card img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .img-card:hover img { transform: scale(1.03); }
+
+        /* Section divider */
+        .sec-divider {
+            flex-shrink: 0;
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 0;
+        }
+        .sec-divider::before, .sec-divider::after {
+            content: ''; flex: 1; height: 1px;
+            background: rgba(255,255,255,0.08);
+        }
+        .sec-divider span {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 2px;
+            color: rgba(255,255,255,0.2);
+        }
+
+        /* Scrollable multi-section content */
+        .scrollable-page {
+            flex: 1; min-height: 0;
+            overflow-y: auto;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .scrollable-page::-webkit-scrollbar { width: 3px; }
+        .scrollable-page::-webkit-scrollbar-track { background: transparent; }
+        .scrollable-page::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+        .section-block {
+            background: rgba(255,255,255,0.02);
+            border-radius: 6px; padding: 12px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .section-block h3 {
+            font-size: 11px; font-weight: 600;
+            color: rgba(255,255,255,0.3); margin-bottom: 8px;
             text-transform: uppercase; letter-spacing: 1px;
         }
-        .scrollable-content .section-block .img-row {
-            display: grid; gap: 10px;
-        }
-        .scrollable-content .section-block .img-row.r2 { grid-template-columns: 1fr 1fr; }
-        .scrollable-content .section-block .img-row.r3 { grid-template-columns: 1fr 1fr 1fr; }
-        .scrollable-content .section-block .img-row.r1 { grid-template-columns: 1fr; }
-        .scrollable-content .section-block .img-row img {
-            width: 100%; border-radius: 8px; aspect-ratio: 4/3; object-fit: cover;
-        }
 
-        /* ── Demo overlay badge ── */
-        #demo-badge {
-            position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
-            z-index: 9999; padding: 6px 20px; border-radius: 20px;
-            background: rgba(0,0,0,0.6); color: #fff; font-size: 12px;
-            font-weight: 600; pointer-events: none; letter-spacing: 0.5px;
-            backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1);
-        }
-        #demo-badge span { opacity: 0.5; font-weight: 400; }
+        /* ═══════════════════════════════════════════
+           FULLPAGE OVERRIDES (use our own nav)
+           ═══════════════════════════════════════════ */
+        #fp-nav { display: none !important; }
+        .fp-slidesNav { display: none !important; }
+        .fp-controlArrow { display: none !important; }
+        .fp-watermark { opacity: 0.08 !important; }
 
-        /* ── Navigation info ── */
-        #nav-info {
-            position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
-            z-index: 9999; display: flex; gap: 24px; align-items: center;
-            padding: 10px 24px; border-radius: 30px;
-            background: rgba(0,0,0,0.55); backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.08);
+        /* ═══════════════════════════════════════════
+           NAV EDGE STRIPS (opaque covers between corners, like CDS fixedNavGroup)
+           ═══════════════════════════════════════════ */
+        .nav-edge {
+            position: fixed; z-index: 190;
+            background: var(--pal-primary);
             pointer-events: none;
         }
+        .nav-edge-top {
+            top: 0; left: var(--sq); right: var(--sq);
+            height: var(--sq);
+        }
+        .nav-edge-bottom {
+            bottom: 0; left: var(--sq); right: var(--sq);
+            height: var(--sq);
+        }
+        .nav-edge-left {
+            top: var(--sq); bottom: var(--sq); left: 0;
+            width: var(--sq);
+        }
+        .nav-edge-right {
+            top: var(--sq); bottom: var(--sq); right: 0;
+            width: var(--sq);
+        }
+
+        /* ═══════════════════════════════════════════
+           NAV HINT (small labels on edge strips)
+           ═══════════════════════════════════════════ */
         .nav-hint {
-            display: flex; align-items: center; gap: 6px;
-            font-size: 12px; color: rgba(255,255,255,0.45);
-        }
-        .nav-hint .arrow {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 22px; height: 22px; border-radius: 5px;
-            background: rgba(255,255,255,0.08); font-size: 11px;
-            color: rgba(255,255,255,0.6);
-        }
-
-        /* ── Current position indicator ── */
-        #position-indicator {
-            position: fixed; top: 10px; right: 16px; z-index: 9999;
-            padding: 6px 14px; border-radius: 8px;
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.1);
-            font-size: 12px; color: rgba(255,255,255,0.7);
-            font-family: 'SF Mono', monospace;
+            position: fixed; z-index: 195;
+            font-size: 10px; font-weight: 600; letter-spacing: 1px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.12);
             pointer-events: none;
         }
-
-        /* ── Minimap ── */
-        #minimap {
-            position: fixed; top: 50%; right: 16px; transform: translateY(-50%);
-            z-index: 9998; display: flex; flex-direction: column; gap: 12px;
-            pointer-events: none;
+        .nav-hint-top {
+            top: calc(var(--sq) / 2); left: 50%;
+            transform: translate(-50%, -50%);
         }
-        .mm-chapter {
-            display: flex; flex-direction: column; gap: 3px; align-items: center;
+        .nav-hint-bottom {
+            bottom: calc(var(--sq) / 2); left: 50%;
+            transform: translate(-50%, 50%);
         }
-        .mm-label {
-            font-size: 9px; text-transform: uppercase; letter-spacing: 1px;
-            color: rgba(255,255,255,0.25); writing-mode: vertical-rl;
-            text-orientation: mixed; margin-bottom: 4px;
+        .nav-hint-left {
+            top: 50%; left: calc(var(--sq) / 2);
+            transform: translate(-50%, -50%) rotate(-90deg);
         }
-        .mm-dots { display: flex; gap: 4px; }
-        .mm-dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            border: 1.5px solid rgba(255,255,255,0.2);
-            transition: all 0.4s ease;
+        .nav-hint-right {
+            top: 50%; right: calc(var(--sq) / 2);
+            transform: translate(50%, -50%) rotate(90deg);
         }
-        .mm-dot.active {
-            background: var(--dot-color, #e94560);
-            border-color: var(--dot-color, #e94560);
-            box-shadow: 0 0 8px var(--dot-color, #e94560);
-        }
-        .mm-sep {
-            width: 12px; height: 1px; background: rgba(255,255,255,0.1);
-            align-self: center;
-        }
-
-        /* ── fullpage.js slide arrow overrides ── */
-        .fp-arrow { border-color: rgba(255,255,255,0.4) !important; }
-        .fp-arrow:hover { border-color: rgba(255,255,255,0.8) !important; }
-        .fp-slidesNav ul li a span {
-            background: rgba(255,255,255,0.3) !important;
-        }
-        .fp-slidesNav ul li a.active span {
-            background: rgba(255,255,255,0.8) !important;
-        }
-
-        /* ── Section colors ── */
-        .section-alpha { background: #1a1a2e; }
-        .section-beta  { background: #0f2027; }
-
-        /* ── fullpage credits override for GPLv3 demo ── */
-        .fp-watermark { opacity: 0.15 !important; }
     </style>
 </head>
 <body>
 
-    <!-- Demo badge -->
-    <div id="demo-badge">fullPage.js DEMO <span>— ↕ Kapitel · ↔ Seiten</span></div>
+    <!-- ═══ LOADING TILES ═══ -->
+    <div class="load-tile load-tl" id="load-tl"><span class="load-letter">D</span></div>
+    <div class="load-tile load-tr" id="load-tr"><span class="load-letter">E</span></div>
+    <div class="load-tile load-bl" id="load-bl"><span class="load-letter">M</span></div>
+    <div class="load-tile load-br" id="load-br"><span class="load-letter">O</span></div>
 
-    <!-- Position indicator -->
-    <div id="position-indicator">—</div>
+    <!-- ═══ FLASH OVERLAY ═══ -->
+    <div class="flash-overlay" id="flash"></div>
 
-    <!-- Minimap -->
-    <div id="minimap">
-        <div class="mm-chapter">
-            <div class="mm-label">Alpha</div>
-            <div class="mm-dots">
-                <div class="mm-dot" id="mm-0-0" style="--dot-color:#e94560"></div>
-                <div class="mm-dot" id="mm-0-1" style="--dot-color:#e94560"></div>
-            </div>
+    <!-- ═══ LANDING BANNERS ═══ -->
+    <div id="landing-banners">
+        <div class="landing-banner-h">
+            <div class="landing-stripe-h"></div>
+            <div class="landing-h-text"><span id="landing-txt-h">chapters</span></div>
         </div>
-        <div class="mm-sep"></div>
-        <div class="mm-chapter">
-            <div class="mm-label">Beta</div>
-            <div class="mm-dots">
-                <div class="mm-dot" id="mm-1-0" style="--dot-color:#4fc3f7"></div>
-                <div class="mm-dot" id="mm-1-1" style="--dot-color:#4fc3f7"></div>
-            </div>
+        <div class="landing-banner-v">
+            <div class="landing-stripe-v"></div>
+            <span id="landing-txt-v">pages</span>
         </div>
     </div>
 
-    <!-- Nav hints -->
-    <div id="nav-info">
-        <div class="nav-hint"><span class="arrow">↑↓</span> Kapitel</div>
-        <div class="nav-hint"><span class="arrow">←→</span> Seiten</div>
-        <div class="nav-hint"><span class="arrow">⇕</span> Scroll (wenn Inhalt)</div>
+    <!-- ═══ NAV EDGE STRIPS (opaque covers = CDS fixedNavGroup) ═══ -->
+    <div class="nav-edge nav-edge-top"></div>
+    <div class="nav-edge nav-edge-bottom"></div>
+    <div class="nav-edge nav-edge-left"></div>
+    <div class="nav-edge nav-edge-right"></div>
+
+    <!-- ═══ NAV HINTS on edges ═══ -->
+    <div class="nav-hint nav-hint-top" id="hint-top">↑ prev page</div>
+    <div class="nav-hint nav-hint-bottom" id="hint-bottom">↓ next page</div>
+    <div class="nav-hint nav-hint-left" id="hint-left">← prev chapter</div>
+    <div class="nav-hint nav-hint-right" id="hint-right">→ next chapter</div>
+
+    <!-- ═══ NAV QUADRANTS (4 corners) ═══ -->
+    <div id="nav-overlay">
+        <div class="nav-quad tl" id="nav-tl"><div class="nav-quad-text" id="nav-tl-text">—</div></div>
+        <div class="nav-quad tr" id="nav-tr"><div class="nav-quad-text" id="nav-tr-text">—</div></div>
+        <div class="nav-quad bl" id="nav-bl"><div class="nav-quad-text" id="nav-bl-text">—</div></div>
+        <div class="nav-quad br" id="nav-br"><div class="nav-quad-text" id="nav-br-text">—</div></div>
     </div>
 
-    <!-- ═══════════════════════════════════════════
+    <!-- ═══ STATUS DISPLAY ═══ -->
+    <div id="status-display">—</div>
+
+    <!-- ═══════════════════════════════════════════════════════════
          FULLPAGE STRUCTURE
-         Section = Kapitel, Slide = Seite
-         ═══════════════════════════════════════════ -->
+         
+         CDS Model:
+         - X-Achse (←→) = Kapitel    → fullpage Sections (vertical)
+         - Y-Achse (↑↓) = Seiten     → fullpage Slides (horizontal)
+         
+         Chapter 0 "Alpha": 2 pages (slides), 1 section each
+         Chapter 1 "Beta":  2 pages (slides), 2 sections each
+         ═══════════════════════════════════════════════════════════ -->
     <div id="fullpage">
 
         <!-- ══════ CHAPTER 0: Alpha ══════ -->
-        <div class="section section-alpha" data-anchor="alpha">
+        <div class="section" data-anchor="alpha" style="background: var(--pal-primary)">
 
             <!-- Page 0: 3 images, 1 section -->
             <div class="slide" data-anchor="page0">
-                <div class="page-content">
+                <div class="page-inner">
                     <div class="page-header">
-                        <h2>Alpha — Seite 1</h2>
-                        <span class="page-meta">1 Section · 3 Bilder</span>
+                        <h2>Alpha</h2>
+                        <span class="page-meta">landscape · 3 Bilder</span>
                     </div>
-                    <div class="section-grid cols-3">
-                        <div class="img-card">
-                            <img src="https://picsum.photos/seed/a0a/600/450" alt="">
-                            <div class="img-label">Bild 1</div>
-                        </div>
-                        <div class="img-card">
-                            <img src="https://picsum.photos/seed/a0b/600/450" alt="">
-                            <div class="img-label">Bild 2</div>
-                        </div>
-                        <div class="img-card">
-                            <img src="https://picsum.photos/seed/a0c/600/450" alt="">
-                            <div class="img-label">Bild 3</div>
-                        </div>
+                    <div class="page-grid g3">
+                        <div class="img-card"><img src="https://picsum.photos/seed/alpha0a/800/600" alt=""></div>
+                        <div class="img-card"><img src="https://picsum.photos/seed/alpha0b/800/600" alt=""></div>
+                        <div class="img-card"><img src="https://picsum.photos/seed/alpha0c/800/600" alt=""></div>
                     </div>
                 </div>
             </div>
 
             <!-- Page 1: 2 images, 1 section -->
             <div class="slide" data-anchor="page1">
-                <div class="page-content">
+                <div class="page-inner">
                     <div class="page-header">
-                        <h2>Alpha — Seite 2</h2>
-                        <span class="page-meta">1 Section · 2 Bilder</span>
+                        <h2>Alpha</h2>
+                        <span class="page-meta">portrait · 2 Bilder</span>
                     </div>
-                    <div class="section-grid cols-2">
-                        <div class="img-card">
-                            <img src="https://picsum.photos/seed/a1a/600/800" alt="">
-                            <div class="img-label">Portrait 1</div>
-                        </div>
-                        <div class="img-card">
-                            <img src="https://picsum.photos/seed/a1b/600/800" alt="">
-                            <div class="img-label">Portrait 2</div>
-                        </div>
+                    <div class="page-grid g2">
+                        <div class="img-card"><img src="https://picsum.photos/seed/alpha1a/600/800" alt=""></div>
+                        <div class="img-card"><img src="https://picsum.photos/seed/alpha1b/600/800" alt=""></div>
                     </div>
                 </div>
             </div>
@@ -297,56 +429,56 @@
         </div>
 
         <!-- ══════ CHAPTER 1: Beta ══════ -->
-        <div class="section section-beta" data-anchor="beta">
+        <div class="section" data-anchor="beta" style="background: var(--pal-primary)">
 
-            <!-- Page 0: 4 images, 2 sections (2+2), scrollable -->
+            <!-- Page 0: 4 images, 2 sections (2+2) -->
             <div class="slide" data-anchor="page0">
-                <div class="page-content">
+                <div class="page-inner">
                     <div class="page-header">
-                        <h2>Beta — Seite 1</h2>
-                        <span class="page-meta">2 Sections · 4 Bilder (2+2) · scrollbar</span>
+                        <h2>Beta</h2>
+                        <span class="page-meta">duo A · 2 Sections (2+2)</span>
                     </div>
-                    <div class="scrollable-content">
+                    <div class="scrollable-page">
                         <div class="section-block">
-                            <h3>Section A — Landscapes</h3>
-                            <div class="img-row r2">
-                                <img src="https://picsum.photos/seed/b0a/800/600" alt="">
-                                <img src="https://picsum.photos/seed/b0b/800/600" alt="">
+                            <h3>Section A</h3>
+                            <div class="page-grid g2" style="flex:none">
+                                <div class="img-card"><img src="https://picsum.photos/seed/beta0a/800/600" alt=""></div>
+                                <div class="img-card"><img src="https://picsum.photos/seed/beta0b/800/600" alt=""></div>
                             </div>
                         </div>
-                        <div class="section-divider"><span>Section Break</span></div>
+                        <div class="sec-divider"><span>section break</span></div>
                         <div class="section-block">
-                            <h3>Section B — Details</h3>
-                            <div class="img-row r2">
-                                <img src="https://picsum.photos/seed/b0c/800/600" alt="">
-                                <img src="https://picsum.photos/seed/b0d/800/600" alt="">
+                            <h3>Section B</h3>
+                            <div class="page-grid g2" style="flex:none">
+                                <div class="img-card"><img src="https://picsum.photos/seed/beta0c/800/600" alt=""></div>
+                                <div class="img-card"><img src="https://picsum.photos/seed/beta0d/800/600" alt=""></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Page 1: 4 images, 2 sections (1+3), scrollable -->
+            <!-- Page 1: 4 images, 2 sections (1+3) -->
             <div class="slide" data-anchor="page1">
-                <div class="page-content">
+                <div class="page-inner">
                     <div class="page-header">
-                        <h2>Beta — Seite 2</h2>
-                        <span class="page-meta">2 Sections · 4 Bilder (1+3) · scrollbar</span>
+                        <h2>Beta</h2>
+                        <span class="page-meta">duo B · 2 Sections (1+3)</span>
                     </div>
-                    <div class="scrollable-content">
+                    <div class="scrollable-page">
                         <div class="section-block">
                             <h3>Section A — Hero</h3>
-                            <div class="img-row r1">
-                                <img src="https://picsum.photos/seed/b1a/1200/600" alt="" style="aspect-ratio:2/1">
+                            <div class="page-grid g1" style="flex:none">
+                                <div class="img-card"><img src="https://picsum.photos/seed/beta1a/1200/600" alt="" style="aspect-ratio:2/1"></div>
                             </div>
                         </div>
-                        <div class="section-divider"><span>Section Break</span></div>
+                        <div class="sec-divider"><span>section break</span></div>
                         <div class="section-block">
                             <h3>Section B — Gallery</h3>
-                            <div class="img-row r3">
-                                <img src="https://picsum.photos/seed/b1b/500/700" alt="" style="aspect-ratio:5/7">
-                                <img src="https://picsum.photos/seed/b1c/500/700" alt="" style="aspect-ratio:5/7">
-                                <img src="https://picsum.photos/seed/b1d/500/700" alt="" style="aspect-ratio:5/7">
+                            <div class="page-grid g3" style="flex:none">
+                                <div class="img-card"><img src="https://picsum.photos/seed/beta1b/500/700" alt="" style="aspect-ratio:5/7"></div>
+                                <div class="img-card"><img src="https://picsum.photos/seed/beta1c/500/700" alt="" style="aspect-ratio:5/7"></div>
+                                <div class="img-card"><img src="https://picsum.photos/seed/beta1d/500/700" alt="" style="aspect-ratio:5/7"></div>
                             </div>
                         </div>
                     </div>
@@ -364,75 +496,326 @@
     (function() {
         'use strict';
 
-        /* ── Chapter definitions (mirrors our LIBRARY structure) ── */
-        var chapters = [
-            { name: 'Alpha', pages: ['Seite 1 (1 Sec)', 'Seite 2 (1 Sec)'] },
-            { name: 'Beta',  pages: ['Seite 1 (2 Sec)', 'Seite 2 (2 Sec)'] },
+        /* ═══════════════════════════════════════════
+           LIBRARY DATA (mirrors demos/demo-library.js)
+           ═══════════════════════════════════════════ */
+        var CHAPTERS = [
+            { name: 'Alpha', color: '#e94560', pageNames: ['landscape', 'portrait'], pages: 2 },
+            { name: 'Beta',  color: '#0f3460', pageNames: ['duo A', 'duo B'],        pages: 2 }
         ];
 
-        var posEl = document.getElementById('position-indicator');
+        /* ═══════════════════════════════════════════
+           STATE
+           ═══════════════════════════════════════════ */
+        var currentChapter = 0;
+        var currentPage = 0;
+        var isAnimating = false;
 
-        function updateUI(sectionIndex, slideIndex) {
-            /* Position indicator */
-            var ch = chapters[sectionIndex];
-            if (posEl && ch) {
-                posEl.textContent = ch.name + ' › ' + ch.pages[slideIndex || 0];
-            }
+        /* ═══════════════════════════════════════════
+           DOM REFS
+           ═══════════════════════════════════════════ */
+        var navTL = document.getElementById('nav-tl');
+        var navTR = document.getElementById('nav-tr');
+        var navBL = document.getElementById('nav-bl');
+        var navBR = document.getElementById('nav-br');
+        var navTLText = document.getElementById('nav-tl-text');
+        var navTRText = document.getElementById('nav-tr-text');
+        var navBLText = document.getElementById('nav-bl-text');
+        var navBRText = document.getElementById('nav-br-text');
+        var statusEl  = document.getElementById('status-display');
+        var flashEl   = document.getElementById('flash');
+        var landingEl = document.getElementById('landing-banners');
+        var navOverlay = document.getElementById('nav-overlay');
+        var hintTop    = document.getElementById('hint-top');
+        var hintBottom = document.getElementById('hint-bottom');
+        var hintLeft   = document.getElementById('hint-left');
+        var hintRight  = document.getElementById('hint-right');
 
-            /* Minimap */
-            document.querySelectorAll('.mm-dot').forEach(function(d) {
-                d.classList.remove('active');
-            });
-            var dotId = 'mm-' + sectionIndex + '-' + (slideIndex || 0);
-            var dot = document.getElementById(dotId);
-            if (dot) dot.classList.add('active');
+        /* ═══════════════════════════════════════════
+           NAV QUAD TEXT — fill-box style
+           ═══════════════════════════════════════════ */
+        function fitQuadText(textEl, text) {
+            textEl.textContent = text;
+            var sq = Math.min(window.innerWidth, window.innerHeight) / 4;
+            var charCount = text.length || 1;
+            var fontSize = Math.min(sq * 0.85, sq * 2.5 / Math.sqrt(charCount));
+            textEl.style.fontSize = Math.round(fontSize) + 'px';
         }
 
-        /* ── Initialize fullpage.js ── */
+        /* ═══════════════════════════════════════════
+           UPDATE NAV QUADS
+           Mirrors CDS getContentForPanel:
+           TL = current page label (Y prev direction)
+           TR = next chapter name (X next direction)
+           BL = next page label (Y next direction)
+           BR = prev chapter / info
+           ═══════════════════════════════════════════ */
+        function updateNavQuads() {
+            var ch = CHAPTERS[currentChapter];
+            var pageLabel = ch.pageNames[currentPage] || ('page ' + (currentPage + 1));
+            var totalPages = ch.pages;
+
+            /* TL: current page (shared with "top" in CDS Y-axis) */
+            fitQuadText(navTLText, pageLabel);
+            navTL.classList.remove('disabled');
+
+            /* TR: next chapter (CDS "next" panel) */
+            if (currentChapter < CHAPTERS.length - 1) {
+                fitQuadText(navTRText, CHAPTERS[currentChapter + 1].name);
+                navTR.classList.remove('disabled');
+            } else {
+                fitQuadText(navTRText, 'end');
+                navTR.classList.add('disabled');
+            }
+
+            /* BL: next page (CDS "bottom" panel) */
+            if (currentPage < totalPages - 1) {
+                var nextPgLabel = ch.pageNames[currentPage + 1] || ('page ' + (currentPage + 2));
+                fitQuadText(navBLText, nextPgLabel);
+                navBL.classList.remove('disabled');
+            } else {
+                fitQuadText(navBLText, 'end');
+                navBL.classList.add('disabled');
+            }
+
+            /* BR: prev chapter (CDS "prev" as bottom-right) or info */
+            if (currentChapter > 0) {
+                fitQuadText(navBRText, CHAPTERS[currentChapter - 1].name);
+                navBR.classList.remove('disabled');
+            } else {
+                fitQuadText(navBRText, 'demo');
+                navBR.classList.add('disabled');
+            }
+
+            /* Status */
+            statusEl.textContent = ch.name + ' — ' + pageLabel +
+                '  ·  Seite ' + (currentPage + 1) + '/' + totalPages +
+                '  ·  Kapitel ' + (currentChapter + 1) + '/' + CHAPTERS.length;
+
+            /* Landing banners */
+            if (currentChapter === 0 && currentPage === 0) {
+                landingEl.classList.add('visible');
+                fitLandingBanners();
+            } else {
+                landingEl.classList.remove('visible');
+            }
+
+            /* Edge hints */
+            hintTop.textContent = currentPage > 0 ? '↑ ' + (ch.pageNames[currentPage - 1] || 'prev page') : '';
+            hintBottom.textContent = currentPage < totalPages - 1 ? '↓ ' + (ch.pageNames[currentPage + 1] || 'next page') : '';
+            hintLeft.textContent = currentChapter > 0 ? '← ' + CHAPTERS[currentChapter - 1].name : '';
+            hintRight.textContent = currentChapter < CHAPTERS.length - 1 ? '→ ' + CHAPTERS[currentChapter + 1].name : '';
+        }
+
+        /* ═══════════════════════════════════════════
+           LANDING BANNERS
+           ═══════════════════════════════════════════ */
+        function fitLandingBanners() {
+            var sq = Math.min(window.innerWidth, window.innerHeight) / 4;
+            var W = window.innerWidth, H = window.innerHeight;
+            var txtH = document.getElementById('landing-txt-h');
+            var txtV = document.getElementById('landing-txt-v');
+
+            txtH.style.fontSize = sq + 'px';
+            txtV.style.fontSize = sq + 'px';
+
+            requestAnimationFrame(function() {
+                var twH = txtH.scrollWidth;
+                var areaW = W - 2 * sq;
+                if (twH > 0) txtH.style.transform = 'scaleX(' + (areaW / twH) + ')';
+
+                var midH = H - 2 * sq;
+                var midCY = sq + midH / 2;
+                var twV = txtV.scrollWidth;
+                var sx = midH / twV;
+                txtV.style.left = (sq / 2 - twV / 2) + 'px';
+                txtV.style.top = (midCY - sq / 2) + 'px';
+                txtV.style.transform = 'rotate(90deg) scaleX(' + (twV > 0 ? sx : 1) + ')';
+            });
+        }
+
+        /* ═══════════════════════════════════════════
+           FLASH BOUNDARY
+           ═══════════════════════════════════════════ */
+        function flashBorder(side) {
+            flashEl.className = 'flash-overlay flash-' + side;
+            setTimeout(function() { flashEl.className = 'flash-overlay'; }, 300);
+        }
+
+        /* ═══════════════════════════════════════════
+           NAVIGATION HELPERS
+           CDS axes: ←→ = chapters, ↑↓ = pages
+           fullpage: sections = chapters (vertical), slides = pages (horizontal)
+           ═══════════════════════════════════════════ */
+        function goNextChapter() {
+            if (isAnimating) return;
+            if (currentChapter < CHAPTERS.length - 1) {
+                fullpage_api.moveSectionDown();
+            } else {
+                flashBorder('right');
+            }
+        }
+        function goPrevChapter() {
+            if (isAnimating) return;
+            if (currentChapter > 0) {
+                fullpage_api.moveSectionUp();
+            } else {
+                flashBorder('left');
+            }
+        }
+        function goNextPage() {
+            if (isAnimating) return;
+            if (currentPage < CHAPTERS[currentChapter].pages - 1) {
+                fullpage_api.moveSlideRight();
+            } else {
+                flashBorder('bottom');
+            }
+        }
+        function goPrevPage() {
+            if (isAnimating) return;
+            if (currentPage > 0) {
+                fullpage_api.moveSlideLeft();
+            } else {
+                flashBorder('top');
+            }
+        }
+
+        /* ═══════════════════════════════════════════
+           NAV QUAD CLICKS
+           TL click = prev page (↑)
+           TR click = next chapter (→)
+           BL click = next page (↓)
+           BR click = prev chapter (←)
+           ═══════════════════════════════════════════ */
+        navTL.addEventListener('click', goPrevPage);
+        navTR.addEventListener('click', goNextChapter);
+        navBL.addEventListener('click', goNextPage);
+        navBR.addEventListener('click', goPrevChapter);
+
+        /* ═══════════════════════════════════════════
+           KEYBOARD (matches CDS arrow keys)
+           ←→ = chapters, ↑↓ = pages
+           ═══════════════════════════════════════════ */
+        document.addEventListener('keydown', function(e) {
+            if (isAnimating) return;
+            switch (e.key) {
+                case 'ArrowRight': e.preventDefault(); goNextChapter(); break;
+                case 'ArrowLeft':  e.preventDefault(); goPrevChapter(); break;
+                case 'ArrowDown':  e.preventDefault(); goNextPage(); break;
+                case 'ArrowUp':    e.preventDefault(); goPrevPage(); break;
+            }
+        });
+
+        /* ═══════════════════════════════════════════
+           LOADING SCREEN
+           ═══════════════════════════════════════════ */
+        function runLoadingScreen(onDone) {
+            var TILES = ['load-tl', 'load-tr', 'load-bl', 'load-br'];
+            var ROTATIONS = 1;
+            var allTiles = TILES.map(function(id) { return document.getElementById(id); });
+
+            function flashTile(tile, cb) {
+                tile.classList.add('lit');
+                setTimeout(function() {
+                    tile.classList.remove('lit');
+                    setTimeout(cb, 160);
+                }, 520);
+            }
+
+            function spin(step, cb) {
+                if (step >= 4 * ROTATIONS) { cb(); return; }
+                flashTile(allTiles[step % 4], function() { spin(step + 1, cb); });
+            }
+
+            function shrink() {
+                var sq = Math.min(window.innerWidth, window.innerHeight) / 4;
+                var sqW = (sq / window.innerWidth * 100) + '%';
+                var sqH = (sq / window.innerHeight * 100) + '%';
+                setTimeout(function() {
+                    allTiles.forEach(function(t) {
+                        t.classList.add('shrink');
+                        t.style.width = sqW;
+                        t.style.height = sqH;
+                    });
+                    setTimeout(function() {
+                        allTiles.forEach(function(t) { t.classList.add('gone'); });
+                        onDone();
+                    }, 950);
+                }, 200);
+            }
+
+            setTimeout(function() { spin(0, shrink); }, 400);
+        }
+
+        /* ═══════════════════════════════════════════
+           FULLPAGE INIT
+           ═══════════════════════════════════════════ */
         new fullpage('#fullpage', {
-            /* GPL v3 — no license key for open source demo */
             licenseKey: 'gplv3-license',
-
-            /* Navigation */
             anchors: ['alpha', 'beta'],
-            navigation: true,
-            navigationPosition: 'left',
-            navigationTooltips: ['Alpha', 'Beta'],
-            slidesNavigation: true,
-            slidesNavPosition: 'bottom',
-
-            /* Scrolling */
             scrollingSpeed: 800,
             css3: true,
             easingcss3: 'cubic-bezier(0.16, 1, 0.3, 1)',
             loopHorizontal: false,
             scrollOverflow: true,
-
-            /* Design */
             verticalCentered: false,
-            controlArrows: true,
+            controlArrows: false,
+            navigation: false,
+            slidesNavigation: false,
 
-            /* Callbacks */
+            onLeave: function(origin, destination, direction) {
+                isAnimating = true;
+            },
             afterLoad: function(origin, destination, direction) {
-                var slideIdx = 0;
+                isAnimating = false;
+                currentChapter = destination.index;
                 var activeSlide = destination.item.querySelector('.slide.active');
                 if (activeSlide) {
                     var slides = destination.item.querySelectorAll('.slide');
                     for (var i = 0; i < slides.length; i++) {
-                        if (slides[i] === activeSlide) { slideIdx = i; break; }
+                        if (slides[i] === activeSlide) { currentPage = i; break; }
                     }
+                } else {
+                    currentPage = 0;
                 }
-                updateUI(destination.index, slideIdx);
+                updateNavQuads();
             },
-
-            afterSlideLoad: function(section, origin, destination, direction) {
-                updateUI(section.index, destination.index);
-            },
-
-            afterRender: function() {
-                updateUI(0, 0);
+            onSlideLeave: function() { isAnimating = true; },
+            afterSlideLoad: function(section, origin, destination) {
+                isAnimating = false;
+                currentChapter = section.index;
+                currentPage = destination.index;
+                updateNavQuads();
             }
         });
+
+        /* ═══════════════════════════════════════════
+           BOOT
+           ═══════════════════════════════════════════ */
+        fullpage_api.setAllowScrolling(false);
+        fullpage_api.setKeyboardScrolling(false);
+
+        runLoadingScreen(function() {
+            navOverlay.classList.add('visible');
+            fullpage_api.setAllowScrolling(true);
+            fullpage_api.setKeyboardScrolling(true);
+            currentChapter = 0;
+            currentPage = 0;
+            updateNavQuads();
+        });
+
+        /* ═══════════════════════════════════════════
+           RESIZE
+           ═══════════════════════════════════════════ */
+        window.addEventListener('resize', function() {
+            var sq = Math.min(window.innerWidth, window.innerHeight) / 4;
+            document.documentElement.style.setProperty('--sq', sq + 'px');
+            updateNavQuads();
+        });
+
+        /* Initial SQ in px */
+        var initSQ = Math.min(window.innerWidth, window.innerHeight) / 4;
+        document.documentElement.style.setProperty('--sq', initSQ + 'px');
 
     })();
     </script>
