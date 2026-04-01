@@ -631,6 +631,13 @@ function _buildChapterDom(allPageData, SQ, totalH) {
         el.style.top    = nq.y + 'px';
         el.style.width  = nq.w + 'px';
         el.style.height = nq.h + 'px';
+        /* Debug label — show ID + size (only on quads large enough to read) */
+        if (nq.w > 40 && nq.h > 16) {
+            var lbl = document.createElement('span');
+            lbl.className = 'netz-label';
+            lbl.textContent = nq.id + ' ' + Math.round(nq.w) + '\u00d7' + Math.round(nq.h);
+            el.appendChild(lbl);
+        }
         container.appendChild(el);
     });
 
