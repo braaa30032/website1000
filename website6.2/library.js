@@ -137,7 +137,9 @@ export var LIBRARY = [
 
             // ── Seite 0: Seite 0 ──
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/david_asche/page0/0/bildschirmfoto_2026_04_04_um_14_34_39_png' }
+                { type: 'image', url: 'https://raw.githubusercontent.com/DavidStHH/Website-Assets/main/assets/WhatsApp%20Image%202025-12-23%20at%2021.40.23%20(1).jpeg', color: '#E74C3C', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/david_asche/page0/0/adobestock_140175523_jpeg' }
+                ] }
             ]
         ]
     },
