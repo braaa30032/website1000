@@ -134,7 +134,7 @@ export var LIBRARY = [
     {
         name: 'David Asche',
         pageSections: {
-            0: [{mainCount: 2}],
+            0: [{mainCount: 2}, {mainCount: 0}],
         },
         pages: [
 
