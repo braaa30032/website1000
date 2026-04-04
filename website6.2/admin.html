@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMS Admin — 0fun.online</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+    <!-- ── Login Overlay — 4 quads like loading screen ── -->
+    <div id="login-overlay">
+        <div class="login-quad tl"><span class="quad-text">0fun</span></div>
+        <div class="login-quad tr"><span class="quad-text">admin</span></div>
+        <div class="login-quad bl">
+            <div class="pw-area">
+                <input type="password" id="login-pw" autocomplete="current-password">
+                <span class="pw-cursor" id="pw-cursor">_</span>
+            </div>
+            <p id="login-error"></p>
+        </div>
+        <div class="login-quad br" id="login-btn"><span class="quad-text">login</span></div>
+    </div>
+
+    <!-- ── Admin Panel ── -->
+    <div id="admin-panel" hidden>
+
+        <!-- Toolbar -->
+        <div id="toolbar">
+            <div class="tb-left">
+                <select id="sel-chapter"></select>
+                <select id="sel-page"></select>
+            </div>
+            <div class="tb-right">
+                <span id="status"></span>
+                <button id="btn-deploy" class="tb-btn" title="Deploy alle Site-Dateien zu GitHub">🚀 Deploy Site</button>
+                <button id="btn-publish" class="tb-btn publish" title="Publish to GitHub">⬆ Publish</button>
+                <button id="btn-logout" class="tb-btn" title="Logout">Logout</button>
+            </div>
+        </div>
+
+        <!-- Grid Viewport -->
+        <div id="grid-viewport"></div>
+    </div>
+
+    <!-- ── Dialog Overlay ── -->
+    <div id="dialog-overlay" hidden>
+        <div id="dialog-box">
+            <h2 id="dialog-title"></h2>
+            <div id="dialog-body"></div>
+            <div id="dialog-actions">
+                <button id="dialog-cancel" class="tb-btn">Abbrechen</button>
+                <button id="dialog-ok" class="tb-btn publish">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- No GSAP needed for admin — pure layout.js + library.js -->
+    <script type="module" src="admin.js?v=20260404p"></script>
+</body>
+</html>

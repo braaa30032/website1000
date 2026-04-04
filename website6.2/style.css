@@ -1,0 +1,234 @@
+/* ═══════════════════════════════════════════════════════════════
+   STYLE.CSS — website 6.2
+   
+   Layer  Z-Index   Purpose
+   ─────  ───────   ───────────────────
+   CDS      1       Content grid (sections, mains, subs, netz)
+   Edge    99       Edge strips (Step 4)
+   Nav    100       Navigation quads (Step 4)
+   Load   200       Loading screen (Step 6)
+   Flash  300       Transition flash (Step 5)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Design Tokens (set by applyTheme() in library.js) ── */
+:root {
+    /* Colors */
+    --color-primary:     #2bffdf;
+    --color-secondary:   #ec677a;
+    --color-accent:      #00e105;
+    --color-surface:     #111111;
+    --color-onSurface:   #ffffff;
+    --color-onPrimary:   #000000;
+    --color-onSecondary: #ffffff;
+
+    /* Typography */
+    --font-family:       Arial, Helvetica, sans-serif;
+    --weight-headline:   700;
+    --style-headline:    normal;
+    --weight-body:       400;
+    --style-body:        normal;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--color-surface);
+    color: var(--color-onSurface);
+    font-family: var(--font-family);
+    font-weight: var(--weight-body);
+    font-style: var(--style-body);
+    -webkit-font-smoothing: antialiased;
+    touch-action: none;           /* prevent browser pull-to-refresh etc */
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* ── Content Layer ── */
+#content-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+}
+
+/* ── Section Container (one per section, stacked vertically) ── */
+.section {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    /* height and top set by JS */
+}
+
+/* ── Content Nodes (main, sub, pet) ── */
+.content-node {
+    position: absolute;
+    overflow: hidden;
+    /* x, y, w, h set by JS via style */
+}
+.content-node img,
+.content-node video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+/* ── Text Nodes ── */
+.content-node.text-node {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    /* padding set by JS — CSS % padding is always width-relative, breaks on landscape */
+    color: var(--color-onSecondary);
+    overflow: hidden;
+}
+.content-node.text-node h3 {
+    /* font-size set by JS (_calcTextFontSize) */
+    font-weight: var(--weight-headline);
+    font-style: var(--style-headline);
+    margin-bottom: 0.4em;
+    line-height: 1.2;
+}
+.content-node.text-node p {
+    /* font-size set by JS (_calcTextFontSize) */
+    font-weight: var(--weight-body);
+    font-style: var(--style-body);
+    line-height: 1.35;
+    opacity: 0.85;
+}
+
+/* ── Netz Fill Quads ── */
+.netz-quad {
+    position: absolute;
+    background: var(--color-primary);
+    opacity: 0.7;
+}
+
+/* ── Netz Text Overlays (positioned on/near netz quads) ── */
+.netz-text {
+    position: absolute;
+    font-family: var(--font-family);
+    font-weight: var(--weight-body);
+    font-style: var(--style-body);
+    font-size: clamp(10px, 1.2vw, 16px);
+    line-height: 1.35;
+    color: var(--color-accent);
+    pointer-events: none;
+    white-space: pre-line;
+    z-index: 2;
+}
+
+/* ── Debug label inside netz quads ── */
+.netz-quad .debug-label {
+    position: absolute;
+    top: 2px; left: 2px;
+    font-size: 9px;
+    color: rgba(0,0,0,0.5);
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ── Placeholder (colored rectangle for Step 1 testing) ── */
+.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: var(--weight-body);
+    color: var(--color-onPrimary);
+    letter-spacing: 0.5px;
+}
+
+/* ── Chapter Container (moved by GSAP y transform for scroll) ── */
+.chapter-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: var(--color-surface);
+    will-change: transform;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NAV QUADS — 9-PANEL BUFFER SYSTEM (Step 4)
+   Two sets of 4 corners (A + B) + 1 info = 9 panels.
+   Size driven by --nav-sq CSS var (= SQ from layout engine).
+   ═══════════════════════════════════════════════════════════════ */
+.nav-quad {
+    position: fixed;
+    width: var(--nav-sq, 25vmin);
+    height: var(--nav-sq, 25vmin);
+    z-index: 100;
+    background: var(--color-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    will-change: transform;
+}
+.nav-quad .nav-label {
+    font-size: clamp(10px, 2.2vmin, 18px);
+    font-weight: var(--weight-headline);
+    font-style: var(--style-headline);
+    color: var(--color-onSecondary);
+    text-align: center;
+    padding: 12%;
+    word-break: break-word;
+    line-height: 1.3;
+    text-transform: lowercase;
+    will-change: clip-path;
+}
+/* Fullscreen state: big centered letter for loading/chapter spin */
+.nav-quad.quad-fullscreen .nav-label {
+    font-size: min(12vw, 14vh);
+    font-weight: var(--weight-headline);
+    padding: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    user-select: none;
+    pointer-events: none;
+}
+.nav-tl { top: 0; left: 0; transform-origin: center top; }
+.nav-tr { top: 0; right: 0; }
+.nav-bl { bottom: 0; left: 0; transform-origin: center bottom; }
+.nav-br { bottom: 0; right: 0; }
+
+/* Buffer set: hidden offscreen until transition */
+.nav-quad.nav-buffer {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* Info panel (9th): centered, hidden by default */
+.nav-info {
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+}
+
+.nav-quad.inactive {
+    opacity: 0.15;
+    cursor: default;
+}
+.nav-quad:not(.inactive):not(.nav-buffer):hover {
+    filter: brightness(1.2);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FLASH OVERLAY (Step 5 transition)
+   ═══════════════════════════════════════════════════════════════ */
+#flash {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: var(--color-onSurface);
+    opacity: 0;
+    pointer-events: none;
+}

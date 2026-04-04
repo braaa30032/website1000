@@ -1,0 +1,411 @@
+/* ═══════════════════════════════════════════════════════════════
+   CMS Admin — Styles
+   Design: sharp corners, inactive palette (Mint-Rose)
+   Login: 4 quads (all secondary) → open on auth
+   Grid:  primary mint background, plain + buttons
+   ═══════════════════════════════════════════════════════════════ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #111111;
+    color: #fff;
+    overflow: hidden;
+    height: 100vh;
+
+    --admin-primary:     #2bffdf;
+    --admin-secondary:   #ec677a;
+    --admin-accent:      #00e105;
+    --admin-surface:     #111111;
+    --admin-onSurface:   #ffffff;
+    --admin-onPrimary:   #000000;
+    --admin-onSecondary: #ffffff;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LOGIN — 4 quads, ALL same secondary color
+   ═══════════════════════════════════════════════════════════════ */
+#login-overlay {
+    position: fixed; inset: 0;
+    z-index: 9999;
+}
+
+.login-quad {
+    position: fixed;
+    width: 50.1%; height: 50.1%;
+    background: var(--admin-secondary);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    will-change: width, height;
+    transition:
+        width  0.9s cubic-bezier(0.76, 0, 0.24, 1),
+        height 0.9s cubic-bezier(0.76, 0, 0.24, 1);
+}
+.login-quad.tl { top: 0;    left: 0;  }
+.login-quad.tr { top: 0;    right: 0; }
+.login-quad.bl { bottom: 0; left: 0;  }
+.login-quad.br { bottom: 0; right: 0; }
+
+/* Large text in quads — all same size, all centered */
+.quad-text {
+    font-size: clamp(2.5rem, 8vw, 7rem);
+    font-weight: 900;
+    line-height: 1;
+    text-transform: lowercase;
+    letter-spacing: -0.02em;
+    user-select: none;
+    pointer-events: none;
+    color: var(--admin-onSecondary);
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+}
+
+/* BR: "login" — clickable */
+.login-quad.br {
+    cursor: pointer;
+    transition:
+        width      0.9s cubic-bezier(0.76, 0, 0.24, 1),
+        height     0.9s cubic-bezier(0.76, 0, 0.24, 1),
+        filter     0.15s ease;
+}
+.login-quad.br:hover { filter: brightness(0.85); }
+
+/* BL: password area — invisible input + blinking _ */
+.login-quad.bl {
+    position: fixed; /* already set, but emphasize */
+}
+
+.pw-area {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+}
+
+/* The actual input: completely invisible, overlays the _ area */
+.pw-area input {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    color: var(--admin-onSecondary);
+    font-size: clamp(2.5rem, 8vw, 7rem);
+    font-weight: 900;
+    font-family: inherit;
+    letter-spacing: -0.02em;
+    text-align: center;
+    outline: none;
+    caret-color: transparent;
+    z-index: 2;
+}
+.pw-area input::placeholder { color: transparent; }
+
+/* Blinking underscore — visible only when input is empty */
+.pw-cursor {
+    font-size: clamp(2.5rem, 8vw, 7rem);
+    font-weight: 900;
+    color: var(--admin-onSecondary);
+    line-height: 1;
+    animation: cursor-blink 1s step-end infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+.pw-cursor.hidden { display: none; }
+
+@keyframes cursor-blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0; }
+}
+
+#login-error {
+    position: absolute;
+    bottom: 16%;
+    left: 50%; transform: translateX(-50%);
+    color: var(--admin-onSecondary);
+    font-size: 13px;
+    text-align: center;
+    white-space: nowrap;
+    opacity: 0.8;
+}
+
+/* Opening animation: quads shrink to 0 at their corners */
+#login-overlay.opening .login-quad {
+    width: 0% !important;
+    height: 0% !important;
+}
+#login-overlay.opened {
+    display: none;
+    pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TOOLBAR
+   ═══════════════════════════════════════════════════════════════ */
+#toolbar {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 48px;
+    background: var(--admin-surface);
+    border-bottom: 1px solid #333;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 12px;
+    z-index: 100;
+}
+.tb-left, .tb-right { display: flex; align-items: center; gap: 8px; }
+
+#toolbar select {
+    background: #222; color: #fff; border: 1px solid #444;
+    border-radius: 0; padding: 6px 10px; font-size: 13px;
+    cursor: pointer;
+}
+.tb-btn {
+    padding: 6px 14px; border-radius: 0; border: 1px solid #444;
+    background: #222; color: #fff; font-size: 13px; cursor: pointer;
+    white-space: nowrap;
+}
+.tb-btn:hover { background: #333; }
+.tb-btn.publish { background: var(--admin-secondary); border-color: var(--admin-secondary); color: var(--admin-onSecondary); font-weight: 700; }
+.tb-btn.publish:hover { filter: brightness(0.85); }
+.tb-btn.publish:disabled { background: #333; border-color: #444; cursor: default; filter: none; }
+#btn-deploy { background: #1a1a2e; border-color: #4a4a7a; color: #aab; font-size: 12px; }
+#btn-deploy:hover { background: #2a2a4e; }
+#btn-deploy:disabled { background: #333; border-color: #444; cursor: default; color: #666; }
+#status { font-size: 12px; color: #666; margin-right: 8px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   GRID VIEWPORT — mint primary background
+   ═══════════════════════════════════════════════════════════════ */
+#grid-viewport {
+    position: fixed;
+    top: 48px; left: 0; right: 0; bottom: 0;
+    overflow: auto;
+    background: var(--admin-primary);
+}
+.grid-canvas {
+    position: relative;
+    margin: 0 auto;
+}
+
+/* ── Nav Quads (admin grid) — secondary ── */
+.admin-nav {
+    position: absolute;
+    background: var(--admin-secondary);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 6px;
+    overflow: hidden;
+    z-index: 10;
+}
+.admin-nav .nav-label {
+    color: var(--admin-onSecondary);
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.2;
+    pointer-events: none;
+}
+.admin-nav.corner-br {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--admin-onSecondary);
+}
+
+/* + buttons inside nav quads */
+.nav-add-btn {
+    background: none;
+    border: none;
+    color: var(--admin-onSecondary);
+    font-size: 28px;
+    font-weight: 900;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+}
+.nav-add-btn:hover { opacity: 1; }
+.nav-add-btn .nav-btn-label {
+    display: block;
+    font-size: 9px;
+    font-weight: 700;
+    margin-top: 2px;
+    opacity: 0.7;
+}
+
+/* ── Content Slots — neutral semi-transparent on mint bg ── */
+.admin-slot {
+    position: absolute;
+    border-radius: 0;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    cursor: default;
+    background: rgba(255,255,255,0.15);
+}
+.admin-slot[data-type="main"] { background: rgba(255,255,255,0.22); }
+.admin-slot[data-type="sub"]  { background: rgba(255,255,255,0.18); }
+.admin-slot[data-type="pet"]  { background: rgba(255,255,255,0.12); }
+.admin-slot[data-type="netz"] { background: rgba(255,255,255,0.08); }
+
+.admin-slot .thumb {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    opacity: 0.85;
+}
+.admin-slot .text-preview {
+    padding: 8px;
+    font-size: 11px;
+    color: var(--admin-onPrimary);
+    opacity: 0.7;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 100%;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ADD BUTTONS — plain + only, no frame / background / shadow
+   ═══════════════════════════════════════════════════════════════ */
+.add-btn {
+    position: absolute;
+    width: 44px; height: 44px;
+    background: none;
+    border: none;
+    box-shadow: none;
+    color: var(--admin-onPrimary);
+    font-size: 36px;
+    font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    z-index: 20;
+    transition: transform 0.15s ease, opacity 0.15s;
+    line-height: 1;
+    opacity: 0.5;
+}
+.add-btn:hover {
+    transform: scale(1.25);
+    opacity: 1;
+}
+.add-btn .btn-label {
+    position: absolute;
+    bottom: -16px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px; font-weight: 700;
+    color: var(--admin-onPrimary);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+/* ── Slot action buttons ── */
+.slot-actions {
+    position: absolute; top: 4px; right: 4px;
+    display: flex; gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 25;
+}
+.admin-slot:hover .slot-actions { opacity: 1; }
+.slot-action {
+    width: 22px; height: 22px;
+    border-radius: 0;
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+}
+.slot-action:hover { background: rgba(0,0,0,0.8); }
+
+/* ── Netz quads — slightly darker mint ── */
+.admin-netz {
+    position: absolute;
+    background: rgba(0,0,0,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DIALOG
+   ═══════════════════════════════════════════════════════════════ */
+#dialog-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+}
+#dialog-overlay[hidden] { display: none; }
+
+#dialog-box {
+    background: var(--admin-surface);
+    border: 1px solid #333;
+    border-radius: 0;
+    padding: 28px 32px;
+    min-width: 360px;
+    max-width: 560px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+#dialog-title {
+    font-size: 18px;
+    margin-bottom: 16px;
+    font-weight: 700;
+}
+#dialog-body {
+    margin-bottom: 20px;
+}
+#dialog-body input,
+#dialog-body textarea,
+#dialog-body select {
+    display: block; width: 100%;
+    padding: 10px 12px; margin-bottom: 12px;
+    background: #222; border: 1px solid #444;
+    border-radius: 0; color: #fff; font-size: 14px;
+    outline: none;
+}
+#dialog-body input:focus,
+#dialog-body textarea:focus,
+#dialog-body select:focus {
+    border-color: var(--admin-primary);
+}
+#dialog-body textarea { min-height: 100px; resize: vertical; font-family: inherit; }
+#dialog-actions { display: flex; justify-content: flex-end; gap: 10px; }
+
+/* ── Drop zone ── */
+.drop-zone {
+    border: 3px dashed #444;
+    border-radius: 0;
+    padding: 40px 20px;
+    text-align: center;
+    color: #666;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 12px;
+}
+.drop-zone.over {
+    border-color: var(--admin-primary);
+    background: rgba(43,255,223,0.05);
+    color: var(--admin-primary);
+}
+.drop-zone .preview-img {
+    max-width: 100%; max-height: 200px;
+    margin-top: 12px;
+}
+
+/* ── Upload progress ── */
+.progress-bar {
+    height: 4px;
+    background: #222;
+    overflow: hidden;
+    margin-top: 8px;
+}
+.progress-bar .fill {
+    height: 100%;
+    background: var(--admin-primary);
+    width: 0%;
+    transition: width 0.2s;
+}

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>website 6.2</title>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- GSAP 3.14.2 ESM import map -->
+    <script type="importmap">
+    {
+        "imports": {
+            "gsap":       "../content/js/vendor/gsap-core.js",
+            "CSSPlugin":  "../content/js/vendor/CSSPlugin.js",
+            "Observer":   "../content/js/vendor/Observer.js"
+        }
+    }
+    </script>
+</head>
+<body>
+
+    <!-- Content layer: grid.js renders sections here -->
+    <div id="content-layer"></div>
+
+    <!-- Nav quads: created dynamically by grid.js (Step 4) -->
+
+    <!-- Loading tiles (Step 6) -->
+    <!-- <div class="load-tile" id="tile-tl"></div> -->
+    <!-- <div class="load-tile" id="tile-tr"></div> -->
+    <!-- <div class="load-tile" id="tile-bl"></div> -->
+    <!-- <div class="load-tile" id="tile-br"></div> -->
+
+    <!-- Flash overlay (Step 5) -->
+    <div id="flash"></div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
