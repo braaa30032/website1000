@@ -137,7 +137,7 @@ export var LIBRARY = [
 
             // ── Seite 0: Seite 0 ──
             [
-                { type: 'image', url: 'https://raw.githubusercontent.com/DavidStHH/Website-Assets/main/assets/WhatsApp%20Image%202025-12-23%20at%2021.40.23%20(1).jpeg', color: '#E74C3C' }
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/david_asche/page0/0/bildschirmfoto_2026_04_04_um_14_34_39_png' }
             ]
         ]
     },
@@ -483,13 +483,13 @@ export var LIBRARY = [
     // ===== Kapitel 2: freie arbeiten =====
     {
         name: 'freie arbeiten',
-        pageNames: ['Körperkasten', 'print painting', 'enamel'],
+        pageNames: ['drawings', 'print painting', 'enamel'],
         pageSections: {
             0: [{mainCount: 2}, {mainCount: 3}],
         },
         pages: [
 
-            // ── Seite 0: Körperkasten ──
+            // ── Seite 0: drawings ──
             [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/20210601_155721%20(2).jpg', color: '#2ECC71' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/weiblicher_akt.jpg', color: '#27AE60', subs: [
