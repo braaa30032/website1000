@@ -63,19 +63,24 @@ body {
     white-space: nowrap;
 }
 
-/* BR: "login" — clickable */
+/* All quads: NO hover effect */
+.login-quad:hover { filter: none !important; }
+
+/* BR: "login" — clickable, with visible hover feedback */
 .login-quad.br {
     cursor: pointer;
+    z-index: 10001;
     transition:
         width      0.9s cubic-bezier(0.76, 0, 0.24, 1),
         height     0.9s cubic-bezier(0.76, 0, 0.24, 1),
-        filter     0.15s ease;
+        background 0.15s ease;
 }
-.login-quad.br:hover { filter: brightness(0.85); }
+.login-quad.br:hover { background: var(--admin-accent) !important; }
 
-/* BL: password area — invisible input + blinking _ */
+/* BL: password area */
 .login-quad.bl {
-    position: fixed; /* already set, but emphasize */
+    position: fixed;
+    z-index: 10000;
 }
 
 .pw-area {
@@ -87,7 +92,7 @@ body {
     justify-content: center;
 }
 
-/* The actual input: completely invisible, overlays the _ area */
+/* The actual input: shows • dots for each char */
 .pw-area input {
     position: absolute;
     top: 0; left: 0;
@@ -99,11 +104,12 @@ body {
     font-size: clamp(2.5rem, 8vw, 7rem);
     font-weight: 900;
     font-family: inherit;
-    letter-spacing: -0.02em;
+    letter-spacing: 0.15em;
     text-align: center;
     outline: none;
-    caret-color: transparent;
+    caret-color: var(--admin-onSecondary);
     z-index: 2;
+    -webkit-text-security: disc;
 }
 .pw-area input::placeholder { color: transparent; }
 
@@ -297,7 +303,8 @@ body {
     transform: translateX(-50%);
     font-size: 9px; font-weight: 700;
     color: var(--admin-onPrimary);
-    white-space: nowrap;
+    white-space: pre;
+    text-align: center;
     pointer-events: none;
     opacity: 0.6;
 }

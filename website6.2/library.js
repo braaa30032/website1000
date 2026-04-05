@@ -133,15 +133,11 @@ export var LIBRARY = [
     // ===== Kapitel 0: David Asche =====
     {
         name: 'David Asche',
-        pageSections: {
-            0: [{mainCount: 2}],
-        },
         pages: [
 
             // ── Seite 0: Seite 0 ──
             [
-                { type: 'image', url: 'https://raw.githubusercontent.com/DavidStHH/Website-Assets/main/assets/WhatsApp%20Image%202025-12-23%20at%2021.40.23%20(1).jpeg', color: '#E74C3C' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/david_asche/page0/0/1sub1_jpg' }
+                { type: 'image', url: 'https://raw.githubusercontent.com/DavidStHH/Website-Assets/main/assets/WhatsApp%20Image%202025-12-23%20at%2021.40.23%20(1).jpeg', color: '#E74C3C' }
             ]
         ]
     },
