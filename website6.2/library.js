@@ -146,8 +146,8 @@ export var LIBRARY = [
         name: '0',
         pageNames: ["overview","abstract","methodology","dispositifs","what is a dispositif","positivity (where from)","how does a dispositif work (where now)","projection (where to)","appendix"],
         pageSections: {
-            0: [{"mainCount":1}],
-            1: [{"mainCount":2},{"mainCount":3},{"mainCount":2},{"mainCount":4},{"mainCount":2},{"mainCount":2}],
+            0: [{"mainCount":2}],
+            1: [{"mainCount":2},{"mainCount":3},{"mainCount":2},{"mainCount":3},{"mainCount":2},{"mainCount":2}],
             2: [{"mainCount":3},{"mainCount":2},{"mainCount":4},{"mainCount":4},{"mainCount":3},{"mainCount":3},{"mainCount":2}],
             3: [{"mainCount":3}],
             4: [{"mainCount":3},{"mainCount":3},{"mainCount":2},{"mainCount":3}],
@@ -160,7 +160,8 @@ export var LIBRARY = [
 
             // ── Seite 0: overview ──
             [
-                { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/intro/handwritring.png" },
+                { type: "text", text: "1. welcome\n   1. to the\n2. site\n   1. of\n3. david asche\n4. 0fun" },
+                { type: "text", text: "1. website user guide\n   1. horizontally\n      1. switch between\n         1. projects\n            1. (start top right corner)\n   2. vertically\n      1. switch between\n         1. pages (of projects)\n            1. (start bottom left corner)\n2. (have) fun" },
             ],
 
             // ── Seite 1: abstract ──
@@ -196,11 +197,7 @@ export var LIBRARY = [
                         { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/023.png" },
                         { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/022.jpg" }
                     ] },
-                { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/026.jpg", subs: [
-                        { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/0263.png" },
-                        { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/0261.jpg" },
-                        { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/0262.png" }
-                    ] },
+
                 { type: "text", text: "1. But how?\n   1. Doing it was easy.\n   2. Describing it was hard.\n      1. I thought of language.\n         1. I was not alone in this!\n            1. \"Sowohl Zeichen- als auch Wortsprache sind nur dem Menschen eigen und Teil seiner Kulturfähigkeit.\" [Both sign and word language are unique to humans and part of their cultural capacity.] (Loschek 1995, p. 158)\n         2. language itself, which is perhaps the oldest dispositif (Agamben 2008, p. 26)" },
                 { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/025.png", subs: [
                         { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/029.png" },
@@ -245,9 +242,7 @@ export var LIBRARY = [
                 { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/037.png" },
                 { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/036.png" },
                 { type: "text", text: "1. **Projection**\n2. The concepts I use – dispositif, subjectivation, aestheticisation, profanation – were developed for societies.\n   1. I use them for a single creative process.\n   2. Why do I do this?\n3. I orient myself on Foucault.\n   1. He began with prisons and clinics.\n   2. He ended with the question of how people work on themselves.\n   3. This shift – from the disciplining of the masses to the self-formation of the individual – is my theoretical foundation.\n      1. What Foucault did on the level of theory, I do across 100 moments." },
-                { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/043.png", subs: [
-                        { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/038.png" }
-                    ] },
+                { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/043.png" },
                 { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/044.png" },
                 { type: "text", text: "1. **Literature**\n2. Theory in this work does not come first.\n   1. It comes where it works.\n3. Each chapter is a pair:\n   1. A concept from the societal level.\n   2. An observation from my level." },
                 { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/049.jpg", subs: [
@@ -256,13 +251,10 @@ export var LIBRARY = [
                         { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/048.jpg", b2b: true }
                     ] },
                 { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/050.jpg", subs: [
-                        { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/051.mp4" },
-                        { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/0461.jpg", b2b: true },
-                        { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/0461.jpg", b2b: true }
+                        { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/051.mp4" }
                     ] },
                 { type: "text", text: "1. **Classification**\n2. This work is a hybrid.\n3. I do not adopt this label.\n   1. Labels are structural dispositifs.\n4. Instead I describe what I do:\n   1. Making, Observing, Comparing, Writing.\n5. That is what I want:\n   1. Occasions.\n   2. Between making and thinking.\n   3. Between inside and outside." },
                 { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/0511.jpg", subs: [
-                        { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/0512.png" },
                         { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/0513.png" },
                         { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/045.jpg" }
                     ] },
@@ -272,8 +264,7 @@ export var LIBRARY = [
             [
                 { type: "text", text: "1. I needed a framework.\n   1. To be able to place what happens in me.\n   2. To be able to translate what happens in me.\n   3. To put what happened in me into words.\n2. I found that framework in the dispositif.\n3. What follows is in three parts:\n   1. What the individual brings before the dispositif takes hold.\n   2. How the dispositif works.\n   3. How the subject emerges.\n4. This tripartition comes from Agamben." },
                 { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/053.jpg", subs: [
-                        { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/054.jpg", b2b: true },
-                        { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/0541.jpg", b2b: true },
+                        { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/054.jpg" },
                         { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/055.jpg" }
                     ] },
                 { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/sprints/056.jpg" },
@@ -601,9 +592,9 @@ export var LIBRARY = [
             ],
         ]
     },
-    // ===== Kapitel 2: freie arbeiten =====
+    // ===== Kapitel 2: independent works =====
     {
-        name: 'freie arbeiten',
+        name: 'independent works',
         pageNames: ['drawings', 'print painting', 'enamel'],
         pageSections: {
             0: [{mainCount: 2}, {mainCount: 3}],
