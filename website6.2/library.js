@@ -608,7 +608,9 @@ export var LIBRARY = [
         pages: [
 
             // ── Seite 0: overview ──
-            [],
+            [
+                { type: 'text', text: 'works done profited' },
+            ],
 
             // ── Seite 1: koerperkasten ──
             [
@@ -694,7 +696,8 @@ export var LIBRARY = [
         name: 'spitzenkollektion',
         pageNames: ['intro', 'abstract', 'mood', 'dev blouse', 'dev summer pants', 'dev capris', 'dev longsleeve', 'dev bomber', 'dev office top', 'summery'],
         pageSections: {
-            1: [{mainCount: 3}, {mainCount: 3}],
+            0: [{mainCount: 2}],
+            1: [{mainCount: 5}],
             3: [{mainCount: 2}, {mainCount: 3}, {mainCount: 2}],
             4: [{mainCount: 1}, {mainCount: 1}, {mainCount: 3}],
             5: [{mainCount: 2}, {mainCount: 3}, {mainCount: 2}],
@@ -707,10 +710,9 @@ export var LIBRARY = [
             // ── Seite 0: intro ──
             [
                 { type: 'text', text: 'In this collection, I developed a collection based solely on the idea of a spike. This idea gave rise to seven garments that brought this design element to the body, starting with the cut from the spike outgoing.', netzTexts: [
-                        { position: 'above-main', text: 'spitzenkollektion' },
-                        { position: 'above-sub-0', text: '6th term project' },
                         { position: 'below-main', text: 'Period of origin 2024, 4 months\nSupervision Prof. Sibylle Klose\nPhotography Ferle Reisige\nTalents Juli Eller, Lydia Puschendorf, Caro' }
-                    ] }
+                    ] },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200034.jpg' },
             ],
 
             // ── Seite 1: abstract ──
@@ -720,7 +722,6 @@ export var LIBRARY = [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/longsleeve_vorne.png' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_vorne_ganz.png' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz.png' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/summer_pantspng.png' }
             ],
 
             // ── Seite 2: mood ──
@@ -937,7 +938,7 @@ export var LIBRARY = [
     // ===== Kapitel 4: displaydisplay =====
     {
         name: 'displaydisplay',
-        pageNames: ['intro', 'abstract', 'sketches', 'mood', 'visual research', 'combined research', 'key ideas', 'development', 'summary'],
+        pageNames: ['abstract', 'abstract', 'sketches', 'mood', 'visual research', 'combined research', 'key ideas', 'development', 'summary'],
         pageSections: {
             1: [{mainCount: 4}],
             2: [{mainCount: 4}],
@@ -950,9 +951,9 @@ export var LIBRARY = [
         },
         pages: [
 
-            // ── Seite 0: intro ──
+            // ── Seite 0: abstract ──
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200034.jpg', color: '#F39C12' }
+                { type: 'text', text: 'In this Project I explored the subjectivation of the pixel through my damaged display, three different digital softwares, analog sketches with coal and drapings with various of fabrics.' },
             ],
 
             // ── Seite 1: abstract ──
