@@ -75,7 +75,7 @@ body {
         height     0.9s cubic-bezier(0.76, 0, 0.24, 1),
         background 0.15s ease;
 }
-.login-quad.br:hover { background: var(--admin-accent) !important; }
+.login-quad.br:hover { filter: brightness(1.2); }
 
 /* BL: password area */
 .login-quad.bl {

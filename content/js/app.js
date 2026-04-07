@@ -17,7 +17,7 @@ import gsap from 'gsap';
 import Observer from 'gsap/Observer';
 import { LIBRARY, getChapterCount, getPageCount, getMainNodesForPage, getPageSections, getActivePalette } from '../../library.js?v=38';
 import { computeLayout, LAYOUT_CONST } from './layout.js';
-import { ANIM, INPUT_TIMING, lerp, buildCDSTransitionTimeline, registerRenderCallback } from './shared/anim-config.js';
+import { ANIM, lerp, buildCDSTransitionTimeline, registerRenderCallback } from './shared/anim-config.js';
 import { splitFillBoxWords, computeFillBox, renderFillBox } from './shared/helpers.js';
 
 /* Register Observer plugin */
@@ -53,12 +53,8 @@ let pageNodes = [];
 let flashEl;
 let _landingEl = null;
 
-/* 2D-first rollout: force all content nodes to render as 2D planes
-   (no 3D GLB frames), regardless of render3d flags in library data. */
-const FORCE_2D_MODE = true;
-
 const L = {
-    frames3d: false, beams3d: false, images: true,
+    frames3d: true, beams3d: true, images: true,
     netz3d: true, pets: true
 };
 
@@ -794,7 +790,7 @@ function _buildPageGroup(layout, chIdx, pgIdx, skipNav, nodes) {
     let _any3d = false;
     layout.mains.forEach((m, mi) => {
         const node = _nodes[mi];
-        const is3d = !!(node && node.render3d && !FORCE_2D_MODE);
+        const is3d = node && node.render3d;
         if (is3d) _any3d = true;
         if (is3d) _createFrame3d(m, _pal().primary, fg);
         if (node) _createMediaPlane(m, node, ig, is3d);
@@ -805,7 +801,7 @@ function _buildPageGroup(layout, chIdx, pgIdx, skipNav, nodes) {
         group.forEach((s, si) => {
             let subNode = null;
             if (_nodes[gi] && _nodes[gi].children && _nodes[gi].children[si]) subNode = _nodes[gi].children[si];
-            const subIs3d = !!(subNode && subNode.render3d && !FORCE_2D_MODE);
+            const subIs3d = subNode && subNode.render3d;
             if (subIs3d) { _any3d = true; _createFrame3d(s, _pal().primary, fg); }
             if (subNode) _createMediaPlane(s, subNode, ig, subIs3d);
         });
@@ -1021,13 +1017,12 @@ function freeze() { isFrozen = true; }
 function unfreeze() { isFrozen = false; }
 
 function transitionTo(ch, pg) {
-    if (isAnimating) return false;
-    if (ch === currentChapter && pg === currentPage) return false;
+    if (isAnimating) return;
+    if (ch === currentChapter && pg === currentPage) return;
     let axis, direction;
     if (ch !== currentChapter) { axis = 'x'; direction = ch > currentChapter ? 1 : -1; }
     else { axis = 'y'; direction = pg > currentPage ? 1 : -1; }
     _performTransition(axis, direction, ch, pg);
-    return true;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1089,16 +1084,8 @@ function _performTransition(axis, direction, newChapter, newPage) {
         });
 }
 
-function _isNavBusy() {
-    return !!(window.NavLayer && NavLayer.isAnimating && NavLayer.isAnimating());
-}
-
-function _canRunContentTransition() {
-    return !(isAnimating || isFrozen || _scrollSwapping || _isNavBusy());
-}
-
 function _transitionChapter(direction) {
-    if (!_canRunContentTransition()) return;
+    if (isAnimating || isFrozen) return;
     const newCh = currentChapter + direction;
     if (newCh < 0 || newCh >= getChapterCount()) { _flashBoundary(); return; }
     /* When scrolling back across chapter boundary, land on last page of previous chapter */
@@ -1107,7 +1094,7 @@ function _transitionChapter(direction) {
 }
 
 function _transitionPage(direction) {
-    if (!_canRunContentTransition()) return;
+    if (isAnimating || isFrozen) return;
     const ch = LIBRARY[currentChapter];
     const newPg = currentPage + direction;
     if (newPg < 0 || newPg >= ch.pages.length) {
@@ -1122,7 +1109,8 @@ function _transitionPage(direction) {
    SCROLL-TRIGGERED PAGE SWAP — instant CDS, nav-only animation
    ═══════════════════════════════════════════════════════════════ */
 function _scrollSwap(direction) {
-    if (!_canRunContentTransition()) return;
+    if (isAnimating || isFrozen || _scrollSwapping) return;
+    if (window.NavLayer && NavLayer.isAnimating && NavLayer.isAnimating()) return;
 
     const ch = LIBRARY[currentChapter];
     let newCh = currentChapter;
@@ -1183,19 +1171,15 @@ function _scrollSwap(direction) {
     needsRender = true;
 
     /* ── Trigger nav-only animation (no CDS animation) ── */
-    let navAccepted = false;
     if (window.NavLayer && NavLayer.animateTransition) {
-        navAccepted = !!NavLayer.animateTransition(axis, navDir, newCh, newPg);
-    }
-    if (!navAccepted && window.NavLayer && NavLayer.syncState) {
-        NavLayer.syncState(newCh, newPg);
+        NavLayer.animateTransition(axis, navDir, newCh, newPg);
     }
 
     /* Re-render with real (preloaded) aspect ratios so images size correctly */
     renderCurrentPage();
 
     /* Cooldown before next scroll swap */
-    gsap.delayedCall(INPUT_TIMING.scrollSwapCooldown, () => { _scrollSwapping = false; });
+    gsap.delayedCall(0.4, () => { _scrollSwapping = false; });
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1221,7 +1205,7 @@ function _handleHScroll(deltaX) {
     if (_hScrollAcc >= HSCROLL_THRESHOLD) {
         _hScrollAcc = 0; _hScrollDir = 0;
         _hScrollCooldown = true;
-        gsap.delayedCall(INPUT_TIMING.hScrollCooldown, () => { _hScrollCooldown = false; });
+        gsap.delayedCall(0.6, () => { _hScrollCooldown = false; });
         if (window.NavLayer && NavLayer.navigateX) NavLayer.navigateX(dir);
     }
 }
@@ -1295,7 +1279,7 @@ function _setupPanning() {
 /* ═══════════════════════════════════════════════════════════════
    BOUNDARY FLASH / RENDER LOOP / RESIZE / INFO
    ═══════════════════════════════════════════════════════════════ */
-function _flashBoundary() { if (!flashEl) return; flashEl.classList.add('active'); gsap.delayedCall(INPUT_TIMING.contentBoundaryFlash, () => flashEl.classList.remove('active')); }
+function _flashBoundary() { if (!flashEl) return; flashEl.classList.add('active'); gsap.delayedCall(0.05, () => flashEl.classList.remove('active')); }
 
 /* ── Render via shared gsap.ticker (registered in anim-config.js) ── */
 function _startRender() {
@@ -1402,10 +1386,7 @@ window.ContentLayer = {
         if (!renderer) { const _ch = ch, _pg = pg; const _wait = setInterval(() => { if (renderer) { clearInterval(_wait); showPage(_ch, _pg); } }, 100); return; }
         showPage(ch, pg);
     },
-    transitionTo(ch, pg) {
-        if (!renderer) return false;
-        return transitionTo(ch, pg);
-    },
+    transitionTo(ch, pg) { if (!renderer) return; transitionTo(ch, pg); },
     freeze, unfreeze, updateLayerVisibility,
     getState() { return { chapter: currentChapter, page: currentPage, isAnimating }; }
 };

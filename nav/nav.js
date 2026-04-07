@@ -10,7 +10,7 @@
 
 import * as THREE from 'three';
 import { createEnvMap } from '../content/js/shared/three-utils.js?v=24';
-import { ANIM, INPUT_TIMING, lerp, buildNavTransitionTimeline, registerRenderCallback, gsap } from '../content/js/shared/anim-config.js?v=24';
+import { ANIM, lerp, buildNavTransitionTimeline, registerRenderCallback, gsap } from '../content/js/shared/anim-config.js?v=24';
 import {
     LETTER_DEPTH, LETTER_SPACING, LINE_SPACING, QUADRANT_FILL,
     letterCache, lettersAvailable, loadLetterGLBs, collectNeededChars,
@@ -28,9 +28,6 @@ const CONFIG = {
     // Nav-specific overrides:
     desaturationAmount: 0.3,
 };
-
-/* 2D-first rollout: keep nav text rendering in canvas mode only. */
-const FORCE_NAV_2D = true;
 
 // ========== THREE.JS SETUP ==========
 
@@ -54,7 +51,6 @@ const navState = {
     currentPage: 0,
     isAnimating: false,
     needsRender: true,
-    pendingSync: null,
 };
 
 // ========== CHAPTER DATA (aus Library) ==========
@@ -177,13 +173,11 @@ function navInit() {
     quadrantSizes = getDefaultSizes();
     applyQuadrantTransforms();
 
-    // Lade .glb-Buchstaben nur im 3D-Nav-Modus
-    if (!FORCE_NAV_2D && (NAV_TEXT_MODE || '3d') === '3d') {
-        loadLetterGLBs(collectNeededChars()).then(() => {
-            updateAllQuadrantContent();
-            navState.needsRender = true;
-        });
-    }
+    // Lade .glb-Buchstaben (fallback auf Platzhalter)
+    loadLetterGLBs(collectNeededChars()).then(() => {
+        updateAllQuadrantContent();
+        navState.needsRender = true;
+    });
 
     // Events
     document.addEventListener('keydown', handleKeyDown);
@@ -262,9 +256,7 @@ function _runLoadingScreen() {
                 _loadingActive = false;
                 navState.isAnimating = false;
 
-                /* Restore nav panels after loading (they were force-hidden) */
-                resetToDefaults();
-                updateAllQuadrantContent();
+                /* Show THREE.js quadrants */
                 setAxisVisibility('x');
                 navState.needsRender = true;
             });
@@ -391,7 +383,7 @@ function updateQuadrantContent(panelName) {
     bgMesh.userData.isBg = true;
     group.add(bgMesh);
 
-    const navMode = FORCE_NAV_2D ? '2d' : (NAV_TEXT_MODE || '3d');
+    const navMode = NAV_TEXT_MODE || '3d';
 
     if (navMode === '3d') {
         /* ── 3D Letters ── */
@@ -519,11 +511,6 @@ let activeAxis = 'x';
 
 function setAxisVisibility(axis) {
     activeAxis = axis;
-    /* Ensure base visibility is restored after loading / transitions */
-    ['prev', 'next', 'nextNext', 'topTop', 'bottom', 'bottomBottom', 'info'].forEach(n => {
-        quadrants[n].visible = true;
-    });
-
     // Bei X aktiv: main sichtbar, top versteckt (sie teilen oben-links)
     // Bei Y aktiv: top sichtbar, main versteckt
     if (axis === 'x') {
@@ -547,7 +534,7 @@ function _setupNavQuadClicks() {
     /* Listen on document – nav-viewport has pointer-events:none so we
        cannot attach click listeners there. */
     document.addEventListener('click', e => {
-        if (!_canAcceptNavInput()) return;
+        if (navState.isAnimating || _loadingActive) return;
         const sq = Math.min(W, H) / 4;
         const cx = e.clientX, cy = e.clientY;
 
@@ -557,13 +544,15 @@ function _setupNavQuadClicks() {
         const inBR = cx > W - sq && cy > H - sq;
 
         if (inTR) {
-            navigateX(1);
+            const c = getContentForPanel('next');
+            if (c && !c.endLabel) navigateX(1);
         } else if (inTL) {
-            navigateY(-1);
+            if (navState.currentPage > 0) navigateY(-1);
         } else if (inBL) {
-            navigateY(1);
+            const c = getContentForPanel('bottom');
+            if (c && !c.endLabel) navigateY(1);
         } else if (inBR) {
-            navigateX(-1);
+            if (navState.currentChapter > 0) navigateX(-1);
         }
     });
 }
@@ -571,7 +560,7 @@ function _setupNavQuadClicks() {
 // ========== INPUT ==========
 
 function handleKeyDown(event) {
-    if (!_canAcceptNavInput()) return;
+    if (navState.isAnimating) return;
     if (event.key === 'ArrowRight')  { event.preventDefault(); navigateX(1); }
     else if (event.key === 'ArrowLeft')  { event.preventDefault(); navigateX(-1); }
     else if (event.key === 'ArrowDown')  { event.preventDefault(); navigateY(1); }
@@ -580,72 +569,62 @@ function handleKeyDown(event) {
 
 // ========== NAVIGATION ==========
 
-function _canAcceptNavInput() {
-    return !(navState.isAnimating || _loadingActive);
-}
+function navigateX(direction) {
+    const atStart = navState.currentChapter <= 0;
+    const atEnd = navState.currentChapter >= CHAPTER_DEFS.length - 1;
 
-function _getBoundaryFlashSide(axis, direction) {
-    if (axis === 'x') return direction > 0 ? 'right' : 'left';
-    return direction > 0 ? 'bottom' : 'top';
-}
-
-function _resolveNavigationTarget(axis, direction) {
-    if (axis === 'x') {
-        const newCh = navState.currentChapter + direction;
-        if (newCh < 0 || newCh >= CHAPTER_DEFS.length) {
-            return { ok: false, side: _getBoundaryFlashSide('x', direction) };
-        }
-        return { ok: true, newCh, newPg: 0 };
-    }
-
-    const maxPage = getPageCount(navState.currentChapter) - 1;
-    const newPg = navState.currentPage + direction;
-    if (newPg < 0 || newPg > maxPage) {
-        return { ok: false, side: _getBoundaryFlashSide('y', direction) };
-    }
-    return { ok: true, newCh: navState.currentChapter, newPg };
-}
-
-function _navigate(axis, direction) {
-    if (!_canAcceptNavInput()) return;
-
-    const target = _resolveNavigationTarget(axis, direction);
-    if (!target.ok) {
-        flashBorder(target.side);
-        return;
-    }
+    if (direction === -1 && atStart) { flashBorder('left'); return; }
+    if (direction === 1 && atEnd)   { flashBorder('right'); return; }
 
     navState.isAnimating = true;
-    navState.pendingSync = null;
+    setAxisVisibility('x');
 
-    let cdsAccepted = true;
+    /* Compute target and start CDS transition in PARALLEL */
+    const newCh = navState.currentChapter + direction;
+    const newPg = 0;
     if (window.ContentLayer && ContentLayer.transitionTo) {
-        cdsAccepted = !!ContentLayer.transitionTo(target.newCh, target.newPg);
+        ContentLayer.transitionTo(newCh, newPg);
     }
 
-    if (!cdsAccepted) {
-        navState.isAnimating = false;
-        return;
-    }
-
-    setAxisVisibility(axis);
-
-    const animFn = axis === 'x' ? animateX : animateY;
-    animFn(direction).then(() => {
+    animateX(direction).then(() => {
         gsap.delayedCall(ANIM.resetDelay, () => {
-            _commitNavState(target.newCh, target.newPg, 'x');
+            navState.currentChapter = newCh;
+            navState.currentPage = newPg;
+            resetToDefaults();
+            updateAllQuadrantContent();
+            updateStatusDisplay();
             navState.isAnimating = false;
-            _flushPendingSync();
         });
     });
 }
 
-function navigateX(direction) {
-    _navigate('x', direction);
-}
-
 function navigateY(direction) {
-    _navigate('y', direction);
+    const maxPage = getPageCount(navState.currentChapter) - 1;
+    const atStart = navState.currentPage <= 0;
+    const atEnd = navState.currentPage >= maxPage;
+
+    if (direction === -1 && atStart) { flashBorder('top'); return; }
+    if (direction === 1 && atEnd)   { flashBorder('bottom'); return; }
+
+    navState.isAnimating = true;
+    setAxisVisibility('y');
+
+    /* Compute target and start CDS transition in PARALLEL */
+    const newPg = navState.currentPage + direction;
+    if (window.ContentLayer && ContentLayer.transitionTo) {
+        ContentLayer.transitionTo(navState.currentChapter, newPg);
+    }
+
+    animateY(direction).then(() => {
+        gsap.delayedCall(ANIM.resetDelay, () => {
+            navState.currentPage = newPg;
+            resetToDefaults();
+            setAxisVisibility('x');
+            updateAllQuadrantContent();
+            updateStatusDisplay();
+            navState.isAnimating = false;
+        });
+    });
 }
 
 // ========== HELPERS ==========
@@ -659,7 +638,7 @@ function flashBorder(side) {
         'top': 'inset 0 20px 30px rgba(255,0,0,0.5)'
     };
     el.style.boxShadow = shadows[side] || '';
-    gsap.delayedCall(INPUT_TIMING.navBoundaryFlash, () => { el.style.boxShadow = 'none'; });
+    gsap.delayedCall(0.3, () => { el.style.boxShadow = 'none'; });
 }
 
 function resetToDefaults() {
@@ -680,22 +659,6 @@ function updateStatusDisplay() {
     const def = CHAPTER_DEFS[navState.currentChapter];
     const totalPages = getPageCount(navState.currentChapter);
     el.textContent = def.name + ' | ' + (navState.currentPage + 1) + '/' + totalPages;
-}
-
-function _commitNavState(ch, pg, axisAfter) {
-    navState.currentChapter = ch;
-    navState.currentPage = pg;
-    resetToDefaults();
-    setAxisVisibility(axisAfter || 'x');
-    updateAllQuadrantContent();
-    updateStatusDisplay();
-}
-
-function _flushPendingSync() {
-    if (!navState.pendingSync) return;
-    const p = navState.pendingSync;
-    navState.pendingSync = null;
-    _commitNavState(p.ch, p.pg, 'x');
 }
 
 // ========== ANIMATIONS ==========
@@ -761,21 +724,22 @@ function handleResize() {
  * Used by app.js _scrollSwap() so the CDS swaps instantly while nav animates.
  */
 function animateTransition(axis, direction, newCh, newPg) {
-    if (navState.isAnimating) return false;
+    if (navState.isAnimating) return;
     navState.isAnimating = true;
-    navState.pendingSync = null;
     setAxisVisibility(axis);
 
     const animFn = axis === 'x' ? animateX : animateY;
     animFn(direction).then(() => {
         gsap.delayedCall(ANIM.resetDelay, () => {
-            _commitNavState(newCh, newPg, 'x');
+            navState.currentChapter = newCh;
+            navState.currentPage = newPg;
+            resetToDefaults();
+            setAxisVisibility('x');
+            updateAllQuadrantContent();
+            updateStatusDisplay();
             navState.isAnimating = false;
-            _flushPendingSync();
         });
     });
-
-    return true;
 }
 
 // ========== PUBLIC API ==========
@@ -787,12 +751,14 @@ window.NavLayer = {
     isAnimating: () => navState.isAnimating,
     /** Called by app.js after scroll-triggered transitions to sync nav state & labels */
     syncState: function(ch, pg) {
-        /* If nav is mid-animation, queue sync and apply after animation commit. */
-        if (navState.isAnimating) {
-            navState.pendingSync = { ch, pg };
-            return;
-        }
-        _commitNavState(ch, pg, 'x');
+        /* Skip if nav is mid-animation (arrow-key transitions handle their own state) */
+        if (navState.isAnimating) return;
+        navState.currentChapter = ch;
+        navState.currentPage = pg;
+        resetToDefaults();
+        setAxisVisibility('x');
+        updateAllQuadrantContent();
+        updateStatusDisplay();
         navState.needsRender = true;
     },
 };

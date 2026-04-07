@@ -246,8 +246,24 @@ function render() {
         el.style.cssText = `left:${nz.x}px;top:${nz.y}px;width:${nz.w}px;height:${nz.h}px;`;
         canvas.appendChild(el);
 
-        // Every netz rect gets an "add text" button
-        canvas.appendChild(_makeAddBtn(nz.x + nz.w / 2, nz.y + nz.h / 2, 'add text', () => addNetzText()));
+        // Determine closest main and relative position for this netz rect
+        const nzCx = nz.x + nz.w / 2, nzCy = nz.y + nz.h / 2;
+        let bestMi = 0, bestPos = 'above-main', bestDist = Infinity;
+        layout.mains.forEach((m, mi) => {
+            const mCx = m.x + m.w / 2, mCy = m.y + m.h / 2;
+            const dist = Math.hypot(nzCx - mCx, nzCy - mCy);
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestMi = mi;
+                if (nzCy < m.y) bestPos = 'above-main';
+                else if (nzCy > m.y + m.h) bestPos = 'below-main';
+                else if (nzCx < m.x) bestPos = 'left-of-main';
+                else bestPos = 'right-of-main';
+            }
+        });
+
+        // Every netz rect gets an "add text" button (offset to top-third to avoid overlap)
+        canvas.appendChild(_makeAddBtn(nz.x + nz.w / 2, nz.y + nz.h * 0.25, 'add text', () => addNetzText(bestPos, bestMi)));
     });
 
     // ── Main slots ──
@@ -371,19 +387,48 @@ function _makeSlot(type, rect, nodeData) {
     el.style.cssText = `left:${rect.x}px;top:${rect.y}px;width:${rect.w}px;height:${rect.h}px;`;
 
     const nodeType = nodeData ? (nodeData.type || 'image') : null;
-    const imageUrl = nodeData ? (nodeData.image || null) : null;
+    const imageUrl = nodeData ? (nodeData.image || nodeData.url || null) : null;
+    const videoUrl = nodeData ? (nodeData.video || null) : null;
 
-    if (imageUrl) {
+    if (nodeType === 'text') {
+        const txt = document.createElement('div');
+        txt.className = 'text-preview';
+        txt.style.cssText = 'width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;padding:12px;overflow:hidden;font-size:11px;';
+        if (nodeData.title) {
+            const h = document.createElement('strong');
+            h.textContent = nodeData.title;
+            h.style.marginBottom = '4px';
+            txt.appendChild(h);
+        }
+        if (nodeData.text) {
+            const p = document.createElement('span');
+            p.textContent = nodeData.text;
+            txt.appendChild(p);
+        }
+        if (!nodeData.title && !nodeData.text) txt.textContent = 'Text';
+        el.appendChild(txt);
+    } else if (imageUrl && nodeType !== 'video') {
         const img = document.createElement('img');
         img.className = 'thumb';
         img.src = imageUrl;
+        img.style.objectFit = 'cover';
         img.loading = 'lazy';
+        img.onerror = () => {
+            img.remove();
+            const err = document.createElement('div');
+            err.className = 'text-preview';
+            err.style.cssText = 'color:#ff4444;font-size:10px;text-align:center;padding:12px;';
+            err.textContent = '⚠ Bild nicht ladbar\n' + imageUrl.split('/').pop();
+            el.appendChild(err);
+        };
         el.appendChild(img);
-    } else if (nodeType === 'text') {
-        const txt = document.createElement('div');
-        txt.className = 'text-preview';
-        txt.textContent = nodeData.title || nodeData.text || 'Text';
-        el.appendChild(txt);
+    } else if (videoUrl) {
+        const vid = document.createElement('video');
+        vid.className = 'thumb';
+        vid.src = videoUrl;
+        vid.muted = true; vid.preload = 'metadata'; vid.playsInline = true;
+        vid.style.cssText = 'object-fit:cover;width:100%;height:100%';
+        el.appendChild(vid);
     }
 
     // Edit / Delete buttons
@@ -591,18 +636,17 @@ function addSubPet(mainIdx, subIdx) {
 }
 
 /* ── Add NetzText ── */
-function addNetzText() {
+function addNetzText(defaultPos = 'above-main', defaultMainIdx = 0) {
+    const positions = ['above-main','below-main','above-sub-0','below-sub-0','left-of-main','right-of-main'];
+    const optHtml = positions.map(p =>
+        `<option value="${p}"${p === defaultPos ? ' selected' : ''}>${p}</option>`
+    ).join('\n');
     openDialog('NetzText hinzufügen', `
         <select id="dlg-netz-pos">
-            <option value="above-main">above-main</option>
-            <option value="below-main">below-main</option>
-            <option value="above-sub-0">above-sub-0</option>
-            <option value="below-sub-0">below-sub-0</option>
-            <option value="left-of-main">left-of-main</option>
-            <option value="right-of-main">right-of-main</option>
+            ${optHtml}
         </select>
         <label style="color:#888;font-size:12px">Für welchen Main-Index (0-basiert)?</label>
-        <input id="dlg-netz-main" type="number" value="0" min="0">
+        <input id="dlg-netz-main" type="number" value="${defaultMainIdx}" min="0">
         <textarea id="dlg-netz-text" placeholder="Text…"></textarea>
     `, () => {
         const pos = document.getElementById('dlg-netz-pos').value;
@@ -848,8 +892,9 @@ function openUploadDialog(title, onDone) {
             const t = document.getElementById('dlg-text-title').value.trim();
             const b = document.getElementById('dlg-text-body').value.trim();
             if (!t && !b) { alert('Bitte Datei oder Text angeben'); return; }
+            const result = { type: 'text', title: t, text: b, url: '' };
             closeDialog();
-            onDone({ type: 'text', title: t, text: b });
+            onDone(result);
         }
     });
 

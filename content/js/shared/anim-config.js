@@ -21,15 +21,6 @@ export const ANIM = {
     phase1Retreat: 0.3,
 };
 
-/* Shared interaction timing (Step 4 hardening)
-   Keep these values in one place so nav/content remain synchronized. */
-export const INPUT_TIMING = {
-    scrollSwapCooldown: 0.4,
-    hScrollCooldown: 0.6,
-    contentBoundaryFlash: 0.05,
-    navBoundaryFlash: 0.3,
-};
-
 export function lerp(a, b, t) { return a + (b - a) * t; }
 
 /* ── Unified render-dirty bridge ──
