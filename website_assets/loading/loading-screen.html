@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>0fun</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: #1a1a1a;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+
+  /* ── Site content (behind everything) ── */
+  .site {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+    color: #fff;
+    z-index: 0;
+  }
+  .site-logo {
+    font-size: clamp(2rem, 6vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.8s ease 0.1s, transform 0.8s ease 0.1s;
+  }
+  .site-logo span { color: #ff0000; }
+  .site-sub {
+    font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
+  }
+  .site.revealed .site-logo,
+  .site.revealed .site-sub { opacity: 1; transform: translateY(0); }
+
+  /* ── Corner decos (after loading) ── */
+  .corner-deco {
+    position: fixed;
+    width: 22vw;
+    height: 28vh;
+    background: #ff0000;
+    z-index: 1;
+    opacity: 0;
+  }
+  .corner-deco.tl { top: 0; left: 0; }
+  .corner-deco.tr { top: 0; right: 0; }
+  .corner-deco.bl { bottom: 0; left: 0; }
+  .corner-deco.br { bottom: 0; right: 0; }
+  .corner-deco.show { opacity: 1; }
+
+  /* ── Tiles: START large (50% each), anchored at corners ── */
+  .tile {
+    position: fixed;
+    background: #ff0000;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    will-change: width, height;
+    /* Start state: tiles fill screen */
+    width: 50.1%;
+    height: 50.1%;
+  }
+  .tile.tl { top: 0;    left: 0;   }
+  .tile.tr { top: 0;    right: 0;  }
+  .tile.bl { bottom: 0; left: 0;   }
+  .tile.br { bottom: 0; right: 0;  }
+
+  /* Letter: always centered in tile */
+  .tile-letter {
+    font-size: min(12vw, 14vh);
+    font-weight: 900;
+    line-height: 1;
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    user-select: none;
+    pointer-events: none;
+    /* stay visually centered even as tile shrinks */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+  }
+  .tile.lit .tile-letter { opacity: 1; }
+
+  /* Shrink phase */
+  .tile.shrink {
+    transition:
+      width  0.85s cubic-bezier(0.76, 0, 0.24, 1),
+      height 0.85s cubic-bezier(0.76, 0, 0.24, 1);
+    width: 22vw !important;
+    height: 28vh !important;
+  }
+
+  .tile.gone { display: none; }
+
+  /* ── Replay ── */
+  #replay {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    padding: 10px 28px;
+    background: rgba(255,255,255,0.07);
+    border: 0.5px solid rgba(255,255,255,0.18);
+    border-radius: 100px;
+    color: rgba(255,255,255,0.6);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.4s ease, background 0.2s;
+  }
+  #replay:hover { background: rgba(255,255,255,0.14); }
+  #replay.visible { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="site" id="site">
+  <p class="site-logo"><span>0</span>fun</p>
+  <p class="site-sub">Nothing but fun</p>
+</div>
+
+<div class="corner-deco tl"></div>
+<div class="corner-deco tr"></div>
+<div class="corner-deco bl"></div>
+<div class="corner-deco br"></div>
+
+<!-- Spin order: TL(0) → TR(f) → BL(u) → BR(n) -->
+<div class="tile tl" id="t-tl"><span class="tile-letter">0</span></div>
+<div class="tile tr" id="t-tr"><span class="tile-letter">f</span></div>
+<div class="tile bl" id="t-bl"><span class="tile-letter">u</span></div>
+<div class="tile br" id="t-br"><span class="tile-letter">n</span></div>
+
+<button id="replay">↺ Replay</button>
+
+<script>
+  const SPIN_ORDER  = ['t-tl', 't-tr', 't-bl', 't-br'];
+  const ROTATIONS   = 2;
+  const FADE_IN_MS  = 160;
+  const HOLD_MS     = 360;
+  const FADE_OUT_MS = 160;
+  const STEP_MS     = FADE_IN_MS + HOLD_MS + FADE_OUT_MS; // total per tile
+
+  const allTiles  = document.querySelectorAll('.tile');
+  const decos     = document.querySelectorAll('.corner-deco');
+  const site      = document.getElementById('site');
+  const replayBtn = document.getElementById('replay');
+
+  let currentTimer = null;
+
+  function clearTimers() {
+    if (currentTimer) { clearTimeout(currentTimer); currentTimer = null; }
+  }
+
+  /* Light up one tile, then off, then call next */
+  function flashTile(tileEl, onDone) {
+    tileEl.classList.add('lit');
+    currentTimer = setTimeout(() => {
+      tileEl.classList.remove('lit');
+      currentTimer = setTimeout(onDone, FADE_OUT_MS);
+    }, FADE_IN_MS + HOLD_MS);
+  }
+
+  function runSpinStep(step, onAllDone) {
+    const totalSteps = 4 * ROTATIONS;
+    if (step >= totalSteps) { onAllDone(); return; }
+    const tileEl = document.getElementById(SPIN_ORDER[step % 4]);
+    flashTile(tileEl, () => runSpinStep(step + 1, onAllDone));
+  }
+
+  function runShrink() {
+    /* small pause after last flash */
+    currentTimer = setTimeout(() => {
+      allTiles.forEach(t => t.classList.add('shrink'));
+
+      /* after shrink completes → reveal site */
+      currentTimer = setTimeout(() => {
+        allTiles.forEach(t => t.classList.add('gone'));
+        decos.forEach(d => d.classList.add('show'));
+        site.classList.add('revealed');
+        currentTimer = setTimeout(() => replayBtn.classList.add('visible'), 700);
+      }, 950);
+    }, 200);
+  }
+
+  function runAnimation() {
+    clearTimers();
+
+    /* Reset */
+    site.classList.remove('revealed');
+    replayBtn.classList.remove('visible');
+    decos.forEach(d => d.classList.remove('show'));
+    allTiles.forEach(t => {
+      t.classList.remove('lit', 'shrink', 'gone');
+      t.style.width  = '';
+      t.style.height = '';
+    });
+
+    /* Brief pause so reset is painted, then spin */
+    currentTimer = setTimeout(() => runSpinStep(0, runShrink), 400);
+  }
+
+  replayBtn.addEventListener('click', runAnimation);
+  setTimeout(runAnimation, 150);
+</script>
+</body>
+</html>

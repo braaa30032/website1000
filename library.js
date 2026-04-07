@@ -512,9 +512,6 @@ export var LIBRARY = [
                 {
                     type: 'text',
                     text: 'In this collection, I developed a collection based solely on the idea of a spike. This idea gave rise to seven garments that brought this design element to the body, starting with the cut from the spike outgoing.',
-                    subs: [
-                        { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/process/office_top/20240611_200034.jpg' }
-                    ],
                     netzTexts: [
                         { position: 'above-main', text: 'spitzenkollektion' },
                         { position: 'above-sub-0', text: '6th term project' },
