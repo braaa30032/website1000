@@ -133,6 +133,9 @@ export var LIBRARY = [
     // ===== Kapitel 0: 0fun =====
     {
         name: '0fun',
+        pageSections: {
+            0: [{mainCount: 2}],
+        },
         pages: [
 
             // ── Seite 0: landing ──
@@ -616,7 +619,7 @@ export var LIBRARY = [
             // ── Seite 2: drehen ──
             [
                 // S0 – intro
-                { type: 'text', text: '' },
+                { type: 'text', text: 'Drehen\naka\n— spinning\n— twisting\n— whirling\n— pivoting\n\nresearch exploring what "drehen" can be\nwhat can be "gedreht"\n"durchdrehen?"' },
                 { type: 'video', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/1intro/1main.mp4', subs: [
                     { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/1intro/1main1.jpg' },
                     { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/1intro/1main2.jpg' },
