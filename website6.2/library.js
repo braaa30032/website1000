@@ -130,14 +130,15 @@ export var NAV_TEXT_MODE = '2d';
 
 // __LIBRARY_START__
 export var LIBRARY = [
-    // ===== Kapitel 0: David Asche =====
+    // ===== Kapitel 0: 0fun =====
     {
-        name: 'David Asche',
+        name: '0fun',
         pages: [
 
-            // ── Seite 0: Seite 0 ──
+            // ── Seite 0: landing ──
             [
-                { type: 'image', url: 'https://raw.githubusercontent.com/DavidStHH/Website-Assets/main/assets/WhatsApp%20Image%202025-12-23%20at%2021.40.23%20(1).jpeg', color: '#E74C3C' }
+                { type: "text", text: "1. welcome\n   1. to the\n2. site\n   1. of\n3. david asche\n4. 0fun" },
+                { type: "text", text: "1. website user guide\n   1. horizontally\n      1. switch between\n         1. projects\n            1. (start top right corner)\n   2. vertically\n      1. switch between\n         1. pages (of projects)\n            1. (start bottom left corner)\n2. (have) fun" },
             ]
         ]
     },
@@ -146,7 +147,6 @@ export var LIBRARY = [
         name: '0',
         pageNames: ["overview","abstract","methodology","dispositifs","what is a dispositif","positivity (where from)","how does a dispositif work (where now)","projection (where to)","appendix"],
         pageSections: {
-            0: [{"mainCount":2}],
             1: [{"mainCount":2},{"mainCount":3},{"mainCount":2},{"mainCount":3},{"mainCount":2},{"mainCount":2}],
             2: [{"mainCount":3},{"mainCount":2},{"mainCount":4},{"mainCount":4},{"mainCount":3},{"mainCount":3},{"mainCount":2}],
             3: [{"mainCount":3}],
@@ -160,8 +160,7 @@ export var LIBRARY = [
 
             // ── Seite 0: overview ──
             [
-                { type: "text", text: "1. welcome\n   1. to the\n2. site\n   1. of\n3. david asche\n4. 0fun" },
-                { type: "text", text: "1. website user guide\n   1. horizontally\n      1. switch between\n         1. projects\n            1. (start top right corner)\n   2. vertically\n      1. switch between\n         1. pages (of projects)\n            1. (start bottom left corner)\n2. (have) fun" },
+                { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/intro/handwritring.png" },
             ],
 
             // ── Seite 1: abstract ──
