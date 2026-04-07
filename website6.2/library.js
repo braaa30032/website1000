@@ -595,35 +595,96 @@ export var LIBRARY = [
     // ===== Kapitel 2: independent works =====
     {
         name: 'independent works',
-        pageNames: ['drawings', 'print painting', 'enamel'],
+        pageNames: ['overview', 'koerperkasten', 'drehen', 'drawings', 'enamel', 'painting / print'],
         pageSections: {
-            0: [{mainCount: 2}, {mainCount: 3}],
+            1: [{mainCount: 2}],
+            2: [{mainCount: 2}, {mainCount: 3}, {mainCount: 5}, {mainCount: 2}, {mainCount: 2}, {mainCount: 3}],
+            3: [{mainCount: 2}, {mainCount: 2}],
+            4: [{mainCount: 1}, {mainCount: 1}],
+            5: [{mainCount: 2}, {mainCount: 1}],
         },
         pages: [
 
-            // ── Seite 0: drawings ──
+            // ── Seite 0: overview ──
+            [],
+
+            // ── Seite 1: koerperkasten ──
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/20210601_155721%20(2).jpg', color: '#2ECC71' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/weiblicher_akt.jpg', color: '#27AE60', subs: [
-                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/weiblicher_akt_koloriert.jpg', color: '#82E0AA' }
-                ] },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/innenkamera1.jpg', color: '#1ABC9C' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/innenkamera2.jpg', color: '#2ECC71', subs: [
-                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/skizze_taenzer.jpg', color: '#27AE60' }
-                ] },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/weibliches_modell_cowboy_hut.jpg', color: '#82E0AA' }
+                { type: 'text', text: 'Is the body box a piece of clothing?! Formally, it consists of a fabric cube with a base area of one metre by one metre and a height of two metres. A uniform. The body box is carried by a drone flying above the person wearing it. The person wearing it is always inside the body box. All people are always inside their body boxes.' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/koerperkasten/sect1/1main.jpg' },
             ],
 
-            // ── Seite 1: print painting ──
+            // ── Seite 2: drehen ──
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/druck/20211201_145651.jpg', color: '#2ECC71' }
+                // S0 – intro
+                { type: 'text', text: '' },
+                { type: 'video', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/1intro/1main.mp4', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/1intro/1main1.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/1intro/1main2.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/1intro/1main3.jpeg' },
+                ] },
+                // S1 – fabric spinning (tshirt)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/2fabric%20spinning/1tshirt/1main.jpg' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/2fabric%20spinning/1tshirt/2main.jpg' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/2fabric%20spinning/1tshirt/3main.jpg' },
+                // S2 – fabric spinning (shelling spinning)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/2fabric%20spinning/2shelling%20spinning/20250910_133759.jpg' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/2fabric%20spinning/2shelling%20spinning/20250910_200429.jpg' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/2fabric%20spinning/2shelling%20spinning/20250910_200439.jpg' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/2fabric%20spinning/2shelling%20spinning/20250910_200445.jpg' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/2fabric%20spinning/2shelling%20spinning/20251029_214241.jpg' },
+                // S3 – enamel spinning (candlestick)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/1candlestick/1main.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/1candlestick/1sub1.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/1candlestick/1sub2.jpg' },
+                ] },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/1candlestick/2main.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/1candlestick/2sub1.jpg' },
+                ] },
+                // S4 – enamel spinning (form)
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/2form/1main.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/2form/1sub1.jpg' },
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/2form/1sub2.jpg' },
+                ] },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/2form/2main.jpg' },
+                // S5 – paper spinning
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/4paper%20spinning/1main.jpeg' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/4paper%20spinning/2main.jpg' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/4paper%20spinning/3main.jpeg' },
             ],
 
-            // ── Seite 2: enamel ──
+            // ── Seite 3: drawings ──
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/email/WhatsApp%20Image%202026-02-08%20at%2016.53.57.jpeg', color: '#2ECC71' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/email/asche_david_jewelery_enamel.jpeg', color: '#27AE60' }
-            ]
+                // S0
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/sect0/1main.jpg' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/sect0/2main.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/sect0/2sub1.jpg' },
+                ] },
+                // S1
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/sect1/1main.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/sect1/1sub1.jpg' },
+                ] },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/sect1/2main.jpg', subs: [
+                    { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/sect1/2sub1.jpg' },
+                ] },
+            ],
+
+            // ── Seite 4: enamel ──
+            [
+                // S0
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/email/sect0/1main.png' },
+                // S1
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/email/sec1/1main.png' },
+            ],
+
+            // ── Seite 5: painting / print ──
+            [
+                // S0
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/druck/sect0/1main.jpg' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/druck/sect0/2main.png.jpg' },
+                // S1
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/druck/sect1/1main.jpg' },
+            ],
         ]
     },
     // ===== Kapitel 3: spitzenkollektion =====
