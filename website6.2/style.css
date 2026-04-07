@@ -93,12 +93,24 @@ html, body {
     margin-bottom: 0.4em;
     line-height: 1.2;
 }
-.content-node.text-node p {
+.content-node.text-node p,
+.content-node.text-node .text-body {
     /* font-size set by JS (_calcTextFontSize) */
     font-weight: var(--weight-body);
     font-style: var(--style-body);
     line-height: 1.35;
     opacity: 0.85;
+}
+.content-node.text-node .text-body ol {
+    list-style: decimal;
+    margin: 0;
+    padding-left: 1.4em;
+}
+.content-node.text-node .text-body li {
+    margin-bottom: 0.15em;
+}
+.content-node.text-node .text-body p {
+    margin: 0.3em 0;
 }
 
 /* ── Netz Fill Quads ── */

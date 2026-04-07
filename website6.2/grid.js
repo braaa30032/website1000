@@ -1292,6 +1292,59 @@ export function animateNavPagePush(dir, duration = 0.9) {
    ═══════════════════════════════════════════════════════════════ */
 
 /**
+ * Minimal Markdown → HTML. Supports **bold**, *italic*, nested ordered lists.
+ * Each nesting level uses 3 spaces of indentation before the `N. ` marker.
+ */
+function _parseMarkdown(md) {
+    if (!md) return '';
+    function esc(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    function inline(s) {
+        return esc(s)
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
+    }
+    const lines = md.split('\n');
+    let html = '';
+    let olStack = []; // indent levels of open <ol>s
+    let inLi = false;
+    for (const line of lines) {
+        const m = line.match(/^( *)(\d+)\. (.+)$/);
+        if (!m) {
+            if (inLi) { html += '</li>'; inLi = false; }
+            while (olStack.length > 0) { html += '</ol>'; olStack.pop(); }
+            if (line.trim()) html += `<p>${inline(line.trim())}</p>`;
+            continue;
+        }
+        const indent = m[1].length;
+        const text   = m[3];
+        if (olStack.length === 0) {
+            html += '<ol>'; olStack.push(indent);
+            html += `<li>${inline(text)}`; inLi = true;
+        } else {
+            const cur = olStack[olStack.length - 1];
+            if (indent > cur) {
+                html += '<ol>'; olStack.push(indent);
+                html += `<li>${inline(text)}`; inLi = true;
+            } else if (indent === cur) {
+                if (inLi) { html += '</li>'; inLi = false; }
+                html += `<li>${inline(text)}`; inLi = true;
+            } else {
+                if (inLi) { html += '</li>'; inLi = false; }
+                while (olStack.length > 1 && olStack[olStack.length - 1] > indent) {
+                    html += '</ol>'; olStack.pop();
+                }
+                html += `<li>${inline(text)}`; inLi = true;
+            }
+        }
+    }
+    if (inLi) html += '</li>';
+    while (olStack.length > 0) { html += '</ol>'; olStack.pop(); }
+    return html;
+}
+
+/**
  * Build the layout config object that computeLayout() expects,
  * from library node data + section definitions.
  */
@@ -1540,8 +1593,9 @@ function _createNodeEl(type, rect, nodeData, index, palette) {
             el.appendChild(titleEl);
         }
         if (nodeData && nodeData.text) {
-            bodyEl = document.createElement('p');
-            bodyEl.textContent = nodeData.text;
+            bodyEl = document.createElement('div');
+            bodyEl.className = 'text-body';
+            bodyEl.innerHTML = _parseMarkdown(nodeData.text);
             el.appendChild(bodyEl);
         }
 

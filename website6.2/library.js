@@ -146,6 +146,7 @@ export var LIBRARY = [
         name: '0',
         pageNames: ["overview","abstract","methodology","dispositifs","what is a dispositif","positivity (where from)","how does a dispositif work (where now)","projection (where to)","appendix"],
         pageSections: {
+            0: [{"mainCount":1}],
             1: [{"mainCount":2},{"mainCount":3},{"mainCount":2},{"mainCount":4},{"mainCount":2},{"mainCount":2}],
             2: [{"mainCount":3},{"mainCount":2},{"mainCount":4},{"mainCount":4},{"mainCount":3},{"mainCount":3},{"mainCount":2}],
             3: [{"mainCount":3}],
@@ -159,6 +160,7 @@ export var LIBRARY = [
 
             // ── Seite 0: overview ──
             [
+                { type: "image", url: "https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/0/intro/handwritring.png" },
             ],
 
             // ── Seite 1: abstract ──
