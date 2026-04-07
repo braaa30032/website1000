@@ -384,11 +384,13 @@ function _calcTextFontSize(boxW, boxH, text, opts = {}) {
     let fontSize = k * Math.sqrt(area / (charCount * _charWidthRatio * lineH));
 
     // Safety: verify text fits vertically
-    // chars per line ≈ innerW / (fontSize * charWidthRatio)
-    // total lines ≈ charCount / charsPerLine
-    // total height ≈ lines * fontSize * lineH
-    const charsPerLine = innerW / (fontSize * _charWidthRatio);
-    const lines = Math.ceil(charCount / Math.max(charsPerLine, 1));
+    // Account for explicit newlines (each \n forces a new line)
+    const charsPerLine = Math.max(1, innerW / (fontSize * _charWidthRatio));
+    const segments = text.split('\n');
+    let lines = 0;
+    for (const seg of segments) {
+        lines += Math.max(1, Math.ceil(seg.length / charsPerLine));
+    }
     const totalH = lines * fontSize * lineH;
     if (totalH > innerH && innerH > 0) {
         fontSize *= (innerH / totalH); // scale down to fit

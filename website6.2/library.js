@@ -597,13 +597,14 @@ export var LIBRARY = [
     // ===== Kapitel 2: independent works =====
     {
         name: 'independent works',
-        pageNames: ['overview', 'koerperkasten', 'drehen', 'drawings', 'enamel', 'painting / print'],
+        pageNames: ['overview', 'koerperkasten', 'drehen overview', 'fabric spinning', 'enamel spinning', 'paper spinning', 'drawings', 'enamel', 'painting / print'],
         pageSections: {
             1: [{mainCount: 2}],
-            2: [{mainCount: 2}, {mainCount: 3}, {mainCount: 5}, {mainCount: 2}, {mainCount: 2}, {mainCount: 3}],
-            3: [{mainCount: 2}, {mainCount: 2}],
-            4: [{mainCount: 1}, {mainCount: 1}],
-            5: [{mainCount: 2}, {mainCount: 1}],
+            3: [{mainCount: 3}, {mainCount: 5}],
+            4: [{mainCount: 2}, {mainCount: 2}],
+            6: [{mainCount: 2}, {mainCount: 2}],
+            7: [{mainCount: 1}, {mainCount: 1}],
+            8: [{mainCount: 2}, {mainCount: 1}],
         },
         pages: [
 
@@ -618,26 +619,33 @@ export var LIBRARY = [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/koerperkasten/sect1/1main.jpg' },
             ],
 
-            // ── Seite 2: drehen ──
+            // ── Seite 2: drehen overview ──
             [
-                // S0 – intro
                 { type: 'text', text: 'Drehen\naka\n— spinning\n— twisting\n— whirling\n— pivoting\n\nresearch exploring what "drehen" can be\nwhat can be "gedreht"\n"durchdrehen?"' },
                 { type: 'video', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/1intro/1main.mp4', subs: [
                     { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/1intro/1main1.jpg' },
                     { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/1intro/1main2.jpg' },
                     { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/1intro/1main3.jpeg' },
                 ] },
-                // S1 – fabric spinning (tshirt)
+            ],
+
+            // ── Seite 3: fabric spinning ──
+            [
+                // tshirt
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/2fabric%20spinning/1tshirt/1main.jpg' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/2fabric%20spinning/1tshirt/2main.jpg' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/2fabric%20spinning/1tshirt/3main.jpg' },
-                // S2 – fabric spinning (shelling spinning)
+                // shelling spinning
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/2fabric%20spinning/2shelling%20spinning/20250910_133759.jpg' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/2fabric%20spinning/2shelling%20spinning/20250910_200429.jpg' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/2fabric%20spinning/2shelling%20spinning/20250910_200439.jpg' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/2fabric%20spinning/2shelling%20spinning/20250910_200445.jpg' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/2fabric%20spinning/2shelling%20spinning/20251029_214241.jpg' },
-                // S3 – enamel spinning (candlestick)
+            ],
+
+            // ── Seite 4: enamel spinning ──
+            [
+                // candlestick
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/1candlestick/1main.jpg', subs: [
                     { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/1candlestick/1sub1.jpg' },
                     { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/1candlestick/1sub2.jpg' },
@@ -645,19 +653,22 @@ export var LIBRARY = [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/1candlestick/2main.jpg', subs: [
                     { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/1candlestick/2sub1.jpg' },
                 ] },
-                // S4 – enamel spinning (form)
+                // form
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/2form/1main.jpg', subs: [
                     { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/2form/1sub1.jpg' },
                     { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/2form/1sub2.jpg' },
                 ] },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/3enamel%20spinning/2form/2main.jpg' },
-                // S5 – paper spinning
+            ],
+
+            // ── Seite 5: paper spinning ──
+            [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/4paper%20spinning/1main.jpeg' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/4paper%20spinning/2main.jpg' },
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/drehen/4paper%20spinning/3main.jpeg' },
             ],
 
-            // ── Seite 3: drawings ──
+            // ── Seite 6: drawings ──
             [
                 // S0
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/Zeichnung/sect0/1main.jpg' },
@@ -673,7 +684,7 @@ export var LIBRARY = [
                 ] },
             ],
 
-            // ── Seite 4: enamel ──
+            // ── Seite 7: enamel ──
             [
                 // S0
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/email/sect0/1main.png' },
@@ -681,7 +692,7 @@ export var LIBRARY = [
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/email/sec1/1main.png' },
             ],
 
-            // ── Seite 5: painting / print ──
+            // ── Seite 8: painting / print ──
             [
                 // S0
                 { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/kunst/druck/sect0/1main.jpg' },
@@ -717,11 +728,11 @@ export var LIBRARY = [
 
             // ── Seite 1: abstract ──
             [
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/blouse_vorne.png' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/capris_halb_vorne.png' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/longsleeve_vorne.png' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/bomber_vorne_ganz.png' },
-                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/6sem/assets/shooting/shoot_office_top_frontal_ganz.png' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/spitzenkollektion/formatiert/spitze_look1.jpg' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/spitzenkollektion/formatiert/spitze_look2.jpg' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/spitzenkollektion/formatiert/spitze_look3.jpg' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/spitzenkollektion/formatiert/spitze_look4.jpg' },
+                { type: 'image', url: 'https://website-dateien.s3.fr-par.scw.cloud/dateien_website/content/spitzenkollektion/formatiert/spitze_look5.jpg' },
             ],
 
             // ── Seite 2: mood ──
